@@ -35,15 +35,6 @@ public class OAuthController {
 //        return ResponseEntity.status(HttpStatus.OK).body(token);
 //    }
 
-    /**
-     * 로그인
-     */
-//    @GetMapping("/login/success")
-//    public String oauth2Callback(@RequestParam String code, Model model){
-//        log.info("구글 사용자 확인후 프론트에게 코드 전달");
-//        model.addAttribute("code", code);
-//        return "hello";
-//    }
 
     @GetMapping("/yes")
     public String test(HttpServletRequest request, Model model){
