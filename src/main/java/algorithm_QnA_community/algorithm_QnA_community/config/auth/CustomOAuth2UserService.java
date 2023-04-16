@@ -1,4 +1,4 @@
-package algorithm_QnA_community.algorithm_QnA_community.config;
+package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;

@@ -1,32 +1,33 @@
-package algorithm_QnA_community.algorithm_QnA_community.service.auth;
-
-
-import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-
-@Service
-@Slf4j
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class OAuthService {
-    private final MemberRepository memberRepository;
-    private OAuth2AuthorizedClientService authorizedService;
-
-
-//    private TokenPro
+//package algorithm_QnA_community.algorithm_QnA_community.config.auth;
+//
+//
+//import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
+//import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
+//import lombok.RequiredArgsConstructor;
+//import lombok.extern.slf4j.Slf4j;
+//import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+//import org.springframework.security.oauth2.core.OAuth2AccessToken;
+//import org.springframework.stereotype.Service;
+//import org.springframework.transaction.annotation.Transactional;
+//
+//import java.util.Optional;
+//
+//
+//@Service
+//@Slf4j
+//@RequiredArgsConstructor
+//@Transactional(readOnly = true)
+//public class OAuthService {
+//    private final MemberRepository memberRepository;
+//    private OAuth2AuthorizedClientService authorizedService;
 //
 //
 //    @Transactional
 //    public OAuth2AccessToken login(String code) {
 //
 //        // accessToken, refreshToken 생성
-//        authorizedService.
-//        //OAuth2RefreshToken refreshToken = tokenProvider.getRefreshToken(code);
+//        //authorizedService.
+//        OAuth2RefreshToken refreshToken = tokenProvider.getRefreshToken(code);
 //
 //        // accessToken을 통해 사용자 정보 불러오기
 //        Member member= getMemberInfo(accessToken);
@@ -67,7 +68,7 @@ public class OAuthService {
 //            throw new RuntimeException("Failed to get user info", e);
 //        }
 //    }
-
-
-
-}
+//
+//
+//
+//}

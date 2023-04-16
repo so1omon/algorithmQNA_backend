@@ -1,4 +1,4 @@
-package algorithm_QnA_community.algorithm_QnA_community.config;
+package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -21,56 +21,59 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+/**
+@Configuration
+@RequiredArgsConstructor
+@EnableOAuth2Client
+public class SecurityConfig {
 
-//@Configuration
-//@RequiredArgsConstructor
-//@EnableOAuth2Client
-//public class SecurityConfig{
-//
-//    @Autowired
-//    private OAuth2ClientContext oauth2ClientContext;
-//
-//    @Bean
-//    protected void configure(HttpSecurity http) throws Exception {
-//    //public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//
-//        http.csrf().disable();
-//
-//        http
-//                .csrf().disable()
-//                .authorizeRequests()
-//                    .antMatchers("/").permitAll()
-//                    .anyRequest().authenticated()
-//
+    @Autowired
+    private OAuth2ClientContext oauth2ClientContext;
+
+    @Bean
+    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        //public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.csrf().disable();
+
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/","/oauth2callback").permitAll()
+                .anyRequest().authenticated()
+
+                .and()
+                .formLogin().disable()
+                .oauth2Login()
+                .loginPage("/login")
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorize")
 //                .and()
-//                .formLogin().disable()
-//                .oauth2Login()
-//                    .authorizationEndpoint()
-//                    .baseUri("/login")
-////                .and()
-////                .defaultSuccessUrl("/success")
-////                .failureUrl("/fail");
-//
-//                .and()
-//                .redirectionEndpoint()
-//                    .baseUri("/oauth2callback");
-//
-//        //"/oauth2/callback" 경로로 들어오는 요청에 대해 필터 추가
-//        //http.addFilterBefore(new OAuth2TokenAuthenticationFilter(), BasicAuthenticationFilter.class);
-//
-//        //return http.build();
-//    }
-//
-//    @Bean
-//    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails resource) {
-//        return new OAuth2RestTemplate(resource, oauth2ClientContext);
-//    }
-//
-//    @Bean
-//    @ConfigurationProperties("security.oauth2.client")
-//    public OAuth2ProtectedResourceDetails googleResourceDetails() {
-//        return new AuthorizationCodeResourceDetails();
-//    }
+//                .defaultSuccessUrl("/success")
+//                .failureUrl("/fail");
+
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/oauth2callback");
+
+        //"/oauth2/callback" 경로로 들어오는 요청에 대해 필터 추가
+        //http.addFilterBefore(new OAuth2TokenAuthenticationFilter(), BasicAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails resource) {
+        return new OAuth2RestTemplate(resource, oauth2ClientContext);
+    }
+
+    @Bean
+    @ConfigurationProperties("security.oauth2.client")
+    public OAuth2ProtectedResourceDetails googleResourceDetails() {
+        return new AuthorizationCodeResourceDetails();
+    }
+}
+**/
 
 
 @Configuration
@@ -78,7 +81,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @EnableOAuth2Client
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
     private final OAuth2ClientContext oauth2ClientContext;
 
     @Override
@@ -88,13 +90,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                 .authorizeRequests()
-                .antMatchers("/", "/oauth2callback")
+                .antMatchers("/", "/login/**", "/oauth2callback")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
                 .oauth2Login()
-                .loginPage("/login")
+                //.loginPage("/login")
                 .authorizationEndpoint()
                 .baseUri("/oauth2/authorize")
                 .authorizationRequestRepository(authorizationRequestRepository())
@@ -108,6 +110,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(oAuth2AuthenticationSuccessHandler())
                 .failureHandler(oAuth2AuthenticationFailureHandler());
     }
+
+
+    @Bean
+    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails resource) {
+        return new OAuth2RestTemplate(resource, oauth2ClientContext);
+    }
+
 
     @Bean
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
@@ -129,10 +138,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new CustomOAuth2AuthenticationFailureHandler();
     }
 
-    @Bean
-    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails resource) {
-        return new OAuth2RestTemplate(resource, oauth2ClientContext);
-    }
+//    @Bean
+//    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails resource) {
+//        return new OAuth2RestTemplate(resource, oauth2ClientContext);
+//    }
 
     @Bean
     @ConfigurationProperties("security.oauth2.client")
