@@ -35,8 +35,7 @@ public class OAuthController {
 
     @GetMapping("/oauth2callback")
     public ResponseEntity<String> callback(@RequestParam("code") String code) {
-        String token = oAuthService.login(code);
-        return ResponseEntity.status(HttpStatus.OK).body(token);
+        return ResponseEntity.status(HttpStatus.OK).body(code);
     }
 
 }
