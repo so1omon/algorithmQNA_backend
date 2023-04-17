@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
+import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -13,6 +15,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
+import java.util.Optional;
 
 
 @Service
@@ -32,19 +35,25 @@ public class OAuthService_v2 {
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
 
-    public String login(String code){
+    public ResponseTokenAndMember login(String code){
         // 토큰 받기
         String token = getToken(code);
 
         // 사용자 정보 받기
-        getMemberInfo(token);
+        Member member = getMemberInfo(token);
+
         // 처음 사용자라면 회원가입
+        Optional<Member> findMember = memberRepository.findById(member.getId());
+        if (findMember.isEmpty()){
+            memberRepository.save(member);
+        }
 
         // 토큰, 사용자 정보 return
-        return token;
+        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(token, member.getId(), member.getName());
+        return tokenAndMember;
     }
 
-    private void getMemberInfo(String token) {
+    private Member getMemberInfo(String token) {
 
         log.info("getMemberInfo 함수 진입");
         log.info("token = {}", token);
@@ -61,6 +70,14 @@ public class OAuthService_v2 {
         // getForObject 메소드를 사용하여 구글 사용자 정보를 가져온다.
         ResponseEntity<String> response=restTemplate.exchange(GOOGLE_USERINFO_REQUEST_URL, HttpMethod.GET,request,String.class);
         log.info("memberInfo body = {}", response.getBody());
+
+        JsonParser jsonParser = new JsonParser();
+        JsonElement jsonElement = jsonParser.parse(response.getBody());
+        String memberId = jsonElement.getAsJsonObject().get("id").getAsString();
+        String memberName = jsonElement.getAsJsonObject().get("name").getAsString();
+
+        Member member = new Member(memberId, memberName);
+        return member;
     }
 
     private String getToken(String code) {

@@ -13,12 +13,12 @@ import javax.persistence.Id;
 public class Member {
 
     @Id
-    private String email;
+    private String id;
 
     private String name;
 
-    public Member(String email, String name) {
-        this.email = email;
+    public Member(String id, String name) {
+        this.id = id;
         this.name = name;
     }
 }

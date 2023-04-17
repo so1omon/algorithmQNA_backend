@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,10 +28,10 @@ public class OAuthController {
      * 로그인 (or 회원가입)
      */
     @GetMapping("/login/googles")
-    public ResponseEntity<String> login(@RequestParam String code) {
+    public ResponseEntity<ResponseTokenAndMember> login(@RequestParam String code) {
         log.info("/login post방식으로 요청이 들어옴");
-        String token = oAuthService.login(code);
-        return ResponseEntity.status(HttpStatus.OK).body(token);
+        ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code);
+        return ResponseEntity.status(HttpStatus.OK).body(responseTokenAndMember);
     }
 
     @GetMapping("/oauth2callback")
