@@ -6,15 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.token.Token;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.servlet.http.HttpServletRequest;
 
 
 @Controller
@@ -22,14 +16,14 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 public class OAuthController {
 
-    private final OAuthService_v2 oAuthService;
+    private final OAuthService oAuthService;
 
     /**
      * 로그인 (or 회원가입)
      */
     @GetMapping("/login/googles")
     public ResponseEntity<ResponseTokenAndMember> login(@RequestParam String code) {
-        log.info("/login post방식으로 요청이 들어옴");
+        log.info("코드 받고 토큰과 사용자 정보 return");
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code);
         return ResponseEntity.status(HttpStatus.OK).body(responseTokenAndMember);
     }
@@ -37,6 +31,11 @@ public class OAuthController {
     @GetMapping("/oauth2callback")
     public ResponseEntity<String> callback(@RequestParam("code") String code) {
         return ResponseEntity.status(HttpStatus.OK).body(code);
+    }
+
+    @GetMapping("/test")
+    public String test(){
+        return "ok";
     }
 
 }

@@ -17,8 +17,16 @@ public class Member {
 
     private String name;
 
+    private ROLE role;
+
     public Member(String id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Member(String id, String name, ROLE role) {
+        this.id = id;
+        this.name = name;
+        this.role = ROLE.USER;
     }
 }
