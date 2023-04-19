@@ -40,14 +40,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 // 예: 401 Unauthorized 응답 반환
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
-
-//            } else{
-//                //UserDetails userDetails = customUserDetailsService.loadUserById(userId);
-//                //UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//                //.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//
-//                //SecurityContextHolder.getContext().setAuthentication(authentication);
-//            }
             }
         }
 

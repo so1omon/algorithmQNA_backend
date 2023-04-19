@@ -1,5 +1,8 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.config.response.Res;
+import algorithm_QnA_community.algorithm_QnA_community.domain.dto.AccessAndRefreshToken;
+import algorithm_QnA_community.algorithm_QnA_community.domain.dto.RefreshToken;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @Controller
@@ -31,6 +36,13 @@ public class OAuthController {
     @GetMapping("/oauth2callback")
     public ResponseEntity<String> callback(@RequestParam("code") String code) {
         return ResponseEntity.status(HttpStatus.OK).body(code);
+    }
+
+    @GetMapping("/sendTokens")
+    public ResponseEntity<String> sendTokens(@RequestBody RefreshToken refreshToken){
+        String accessToken = oAuthService.sendTokens(refreshToken);
+        //return ResponseEntity.status(HttpStatus.OK).body(accessToken);
+        return ResponseEntity.status(HttpStatus.OK).body(accessToken);
     }
 
     @GetMapping("/test")

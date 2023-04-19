@@ -3,6 +3,7 @@ package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.ROLE;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.AccessAndRefreshToken;
+import algorithm_QnA_community.algorithm_QnA_community.domain.dto.RefreshToken;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import com.google.gson.JsonElement;
@@ -16,6 +17,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
+import java.net.URL;
 import java.util.Optional;
 
 
@@ -52,6 +54,35 @@ public class OAuthService {
         // 토큰, 사용자 정보 return
         ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(token.getAccessToken(), token.getRefreshToken(), member.getId(), member.getName());
         return tokenAndMember;
+    }
+
+    public String sendTokens(RefreshToken refreshToken){
+        String rt = refreshToken.getRefreshTokenName();
+
+        URI uri = URI.create("https://oauth2.googleapis.com/token");
+
+        HttpHeaders headers = new HttpHeaders();
+
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+
+        parameters.add("client_id", clientId);
+        parameters.add("client_secret", clientSecret);
+        parameters.add("refresh_token", rt);
+        parameters.add("grant_type", "refresh_token");
+
+        //HttpEntity를 하나 생성해 헤더를 담아서 restTemplate으로 구글과 통신하게 된다.
+        //HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(uri, entity, String.class);
+        log.info("구글에서 refresh token 받아옴={}", response.getBody());
+
+        JsonParser jsonParser = new JsonParser();
+        JsonElement jsonElement = jsonParser.parse(response.getBody());
+        String newAccessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
+        //String newRefreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
+        //AccessAndRefreshToken accessAndRefreshToken = new AccessAndRefreshToken(newAccessToken, newRefreshToken);
+        return newAccessToken;
     }
 
     private Member getMemberInfo(AccessAndRefreshToken token) {

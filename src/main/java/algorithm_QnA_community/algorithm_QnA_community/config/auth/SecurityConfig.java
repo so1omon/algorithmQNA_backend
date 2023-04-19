@@ -97,7 +97,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                     .authorizeRequests()
-                    .antMatchers("/", "/login/**", "/oauth2callback").permitAll()
+                    .antMatchers("/", "/login/**", "/oauth2callback","/sendTokens").permitAll()
                     .anyRequest().authenticated()
                 .and()
                     .oauth2Login()
