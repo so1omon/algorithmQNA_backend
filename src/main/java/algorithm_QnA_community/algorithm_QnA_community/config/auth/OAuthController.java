@@ -1,19 +1,13 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.config.response.Res;
-import algorithm_QnA_community.algorithm_QnA_community.domain.dto.AccessAndRefreshToken;
-import algorithm_QnA_community.algorithm_QnA_community.domain.dto.RefreshToken;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 
 
 @Controller
@@ -27,21 +21,42 @@ public class OAuthController {
      * 로그인 (or 회원가입)
      */
     @GetMapping("/login/googles")
-    public ResponseEntity<ResponseTokenAndMember> login(@RequestParam String code) {
+    public ResponseEntity<String> login(@RequestParam String code) {
         log.info("코드 받고 토큰과 사용자 정보 return");
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code);
-        return ResponseEntity.status(HttpStatus.OK).body(responseTokenAndMember);
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken",responseTokenAndMember.getAccessToken())
+                .httpOnly(true)
+                .secure(true)
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshUUID",responseTokenAndMember.getRefreshUUID())
+                .httpOnly(true)
+                .secure(true)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+                .body(responseTokenAndMember.getMemberName());
     }
 
+    /**
+     * 인증코드 반환
+     * @param code
+     * @return
+     */
     @GetMapping("/oauth2callback")
     public ResponseEntity<String> callback(@RequestParam("code") String code) {
         return ResponseEntity.status(HttpStatus.OK).body(code);
     }
 
+    /**
+     * access token 재발급
+     * @param refreshUUID
+     * @returnr
+     */
     @GetMapping("/sendTokens")
-    public ResponseEntity<String> sendTokens(@RequestBody RefreshToken refreshToken){
-        String accessToken = oAuthService.sendTokens(refreshToken);
-        //return ResponseEntity.status(HttpStatus.OK).body(accessToken);
+    public ResponseEntity<String> sendTokens(@CookieValue String refreshUUID){
+        String accessToken = oAuthService.sendTokens(refreshUUID);
         return ResponseEntity.status(HttpStatus.OK).body(accessToken);
     }
 
