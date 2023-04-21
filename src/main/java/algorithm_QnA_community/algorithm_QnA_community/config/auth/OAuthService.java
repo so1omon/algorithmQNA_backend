@@ -135,7 +135,7 @@ public class OAuthService {
         parameters.add("code", code);
         parameters.add("client_id", clientId);
         parameters.add("client_secret", clientSecret);
-        parameters.add("redirect_uri", "http://localhost:8080/oauth2callback"); // 리다이렉션 그대로 작성해야함
+        parameters.add("redirect_uri", "http://localhost:8080/oauth2"); // 리다이렉션 그대로 작성해야함
         parameters.add("access_type", "offline");
         parameters.add("approval_prompt", "force");
         parameters.add("grant_type", "authorization_code");

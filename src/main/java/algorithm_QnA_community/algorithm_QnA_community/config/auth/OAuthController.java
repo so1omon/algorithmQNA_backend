@@ -8,7 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 
 @Controller
@@ -21,7 +22,7 @@ public class OAuthController {
     /**
      * 로그인 (or 회원가입)
      */
-    @GetMapping("/login/googles")
+    @GetMapping("/oauth2/token/new")
     public ResponseEntity<MemberInfoRes> login(@RequestParam String code) {
         log.info("코드 받고 토큰과 사용자 정보 return");
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code);
@@ -50,22 +51,13 @@ public class OAuthController {
         }
     }
 
-    /**
-     * 인증코드 반환
-     * @param code
-     * @return
-     */
-    @GetMapping("/oauth2callback")
-    public ResponseEntity<String> callback(@RequestParam("code") String code) {
-        return ResponseEntity.status(HttpStatus.OK).body(code);
-    }
 
     /**
      * access token 재발급
      * @param refreshUUID
      * @return
      */
-    @GetMapping("/sendTokens")
+    @GetMapping("/oauth2/token/renew")
     public ResponseEntity<String> sendTokens(@CookieValue String refreshUUID){
         log.info("refreshUUID={}", refreshUUID);
         String accessToken = oAuthService.sendTokens(refreshUUID);
