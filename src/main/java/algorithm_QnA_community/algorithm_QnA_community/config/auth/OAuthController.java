@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.config.response.MemberInfoRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,22 +22,32 @@ public class OAuthController {
      * 로그인 (or 회원가입)
      */
     @GetMapping("/login/googles")
-    public ResponseEntity<String> login(@RequestParam String code) {
+    public ResponseEntity<MemberInfoRes> login(@RequestParam String code) {
         log.info("코드 받고 토큰과 사용자 정보 return");
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code);
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken",responseTokenAndMember.getAccessToken())
-                .httpOnly(true)
-                .secure(true)
-                .build();
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshUUID",responseTokenAndMember.getRefreshUUID())
-                .httpOnly(true)
-                .secure(true)
-                .build();
+        if (responseTokenAndMember == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(null);
+        }
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
-                .body(responseTokenAndMember.getMemberName());
+        else {
+            ResponseCookie accessCookie = ResponseCookie.from("accessToken", responseTokenAndMember.getAccessToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .build();
+
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshUUID", responseTokenAndMember.getRefreshUUID())
+                    .httpOnly(true)
+                    .secure(true)
+                    .build();
+
+
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+                    .body(responseTokenAndMember.getMemberInfo());
+        }
     }
 
     /**
@@ -52,12 +63,27 @@ public class OAuthController {
     /**
      * access token 재발급
      * @param refreshUUID
-     * @returnr
+     * @return
      */
     @GetMapping("/sendTokens")
     public ResponseEntity<String> sendTokens(@CookieValue String refreshUUID){
+        log.info("refreshUUID={}", refreshUUID);
         String accessToken = oAuthService.sendTokens(refreshUUID);
-        return ResponseEntity.status(HttpStatus.OK).body(accessToken);
+        if (accessToken.equals("invalid_UUID")){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("invalid_UUID");
+        } else if (accessToken.equals("invalid_refreshToken")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("invalid_refreshToken");
+        }
+
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), accessCookie.toString())
+                .body(null);
     }
 
     @GetMapping("/test")

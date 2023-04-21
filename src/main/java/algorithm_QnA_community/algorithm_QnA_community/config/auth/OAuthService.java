@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.config.response.MemberInfoRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.ROLE;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.AccessTokenAndRefreshUUID;
@@ -42,26 +43,32 @@ public class OAuthService {
     private String redirectUri;
 
     public ResponseTokenAndMember login(String code){
+
         // 토큰 받기
         AccessTokenAndRefreshUUID tokenInfo = getToken(code);
+        if (tokenInfo==null) return null;
 
         // 사용자 정보 받기
-        Member member = getMemberInfo(tokenInfo.getAccessToken());
+        MemberInfoRes memberInfo = getMemberInfo(tokenInfo.getAccessToken());
 
         // 처음 사용자라면 회원가입
-        Optional<Member> findMember = memberRepository.findById(member.getId());
+        Optional<Member> findMember = memberRepository.findById(memberInfo.getId());
         if (findMember.isEmpty()){
+            Member member = new Member(memberInfo.getId(), memberInfo.getName());
             memberRepository.save(member);
         }
 
         // 토큰, 사용자 정보 return
-        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(tokenInfo.getAccessToken(), tokenInfo.getRefreshUUID(), member.getId(), member.getName());
+        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(tokenInfo.getAccessToken(), tokenInfo.getRefreshUUID(), memberInfo);
         return tokenAndMember;
     }
 
     public String sendTokens(String refreshUUID){
         ValueOperations<String, String> vop = redisTemplate.opsForValue();
         String refreshToken = vop.get(refreshUUID);
+        if (refreshToken==null) {
+            return "invalid_UUID";
+        }
         log.info("redis에서 refreshToken 찾음={}", refreshToken);
 
         URI uri = URI.create("https://oauth2.googleapis.com/token");
@@ -79,15 +86,19 @@ public class OAuthService {
         //HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(uri, entity, String.class);
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(uri, entity, String.class);
 
-        JsonParser jsonParser = new JsonParser();
-        JsonElement jsonElement = jsonParser.parse(response.getBody());
-        String newAccessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
-        return newAccessToken;
+            JsonParser jsonParser = new JsonParser();
+            JsonElement jsonElement = jsonParser.parse(response.getBody());
+            String newAccessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
+            return newAccessToken;
+        } catch (Exception e) {
+            return "invalid_refreshToken";
+        }
     }
 
-    private Member getMemberInfo(String accessToken) {
+    private MemberInfoRes getMemberInfo(String accessToken) {
 
         log.info("getMemberInfo 함수 진입");
         log.info("accessToken = {}", accessToken);
@@ -108,11 +119,12 @@ public class OAuthService {
 
         JsonParser jsonParser = new JsonParser();
         JsonElement jsonElement = jsonParser.parse(response.getBody());
-        String memberId = jsonElement.getAsJsonObject().get("id").getAsString();
-        String memberName = jsonElement.getAsJsonObject().get("name").getAsString();
+        String id = jsonElement.getAsJsonObject().get("id").getAsString();
+        String name = jsonElement.getAsJsonObject().get("name").getAsString();
+        String profile = jsonElement.getAsJsonObject().get("picture").getAsString();
 
-        Member member = new Member(memberId, memberName, ROLE.USER);
-        return member;
+        MemberInfoRes memberInfoRes = new MemberInfoRes(id, name, profile);
+        return memberInfoRes;
     }
 
     private AccessTokenAndRefreshUUID getToken(String code) {
@@ -136,22 +148,28 @@ public class OAuthService {
 
         // HTTP 요청을 보내고 OAuth2 Access Token을 받아옵니다.
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                uri, entity, String.class);
-        log.info("response body={}", response.getBody());
 
-        JsonParser jsonParser = new JsonParser();
-        JsonElement jsonElement = jsonParser.parse(response.getBody());
-        String accessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
-        String refreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(uri, entity, String.class);
+            log.info("response body={}", response.getBody());
 
-        // refreshToken redis에 저장(uuid가 key)
-        ValueOperations<String, String> vop = redisTemplate.opsForValue();
-        String uuid = UUID.randomUUID().toString();
+            JsonParser jsonParser = new JsonParser();
+            JsonElement jsonElement = jsonParser.parse(response.getBody());
+            String accessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
+            String refreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
 
-        vop.set(uuid, refreshToken); // redis에 저장
+            // refreshToken redis에 저장(uuid가 key)
+            ValueOperations<String, String> vop = redisTemplate.opsForValue();
+            String uuid = UUID.randomUUID().toString();
 
-        AccessTokenAndRefreshUUID accessAndRefreshToken = new AccessTokenAndRefreshUUID(accessToken, uuid);
-        return accessAndRefreshToken;
+            vop.set(uuid, refreshToken); // redis에 저장
+
+            AccessTokenAndRefreshUUID accessAndRefreshToken = new AccessTokenAndRefreshUUID(accessToken, uuid);
+            return accessAndRefreshToken;
+        } catch (Exception e) {
+            log.error("인증코드로 accessToken, refreshToken 가져오는데 실패. 인증코드={}", code);
+            return null;
+        }
+
     }
 }
