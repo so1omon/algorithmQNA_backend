@@ -36,11 +36,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             if (responseCode != HttpURLConnection.HTTP_OK) {
+                log.info("유효하지 않음");
                 // Access Token이 유효하지 않은 경우 처리
                 // 예: 401 Unauthorized 응답 반환
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
+        }
+        else {
+            log.info("access_token 없음");
         }
 
         filterChain.doFilter(request, response);

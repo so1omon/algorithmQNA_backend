@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -90,6 +91,8 @@ public class SecurityConfig {
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final MemberRepository memberRepository;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -97,7 +100,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                     .authorizeRequests()
-                    .antMatchers("/","/oauth2callback", "/oauth2/token/new","/oauth2").permitAll()
+                    .antMatchers("/", "/oauth2/token/new","/oauth2").permitAll()
                     .anyRequest().authenticated()
                 .and()
                     .oauth2Login()
@@ -107,7 +110,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .authorizationRequestRepository(authorizationRequestRepository())
                 .and()
                     .redirectionEndpoint()
-                    .baseUri("/oauth2/*")
+                    .baseUri("/oauth2")
                 .and()
                     .userInfoEndpoint()
                     .userService(oAuth2UserService())
@@ -142,7 +145,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
-        return new CustomOAuth2UserService();
+        return new CustomOAuth2UserService(memberRepository);
     }
 
     @Bean
@@ -160,6 +163,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public OAuth2ProtectedResourceDetails googleResourceDetails() {
         return new AuthorizationCodeResourceDetails();
     }
+
+
 
 
 

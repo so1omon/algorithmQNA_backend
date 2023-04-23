@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.*;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -41,6 +42,7 @@ public class OAuthService {
 
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
+
 
     public ResponseTokenAndMember login(String code){
 
@@ -135,7 +137,7 @@ public class OAuthService {
         parameters.add("code", code);
         parameters.add("client_id", clientId);
         parameters.add("client_secret", clientSecret);
-        parameters.add("redirect_uri", "http://localhost:8080/oauth2"); // 리다이렉션 그대로 작성해야함
+        parameters.add("redirect_uri", redirectUri); // 리다이렉션 그대로 작성해야함
         parameters.add("access_type", "offline");
         parameters.add("approval_prompt", "force");
         parameters.add("grant_type", "authorization_code");

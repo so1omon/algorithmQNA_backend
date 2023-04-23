@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -19,13 +23,19 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
+//    @GetMapping("/login")
+//    public String login2(HttpServletRequest request){
+//
+//        return "redirect:/oauth2/authorize/google";
+//    }
+
     /**
      * 로그인 (or 회원가입)
      */
-    @GetMapping("/oauth2/token/new")
+    @GetMapping("/login")
     public ResponseEntity<MemberInfoRes> login(@RequestParam String code) {
-        log.info("코드 받고 토큰과 사용자 정보 return");
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code);
+
 
         if (responseTokenAndMember == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -44,12 +54,12 @@ public class OAuthController {
                     .build();
 
 
-
             return ResponseEntity.status(HttpStatus.OK)
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
                     .body(responseTokenAndMember.getMemberInfo());
         }
     }
+
 
 
     /**

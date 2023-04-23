@@ -17,6 +17,8 @@ public class Member {
 
     private String name;
 
+    private String profile;
+
     private ROLE role;
 
     public Member(String id, String name) {
@@ -28,5 +30,12 @@ public class Member {
         this.id = id;
         this.name = name;
         this.role = ROLE.USER;
+    }
+
+    public Member(String id, String name, String profile) {
+        this.id = id;
+        this.name = name;
+        this.profile = profile;
+        this.role = role;
     }
 }
