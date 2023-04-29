@@ -4,13 +4,17 @@ import lombok.Data;
 
 @Data
 public class MemberInfoRes {
-    private String id;
+
+    private String email;
     private String name;
     private String profile;
 
-    public MemberInfoRes(String id, String name, String profile) {
-        this.id = id;
+    private String state;
+
+    public MemberInfoRes(String email, String name, String profile, String state) {
+        this.email = email;
         this.name = name;
         this.profile = profile;
+        this.state=state;
     }
 }

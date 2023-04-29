@@ -45,10 +45,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String profile = oAuth2User.getAttribute("picture");
         log.info("profile={}", profile);
 
-        Optional<Member> findMember = memberRepository.findById(id);
+        Optional<Member> findMember = memberRepository.findByEmail(email);
         if (findMember.isEmpty()){
-            Member member = new Member(id, email, profile);
-            memberRepository.save(member);
+//            new Member()
+            //memberRepository.save();
         }
         return oAuth2User;
 

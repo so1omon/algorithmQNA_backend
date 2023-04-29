@@ -1,41 +1,41 @@
 package algorithm_QnA_community.algorithm_QnA_community.domain;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+@NoArgsConstructor(access= AccessLevel.PROTECTED)
+public class Member extends BaseTimeEntity {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "member_id")
+    private Long id;
 
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
     private String name;
 
-    private String profile;
+    @Column(nullable = false)
+    private Role role;
 
-    private ROLE role;
+    private int commentBadgeCnt;
+    private int postBadgeCnt;
+    private int likeBadgeCnt;
+    private String profileImgUrl;
 
-    public Member(String id, String name) {
-        this.id = id;
+    @Builder(builderClassName = "createMember", builderMethodName = "createMember")
+    public Member(String name, String email, Role role, String profileImgUrl) {
         this.name = name;
-    }
-
-    public Member(String id, String name, ROLE role) {
-        this.id = id;
-        this.name = name;
-        this.role = ROLE.USER;
-    }
-
-    public Member(String id, String name, String profile) {
-        this.id = id;
-        this.name = name;
-        this.profile = profile;
+        this.email = email;
         this.role = role;
+        this.profileImgUrl = profileImgUrl;
     }
 }
