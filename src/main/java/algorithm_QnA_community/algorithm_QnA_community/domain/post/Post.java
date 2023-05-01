@@ -9,6 +9,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,8 @@ import java.util.List;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성
+ * 2023/05/01        solmin       불필요한 setter 삭제 및 일부 Validation 추가
+ *                                TEXT->LONGTEXT
  */
 @Entity
 @Getter
@@ -37,7 +40,8 @@ public class Post extends BaseTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
+    @NotBlank
     private String content;
 
     private int likeCnt;
@@ -45,6 +49,7 @@ public class Post extends BaseTimeEntity {
     private int dislikeCnt;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PostCategory category;
 
     @Builder(builderClassName = "createPost", builderMethodName = "createPost")
@@ -58,7 +63,7 @@ public class Post extends BaseTimeEntity {
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
@@ -74,10 +79,6 @@ public class Post extends BaseTimeEntity {
 
 
     //----------------- 연관관계 메소드 시작 -----------------//
-    public void setMember(Member member){
-        this.member = member;
-        member.getPosts().add(this);
-    }
 
     public void updateLikeCnt(boolean isLike, boolean isIncrement){
         if(isLike){

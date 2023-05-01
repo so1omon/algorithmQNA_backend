@@ -1,6 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.domain.member;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.BaseTimeEntity;
+import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.Alarm;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikeComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
@@ -10,6 +11,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성, Member 엔티티와 다대다 관계를 갖는 각 엔티티에 대해
  *                                멤버가 이러한 매핑정보들을 필수적으로 알아야 하는지 궁금
+ * 2023/05/01        solmin       Validation 일부 추가 및 Alarms Mapping
  */
 
 @Entity
@@ -35,7 +38,7 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Email
     private String email;
 
     @Column(nullable = false)
@@ -47,6 +50,8 @@ public class Member extends BaseTimeEntity {
     private int commentBadgeCnt;
     private int postBadgeCnt;
     private int likeBadgeCnt;
+
+    @Column(length = 1000)
     private String profileImgUrl;
 
     @Builder(builderClassName = "createMember", builderMethodName = "createMember")
@@ -65,6 +70,8 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member")
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member")
+    private List<Alarm> alarms = new ArrayList<>();
 
     // 멤버가 이 정보들을 알고 있지 않는게 낫다고 판단
 //    @OneToMany(mappedBy = "member")

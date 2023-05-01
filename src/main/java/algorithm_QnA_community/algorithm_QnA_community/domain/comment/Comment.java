@@ -8,6 +8,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComme
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성
+ * 2023/05/01        solmin       content NotBlank 추가
  */
 @Entity
 @Getter
@@ -31,13 +33,12 @@ public class Comment extends BaseTimeEntity {
     @Column(name = "comment_id")
     private Long id;
 
-    @Column(nullable = false)
     private int depth;
 
     @Column(columnDefinition = "TEXT", nullable = false)
+    @NotBlank
     private String content;
 
-    @Column(nullable = false)
     private boolean isPinned = false; // 채택된 댓글인지 여부
 
     private int likeCnt;
