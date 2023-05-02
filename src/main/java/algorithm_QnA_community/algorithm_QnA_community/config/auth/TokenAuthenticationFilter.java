@@ -76,14 +76,16 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             if (responseCode == HttpURLConnection.HTTP_OK) { // accessToken 유효
                 log.info("accessToken이 유효함");
                 createAuthentication();
+
+
             }
 
             else {
                 log.info("accessToken이 유효하지 않음");
-                String accessToken_new = oAuthService.sendTokens(refreshUUID);
-                log.info("accessToken_new={}", accessToken_new);
+                accessToken = oAuthService.sendTokens(refreshUUID);
+                log.info("accessToken_new={}", accessToken);
 
-                if (accessToken_new!= null) {
+                if (accessToken!= null) {
                     log.info("refresh로 재발급 성공");
                     createAuthentication();
                 }
@@ -97,6 +99,20 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             log.info("토큰 둘 다 없음");
             throw new RuntimeException();
         }
+
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        Cookie accessCookie = new Cookie("accessToken", accessToken);
+        accessCookie.setSecure(true);
+        accessCookie.setHttpOnly(true);
+        Cookie refreshCookie = new Cookie("refreshUUID", refreshUUID);
+        refreshCookie.setSecure(true);
+        refreshCookie.setHttpOnly(true);
+
+        httpResponse.addCookie(accessCookie);
+        httpResponse.addCookie(refreshCookie);
+
+
         filterChain.doFilter(request, response);
     }
 

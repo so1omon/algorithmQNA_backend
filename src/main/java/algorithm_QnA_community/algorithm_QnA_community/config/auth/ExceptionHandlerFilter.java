@@ -31,7 +31,7 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
             response.getWriter().write(new ObjectMapper().writeValueAsString(new Status(403, "사용자 인증에 실패했습니다. 로그인 후 다시 시도해주세요.")));
-            response.sendRedirect("/auth/not-secured");
+
         }
     }
 
