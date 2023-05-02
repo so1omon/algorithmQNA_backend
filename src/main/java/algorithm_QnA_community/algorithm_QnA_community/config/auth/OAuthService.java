@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.*;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -31,7 +32,7 @@ public class OAuthService {
     private final MemberRepository memberRepository;
     private final RestTemplate restTemplate;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
@@ -45,7 +46,7 @@ public class OAuthService {
 
     public ResponseTokenAndMember login(String code, String state){
 
-        AccessTokenAndRefreshUUID tokenInfo = getToken(code, state); // 액세스 토큰과 refreshUUID 얻어옴
+        AccessTokenAndRefreshUUID tokenInfo = getToken(code); // 액세스 토큰과 refreshUUID 얻어옴
 
         if (tokenInfo==null) return null; // 잘못된 인증코드로 인해 토큰을 받아오지 못함
 
@@ -74,7 +75,7 @@ public class OAuthService {
         String refreshToken = vop.get(refreshUUID);
 
         if (refreshToken==null) {
-            return "invalid_UUID";
+            return null;
         }
 
         URI uri = URI.create("https://oauth2.googleapis.com/token");
@@ -99,7 +100,7 @@ public class OAuthService {
             String newAccessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
             return newAccessToken;
         } catch (Exception e) {
-            return "invalid_refreshToken";
+            return null;
         }
     }
 
@@ -136,13 +137,12 @@ public class OAuthService {
      * @param code
      * @return accessToken refreshUUID
      */
-    private AccessTokenAndRefreshUUID getToken(String code, String state) {
+    private AccessTokenAndRefreshUUID getToken(String code) {
         RestTemplate restTemplate = new RestTemplate();
 
         // HTTP 요청에 필요한 파라미터를 설정
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.add("code", code);
-        parameters.add("state", state);
         parameters.add("client_id", clientId);
         parameters.add("client_secret", clientSecret);
         parameters.add("redirect_uri", redirectUri);

@@ -21,11 +21,13 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
+    // 임시
     @GetMapping("/getcode")
     public String getcode(){
         return "redirect:/oauth2/authorize/google";
     }
 
+    // 임시
     @GetMapping("/google/callback")
     public ResponseEntity<CodeAndState> callback(@RequestParam String code, @RequestParam String state){
         CodeAndState codeAndState = new CodeAndState(code, state);
@@ -33,7 +35,28 @@ public class OAuthController {
                 .body(codeAndState);
     }
 
-    /**
+    //test용
+    @GetMapping("/test")
+    public ResponseEntity<String> test(){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("성공!!");
+    }
+
+    @GetMapping("/auth/not-secured")
+    public ResponseEntity<Res> notSecured() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),"not_secured"));
+    }
+
+    @GetMapping("/auth/denied")
+    public ResponseEntity<Res> denied() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),"denied"));
+    }
+
+
+
+   /**
      * 로그인 또는 회원가입
      * @param code (인증코드)
      * @return
@@ -80,7 +103,7 @@ public class OAuthController {
      * @return
      */
     @GetMapping("/oauth2/token/renew")
-    public ResponseEntity<String> sendTokens(@CookieValue String refreshUUID){
+    public ResponseEntity<String> sendTokens(@RequestParam String refreshUUID){
         log.info("access 토큰 재발급");
         log.info("refreshUUID={}", refreshUUID);
         String accessToken = oAuthService.sendTokens(refreshUUID);
