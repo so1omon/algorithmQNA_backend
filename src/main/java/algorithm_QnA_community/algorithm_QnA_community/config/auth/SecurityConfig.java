@@ -6,12 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -20,13 +19,31 @@ import org.springframework.security.oauth2.client.web.AuthorizationRequestReposi
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.client.RestTemplate;
 
+
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : SecurityConfig
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      :
+ *                      - 필터 순서
+ *                        (1) tokenAuthenticationFilter
+ *                                 - 토큰 검증
+ *                        (2) ExceptionHandlerFilter
+ *                                 - (1) 과정에서 발생 한 예외처리
+ *                        (3) exceptionHandling
+ *                                 - (삭제)
+ *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/05/02       janguni         최초 생성
+ */
 
 @Slf4j
 @Configuration
@@ -37,21 +54,40 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final MemberRepository memberRepository;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final OAuthService oAuthService;
 
     @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers(
+                "/getcode",
+                "/login",
+                "/",
+                "/oauth2/authorize/google",
+                "/auth/not-secured"
+        );
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        http.csrf().disable()
+                .cors().disable()
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .addFilterBefore(new TokenAuthenticationFilter(oAuthService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new ExceptionHandlerFilter(), tokenAuthenticationFilter().getClass());
+
+        /**
         http
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "/login", "/google/callback", "/auth/not-secured", "/getcode", "/oauth2/authorize/google", "/oauth2/token/renew").permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
-                .authenticationEntryPoint(customAuthenticationEntryPoint) // 로그인절차 혹은 토큰
-                .accessDeniedHandler(customAccessDeniedHandler)
+                .authenticationEntryPoint(customAuthenticationEntryPoint); // 로그인절차 혹은 토큰
 
-        // 여기부터
                 .and()
                 .oauth2Login()
                 .authorizationEndpoint()
@@ -66,20 +102,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .successHandler(oAuth2AuthenticationSuccessHandler())
                 .failureHandler(oAuth2AuthenticationFailureHandler());
-        // 여기까지
+
        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
        http.addFilterBefore(new ExceptionHandlerFilter(), tokenAuthenticationFilter().getClass());
-
+        **/
     }
 
-    @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        CustomAccessDeniedHandler accessDeniedHandler = new CustomAccessDeniedHandler();
-        accessDeniedHandler.setErrorURL("/auth/denied");
-        return accessDeniedHandler;
-    }
-
-    @Bean
+    //@Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter(){
         TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter(oAuthService);
         return tokenAuthenticationFilter;
@@ -93,16 +122,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
         return new CustomOAuth2UserService(memberRepository);
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
-        return new CustomOAuth2AuthenticationSuccessHandler();
-    }
-
-    @Bean
-    public AuthenticationFailureHandler oAuth2AuthenticationFailureHandler() {
-        return new CustomOAuth2AuthenticationFailureHandler();
     }
 
     @Bean

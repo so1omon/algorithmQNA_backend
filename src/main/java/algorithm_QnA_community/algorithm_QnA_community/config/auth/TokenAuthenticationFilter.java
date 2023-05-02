@@ -1,29 +1,16 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import algorithm_QnA_community.algorithm_QnA_community.config.Exception.TokenAuthenticationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.annotation.PostConstruct;
+import javax.security.sasl.AuthenticationException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -31,93 +18,109 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 
-// 모든 요청에 accesstoken과 refreshUUID가 담기는 지 확인 - 0
-// accessToken만료 -> 재발급해서 보내주기 - 0
-// refreshUUID도 만료 -> 403 forbidden 에러
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : TokenAuthenticationFilter
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      : accessToken과 refreshUUID의 유효성 검증
+ *                      - 정상 흐름
+ *                          (1) 상황
+ *                              - accessToken이 유효한 경우
+ *                              - refreshUUID로 accessToken을 재발급 한 경우
+ *                          (2) 처리
+ *                              - authentication 객체 생성 후 쿠키에 accessToken과 refreshUUID값 넣어서 반환
+ *
+ *                      - 예외 처리
+ *                          (1) 상황
+ *                              - accessToken, refreshUUID 둘 중 하나라도 값이 없을 경우
+ *                              - accessToken이 유효하지 않을 상황에서 refreshUUID로 accessToken 재발급을 못한 경우
+ *                          (2) 처리
+ *                              - runtimeException 발생 후 ExceptionHandlerFilter에서 예외처리 진행
+ *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/05/02       janguni         최초 생성
+ */
+
+
 @Slf4j
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter implements InitializingBean {
 
     private final OAuthService oAuthService;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String clientId;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String clientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
-    private String redirectUri;
-
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, RuntimeException{
-        String accessToken = request.getHeader("access_token");
-        String refreshUUID = request.getHeader("refreshUUID");
-
-        log.info("------------------------------------------------");
-        log.info("accessToken -> {}", accessToken);
-        log.info("refreshUUID -> {}", refreshUUID);
-        log.info("------------------------------------------------");
-
-        if (accessToken != null & refreshUUID != null) {
-            log.info("access_token과 refreshUUID 둘 다 있음");
-            URL url = new URL("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            connection.setRequestMethod("GET");
-
-            int responseCode = connection.getResponseCode();
-            log.info("responseCode={}", responseCode);
-
-            if (responseCode == HttpURLConnection.HTTP_OK) { // accessToken 유효
-                log.info("accessToken이 유효함");
-                createAuthentication();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
+        try {
+            // 액세스 토큰과 refreshUUID 값 추출
+            String accessToken = request.getHeader("access_token");
+            String refreshUUID = request.getHeader("refreshUUID");
 
 
+            // ============ accessToken & refreshUUID 로 토큰 유효 검증 로직 ============ //
+            if (accessToken != null & refreshUUID != null) { // 두 개의 값이 모두 있을 경우
+
+                // accessToken 먼저 유효 검증
+                URL url = new URL("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+
+                // 유효하다면 200, 그렇지 않다면 400
+                int responseCode = connection.getResponseCode();
+
+                // accessToken 유효한 경우
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    log.info("accessToken이 유효함");
+                    createAuthentication(); //authentication 객체 생성
+                }
+
+                // accessToken이 유효하지 않은 경우
+                else {
+                    accessToken = oAuthService.sendTokens(refreshUUID); // refreshUUID로 accessToken 재발급
+
+                    // accessToken 재발급에 성공한 경우
+                    if (accessToken != null) {
+                        createAuthentication(); //authentication 객체 생성
+                    }
+
+                    // refreshUUID 값이 잘못되었거나, refreshToken이 만료됐을 경우
+                    else {
+                        throw new TokenAuthenticationException("토큰예외"); // Exception!
+                    }
+                }
             }
 
+            // accessToken과 refreshUUID 둘 중 하나라도 없을 경우
             else {
-                log.info("accessToken이 유효하지 않음");
-                accessToken = oAuthService.sendTokens(refreshUUID);
-                log.info("accessToken_new={}", accessToken);
-
-                if (accessToken!= null) {
-                    log.info("refresh로 재발급 성공");
-                    createAuthentication();
-                }
-                else{
-                    log.info("refresh로 재발급 실패");
-                    throw new RuntimeException();
-                }
+                log.info("토큰 빠트림");
+                throw new TokenAuthenticationException("토큰예외"); // Exception!
             }
+
+            // Cookie에 accessToken, refreshUUID 값 담음
+            HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+            Cookie accessCookie = new Cookie("accessToken", accessToken);
+            accessCookie.setSecure(true);
+            accessCookie.setHttpOnly(true);
+            Cookie refreshCookie = new Cookie("refreshUUID", refreshUUID);
+            refreshCookie.setSecure(true);
+            refreshCookie.setHttpOnly(true);
+
+            httpResponse.addCookie(accessCookie);
+            httpResponse.addCookie(refreshCookie);
+
+
+            filterChain.doFilter(request, response);
+        } catch (TokenAuthenticationException e) {
+            throw e;
         }
-        else {
-            log.info("토큰 둘 다 없음");
-            throw new RuntimeException();
-        }
-
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-        Cookie accessCookie = new Cookie("accessToken", accessToken);
-        accessCookie.setSecure(true);
-        accessCookie.setHttpOnly(true);
-        Cookie refreshCookie = new Cookie("refreshUUID", refreshUUID);
-        refreshCookie.setSecure(true);
-        refreshCookie.setHttpOnly(true);
-
-        httpResponse.addCookie(accessCookie);
-        httpResponse.addCookie(refreshCookie);
-
-
-        filterChain.doFilter(request, response);
     }
 
+    // authentication 객체 생성
     private void createAuthentication() {
-
         PrincipalDetails principalDetails = new PrincipalDetails();
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
