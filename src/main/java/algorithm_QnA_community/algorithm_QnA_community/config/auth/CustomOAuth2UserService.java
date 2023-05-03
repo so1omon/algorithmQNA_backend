@@ -2,33 +2,37 @@ package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
+
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
+
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : CustomOAuth2UserService
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      : 구글 로그인 테스트 용도 (삭제예정)
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/04/20       janguni         최초 생성
+ */
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final MemberRepository memberRepository;
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // 액세스 토큰을 사용하여 사용자 정보를 가져온다.
@@ -45,11 +49,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String profile = oAuth2User.getAttribute("picture");
         log.info("profile={}", profile);
 
-        Optional<Member> findMember = memberRepository.findByEmail(email);
-        if (findMember.isEmpty()){
-//            new Member()
-            //memberRepository.save();
-        }
         return oAuth2User;
 
     }

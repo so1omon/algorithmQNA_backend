@@ -1,4 +1,15 @@
-package algorithm_QnA_community.algorithm_QnA_community.config.response;
+package algorithm_QnA_community.algorithm_QnA_community.domain.response;
+
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.domain.response
+ * fileNmae         : StatusCode
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      : StatusCode 모음
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/05/02       janguni         최초 생성
+ */
 
 public abstract class StatusCode {
     public static final int OK = 200;

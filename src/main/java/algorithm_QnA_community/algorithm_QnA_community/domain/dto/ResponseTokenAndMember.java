@@ -1,6 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.domain.dto;
 
-import algorithm_QnA_community.algorithm_QnA_community.config.response.MemberInfoRes;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
 import lombok.Data;
 
 @Data

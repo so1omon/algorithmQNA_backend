@@ -1,11 +1,11 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.config.ResponseMessage;
-import algorithm_QnA_community.algorithm_QnA_community.config.response.DefStatus;
-import algorithm_QnA_community.algorithm_QnA_community.config.response.MemberInfoRes;
-import algorithm_QnA_community.algorithm_QnA_community.config.response.Res;
-import algorithm_QnA_community.algorithm_QnA_community.config.response.StatusCode;
-import algorithm_QnA_community.algorithm_QnA_community.domain.dto.CodeAndState;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.ResponseMessage;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.StatusCode;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.CodeAndState;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +14,22 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+
 /**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : OAuthController
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      : 로그인, 토큰 인증 처리 controller
+ *                     - /login
+ *                          인증코드로 토큰 정보, 사용자 정보 반환
+ *                     - /auth/not-secured
+ *                          토큰 인증 실패 시 내부 리다이렉션 경로
  *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/04/20       janguni         최초 생성
+ * 2023/05-02       janguni         /auth/not-secured 경로 추가
  */
 
 @Controller
@@ -39,7 +53,7 @@ public class OAuthController {
 
         if (responseTokenAndMember == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.FAIL_AUTHORIZE), null));
+                    .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.FAIL_AUTHORIZE_CODE), null));
         }
 
         else {
@@ -70,15 +84,13 @@ public class OAuthController {
     @GetMapping("/auth/not-secured")
     public ResponseEntity<Res> notSecured() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),"not_secured"));
+                .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),null));
     }
+
+
+
 
     // ====================== 임시용 ====================== //
-    @GetMapping("/getcode")
-    public String getcode(){
-        return "redirect:/oauth2/authorize/google";
-    }
-
     @GetMapping("/google/callback")
     public ResponseEntity<CodeAndState> callback(@RequestParam String code, @RequestParam String state){
         CodeAndState codeAndState = new CodeAndState(code, state);
@@ -91,8 +103,5 @@ public class OAuthController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body("성공!!");
     }
-
-
-
 
 }

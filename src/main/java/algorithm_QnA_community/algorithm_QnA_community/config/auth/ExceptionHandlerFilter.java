@@ -9,6 +9,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : ExceptionHandlerFilter
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      : TokenAuthenticationFilter 예외처리 필터
+ *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/05/02       janguni         최초 생성
+ */
 
 @Slf4j
 public class ExceptionHandlerFilter extends OncePerRequestFilter {

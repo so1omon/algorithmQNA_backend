@@ -1,6 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.config.response.MemberInfoRes;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.AccessTokenAndRefreshUUID;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -22,6 +21,18 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
+
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : OAuthService
+ * author           : janguni
+ * date             : 2023-05-03
+ * description      : 구글 Oauth2 server로 부터 token 발급, 사용자 정보 반환
+ *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/04/20       janguni         최초 생성
+ */
 
 
 @Service
@@ -31,7 +42,6 @@ public class OAuthService {
 
     private final MemberRepository memberRepository;
     private final RestTemplate restTemplate;
-
     private final RedisTemplate redisTemplate;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -71,9 +81,10 @@ public class OAuthService {
 
     // refresh token으로 accessToken 재발급
     public String sendTokens(String refreshUUID){
+
         ValueOperations<String, String> vop = redisTemplate.opsForValue();
         String refreshToken = vop.get(refreshUUID);
-
+        log.info("refreshToken={}", refreshToken);
         if (refreshToken==null) {
             return null;
         }
@@ -100,6 +111,7 @@ public class OAuthService {
             String newAccessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
             return newAccessToken;
         } catch (Exception e) {
+            log.info("google에서 재발급을 안함");
             return null;
         }
     }
@@ -138,7 +150,7 @@ public class OAuthService {
      * @return accessToken refreshUUID
      */
     private AccessTokenAndRefreshUUID getToken(String code) {
-        RestTemplate restTemplate = new RestTemplate();
+
 
         // HTTP 요청에 필요한 파라미터를 설정
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();

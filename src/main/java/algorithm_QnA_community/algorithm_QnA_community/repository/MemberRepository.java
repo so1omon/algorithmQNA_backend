@@ -5,6 +5,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.respository
+ * fileNmae         : MemberRepository
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      :
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/05/02       janguni         최초 생성
+ */
+
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    Optional<Member> findByEmail(String email); // 이미 생성된 사용자인지 판단
+    Optional<Member> findByEmail(String email);
 }

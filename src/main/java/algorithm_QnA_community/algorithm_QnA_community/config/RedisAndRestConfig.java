@@ -1,6 +1,5 @@
 package algorithm_QnA_community.algorithm_QnA_community.config;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,11 +9,21 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config
+ * fileNmae         : RedisAndRestConfig
+ * author           : janguni
+ * date             : 2023-05-02
+ * description      : RedisTemplate, RestTemplate 빈 등록
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/05/02       janguni         최초 생성
+ */
+
 @Configuration
-public class RedisConfig {
+public class RedisAndRestConfig {
 
     @Value("${spring.data.redis.host}")
     private String redisHost;
@@ -24,11 +33,6 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.password}")
     private String redisPassword;
-
-//    @Override
-//    public void afterPropertiesSet() throws Exception {
-//        redisTemplate().afterPropertiesSet();
-//    }
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -56,5 +60,7 @@ public class RedisConfig {
         factory.setReadTimeout(3000);
         return new RestTemplate(factory);
     }
+
+
 
 }

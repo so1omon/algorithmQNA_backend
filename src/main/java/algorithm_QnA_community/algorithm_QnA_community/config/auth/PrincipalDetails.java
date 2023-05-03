@@ -7,6 +7,18 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.*;
 
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : PrincipalDetails
+ * author           : janguni
+ * date             : 2023-05-03
+ * description      : 토큰 인증 성공 시 SecurityContext에 들어가는 Authentication
+ *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023/04/20       janguni         최초 생성
+ */
+
 @Getter
 public class PrincipalDetails implements OAuth2User{
 
@@ -20,7 +32,6 @@ public class PrincipalDetails implements OAuth2User{
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        //authorities.add(new SimpleGrantedAuthority(member.getRole().name()));
         return authorities;
     }
 
