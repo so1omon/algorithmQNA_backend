@@ -101,7 +101,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(
                 "/",
                 "/login/**",
-                "/auth/not-secured"
+                "/auth/not-secured",
+                "/auth/deleteCookie"
         );
     }
 

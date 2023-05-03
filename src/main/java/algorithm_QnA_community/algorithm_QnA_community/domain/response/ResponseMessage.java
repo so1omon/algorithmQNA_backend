@@ -12,6 +12,11 @@ package algorithm_QnA_community.algorithm_QnA_community.domain.response;
  */
 
 public class ResponseMessage {
+
+    public static final String SUCCESS_DELETE_COOKIE = "성공적으로 쿠키를 삭제하였습니다.";
+
+    public static final String FAIL_DELETE_COOKIE = "쿠키를 삭제하는데 실패하였습니다.";
+
     public static final String SUCCESS_AUTHORIZE = "성공적으로 사용자 인증을 하였습니다.";
 
     public static final String FAIL_AUTHORIZE_CODE = "잘못된 인증코드 값 입니다.";

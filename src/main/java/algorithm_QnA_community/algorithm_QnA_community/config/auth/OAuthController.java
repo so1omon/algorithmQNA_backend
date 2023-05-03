@@ -14,6 +14,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
@@ -29,7 +33,8 @@ import org.springframework.web.bind.annotation.*;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/04/20       janguni         최초 생성
- * 2023/05-02       janguni         /auth/not-secured 경로 추가
+ * 2023/05/02       janguni         failTokenAuthentication() 생성
+ * 2023/05/03       janguni         deleteCookie() 생성
  */
 
 @Controller
@@ -79,13 +84,37 @@ public class OAuthController {
 
     /**
      * 토큰 인증 실패 시
-     * @return
      */
     @GetMapping("/auth/not-secured")
-    public ResponseEntity<Res> notSecured() {
+    public ResponseEntity<Res> failTokenAuthentication() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),null));
     }
+
+    /**
+     * 쿠키 삭제 요청
+     */
+    @GetMapping("/auth/deleteCookie")
+    public ResponseEntity<Res> deleteCookie(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Cookie accessCookie = new Cookie("accessToken", "");
+            accessCookie.setMaxAge(0);
+
+            Cookie refreshCookie = new Cookie("refreshUUID", "");
+            refreshCookie.setMaxAge(0);
+
+            response.addCookie(accessCookie);
+            response.addCookie(refreshCookie);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Res(new DefStatus(StatusCode.OK, ResponseMessage.SUCCESS_DELETE_COOKIE),null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new Res(new DefStatus(StatusCode.BAD_REQUEST, ResponseMessage.FAIL_DELETE_COOKIE),null));
+        }
+    }
+
+
 
 
 
