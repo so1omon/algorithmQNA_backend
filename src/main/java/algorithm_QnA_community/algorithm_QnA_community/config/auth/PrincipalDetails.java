@@ -3,6 +3,7 @@ package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.*;
@@ -25,9 +26,9 @@ public class PrincipalDetails implements OAuth2User{
     private Member member;
     private Map<String, Object> attributes;
 
-    public PrincipalDetails() {
+    public PrincipalDetails(Member member) {
+        this.member = member;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -38,5 +39,10 @@ public class PrincipalDetails implements OAuth2User{
     @Override
     public String getName() {
         return null;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 }

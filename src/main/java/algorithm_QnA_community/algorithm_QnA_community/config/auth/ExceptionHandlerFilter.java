@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.config.Exception.TokenAuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -28,10 +29,10 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
         try {
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
+        } catch (TokenAuthenticationException e) {
             log.info("토큰 인증 실패");
             response.sendRedirect("/auth/not-secured");
-            }
+        }
 
     }
 

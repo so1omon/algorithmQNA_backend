@@ -61,7 +61,8 @@ public class OAuthService {
         if (tokenInfo==null) return null; // 잘못된 인증코드로 인해 토큰을 받아오지 못함
 
         MemberInfoRes memberInfo = getMemberInfo(tokenInfo.getAccessToken(), state); // 사용자 정보 받기
-
+        //MemberInfoRes memberInfo = getMemberInfo("fake", state);
+        log.info("memberInfo= {}", memberInfo);
         // 처음 로그인을 시도한 사용자라면 회원가입 처리
         Optional<Member> findMember = memberRepository.findByEmail(memberInfo.getName());
         if (findMember.isEmpty()){
@@ -116,32 +117,36 @@ public class OAuthService {
         }
     }
 
-    private MemberInfoRes getMemberInfo(String accessToken, String state) {
+    public MemberInfoRes getMemberInfo(String accessToken, String state) {
+        try {
 
-        log.info("accessToken = {}", accessToken);
+            log.info("accessToken = {}", accessToken);
 
-        String GOOGLE_USERINFO_REQUEST_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
+            String GOOGLE_USERINFO_REQUEST_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
-        //header에 accessToken을 담는다.
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessToken);
+            //header에 accessToken을 담는다.
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + accessToken);
 
 
-        //HttpEntity를 하나 생성해 헤더를 담아서 restTemplate으로 구글과 통신하게 된다.
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
+            //HttpEntity를 하나 생성해 헤더를 담아서 restTemplate으로 구글과 통신하게 된다.
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
-        // getForObject 메소드를 사용하여 구글 사용자 정보를 가져온다.
-        ResponseEntity<String> response=restTemplate.exchange(GOOGLE_USERINFO_REQUEST_URL, HttpMethod.GET,request,String.class);
-        log.info("memberInfo body = {}", response.getBody());
+            // getForObject 메소드를 사용하여 구글 사용자 정보를 가져온다.
+            ResponseEntity<String> response = restTemplate.exchange(GOOGLE_USERINFO_REQUEST_URL, HttpMethod.GET, request, String.class);
+            log.info("memberInfo body = {}", response.getBody());
 
-        JsonParser jsonParser = new JsonParser();
-        JsonElement jsonElement = jsonParser.parse(response.getBody());
-        String email = jsonElement.getAsJsonObject().get("email").getAsString();
-        String name = jsonElement.getAsJsonObject().get("name").getAsString();
-        String profile = jsonElement.getAsJsonObject().get("picture").getAsString();
+            JsonParser jsonParser = new JsonParser();
+            JsonElement jsonElement = jsonParser.parse(response.getBody());
+            String email = jsonElement.getAsJsonObject().get("email").getAsString();
+            String name = jsonElement.getAsJsonObject().get("name").getAsString();
+            String profile = jsonElement.getAsJsonObject().get("picture").getAsString();
 
-        MemberInfoRes memberInfoRes = new MemberInfoRes(email, name, profile, state);
-        return memberInfoRes;
+            MemberInfoRes memberInfoRes = new MemberInfoRes(email, name, profile, state);
+            return memberInfoRes;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

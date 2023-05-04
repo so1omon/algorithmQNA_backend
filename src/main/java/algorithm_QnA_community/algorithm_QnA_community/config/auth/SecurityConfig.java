@@ -51,6 +51,7 @@ import org.springframework.web.client.RestTemplate;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final OAuthService oAuthService;
+    private final MemberRepository memberRepository;
 
 //    private final MemberRepository memberRepository;
 //    private final RestTemplate restTemplate;
@@ -58,8 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
     // == code 필요할 때 (시작)== //
-/**
-
+    /**
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(
@@ -89,13 +89,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                  .userInfoEndpoint()
                 .userService(oAuth2UserService());
     }
-**/
+    **/
     // == code 필요할 때 (끝)== //
 
 
 
     // == 실제 운영 (시작)== //
-
+///**
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers(
@@ -114,14 +114,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .anyRequest().authenticated();
 
+
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(new ExceptionHandlerFilter(), tokenAuthenticationFilter().getClass());
     }
+//**/
 
     // == 실제 운영 (끝) == //
 
     public TokenAuthenticationFilter tokenAuthenticationFilter(){
-        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter(oAuthService);
+        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter(oAuthService, memberRepository);
         //return new TokenAuthenticationFilter(new OAuthService(memberRepository, restTemplate, redisTemplate));
         return tokenAuthenticationFilter;
     }

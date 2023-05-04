@@ -1,6 +1,9 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
 import algorithm_QnA_community.algorithm_QnA_community.config.Exception.TokenAuthenticationException;
+import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
+import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Optional;
 
 /**
  * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
@@ -51,6 +55,7 @@ import java.net.URL;
 public class TokenAuthenticationFilter extends OncePerRequestFilter implements InitializingBean {
 
     private final OAuthService oAuthService;
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
@@ -64,17 +69,24 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             if (accessToken != null & refreshUUID != null) { // 두 개의 값이 모두 있을 경우
 
                 // accessToken 먼저 유효 검증
-                URL url = new URL("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-
-                // 유효하다면 200, 그렇지 않다면 400
-                int responseCode = connection.getResponseCode();
-
-                // accessToken 유효한 경우
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    log.info("accessToken이 유효함");
-                    createAuthentication(); //authentication 객체 생성
+//                URL url = new URL("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken);
+//                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod("GET");
+//
+//                // 유효하다면 200, 그렇지 않다면 400
+//                int responseCode = connection.getResponseCode();
+//
+//                // accessToken 유효한 경우
+//                if (responseCode == HttpURLConnection.HTTP_OK) {
+//                    log.info("accessToken이 유효함");
+//                    createAuthentication(); //authentication 객체 생성
+//                }
+                MemberInfoRes memberInfo = oAuthService.getMemberInfo(accessToken, "state");
+                if (memberInfo!=null) {
+                    Member findMember = memberRepository.findByEmail(memberInfo.getEmail()).get(); // 예외처리 해야함!!!
+                    log.info("findMember.email={}", findMember.getEmail());
+                    createAuthentication(findMember);
+                    log.info("authentication 객체 생성 완료!!");
                 }
 
                 // accessToken이 유효하지 않은 경우
@@ -83,7 +95,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
 
                     // accessToken 재발급에 성공한 경우
                     if (accessToken != null) {
-                        createAuthentication(); //authentication 객체 생성
+                        MemberInfoRes memberInfo2 = oAuthService.getMemberInfo(accessToken, "state");
+
+                        Member findMember2 = memberRepository.findByEmail(memberInfo2.getEmail()).get(); // 예외처리 해야함!!!
+
+                        createAuthentication(findMember2);
                     }
 
                     // refreshUUID 값이 잘못되었거나, refreshToken이 만료됐을 경우
@@ -112,7 +128,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             httpResponse.addCookie(accessCookie);
             httpResponse.addCookie(refreshCookie);
 
-
+            log.info("필터를 통과~~~");
             filterChain.doFilter(request, response);
         } catch (TokenAuthenticationException e) {
             throw e;
@@ -120,10 +136,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
     }
 
     // authentication 객체 생성
-    private void createAuthentication() {
-        PrincipalDetails principalDetails = new PrincipalDetails();
+    private void createAuthentication(Member member) {
+        PrincipalDetails principalDetails = new PrincipalDetails(member);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
 }
