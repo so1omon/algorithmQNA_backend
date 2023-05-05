@@ -23,6 +23,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성
  * 2023/05/01        solmin       content NotBlank 추가
+ * 2023/05/05        solmin       팩토리 메소드 오류 수정
  */
 @Entity
 @Getter
@@ -75,10 +76,10 @@ public class Comment extends BaseTimeEntity {
         this.parent = parent;
         this.member = member;
         this.content = content;
-        parent.getChild().add(this);
         member.getComments().add(this);
         if(parent!=null){
             this.depth = parent.getDepth()+1;
+            parent.getChild().add(this);
         }
     }
 

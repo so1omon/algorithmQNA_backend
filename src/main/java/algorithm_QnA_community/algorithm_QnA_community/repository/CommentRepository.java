@@ -1,24 +1,19 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
-import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
+import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.repository
- * fileName       : MemberRepository
+ * fileName       : CommentRepository
  * author         : solmin
- * date           : 2023/05/01
+ * date           : 2023/05/04
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2023/05/01        solmin       최초 생성 (JPA 테스트용)
+ * 2023/05/04        solmin       최초 생성
  */
-public interface MemberRepository extends JpaRepository<Member, Long> {
-    Optional<Member> findById(Long id);
 
-    List<Member> findByName(String name);
+public interface CommentRepository extends JpaRepository<Comment, Long> {
 }
