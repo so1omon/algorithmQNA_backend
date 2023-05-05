@@ -38,6 +38,10 @@ out/
 ### VS Code ###
 .vscode/
 
+### YML ###
+*.yml
+
+
 
 
 
