@@ -10,6 +10,7 @@ import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
+
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.domain
  * fileName       : BaseEntity
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
  *                                상속 없이 별도로 구현할 예정
  */
 
+
 @MappedSuperclass
 @Getter
 @EntityListeners(AuditingEntityListener.class)
@@ -34,4 +36,6 @@ public abstract class BaseTimeEntity {
     @LastModifiedDate
     @Column(name="updated_at")
     public LocalDateTime lastModifiedDate;
+
 }
+
