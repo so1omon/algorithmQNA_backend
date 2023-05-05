@@ -1,11 +1,13 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
 /**
+
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.repository
  * fileName       : MemberRepository
  * author         : solmin
@@ -18,4 +20,5 @@ import java.util.Optional;
  */
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findById(Long id);
+
 }
