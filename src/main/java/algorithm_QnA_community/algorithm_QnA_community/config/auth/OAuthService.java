@@ -1,8 +1,8 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
-import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
-import algorithm_QnA_community.algorithm_QnA_community.domain.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.AccessTokenAndRefreshUUID;
 import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;

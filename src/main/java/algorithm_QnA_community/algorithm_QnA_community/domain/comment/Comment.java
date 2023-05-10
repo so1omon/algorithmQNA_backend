@@ -8,6 +8,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComme
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,8 @@ import java.util.List;
  * 2023/04/26        solmin       최초 생성
  * 2023/05/01        solmin       content NotBlank 추가
  * 2023/05/05        solmin       팩토리 메소드 오류 수정
+ * 2023/05/10        solmin       댓글 정보 수정 및 채택을 위한 업데이트 메소드 추가
+ *                                TODO 추후 Validation Error 테스트 시마다 검증 어노테이션 메세지 추가 예정
  */
 @Entity
 @Getter
@@ -37,7 +40,7 @@ public class Comment extends BaseTimeEntity {
     private int depth;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    @NotBlank
+    @NotBlank(message = "게시글 내용을 1글자 이상 작성해야 합니다.")
     private String content;
 
     private boolean isPinned = false; // 채택된 댓글인지 여부
@@ -91,5 +94,12 @@ public class Comment extends BaseTimeEntity {
         }
     }
 
+    public void updateContent(String content){
+        this.content = content;
+    }
+
+    public void updatePin(boolean isPinned){
+        this.isPinned = isPinned;
+    }
 
 }

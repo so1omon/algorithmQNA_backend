@@ -1,6 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.config.Exception.TokenAuthenticationException;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.TokenAuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 

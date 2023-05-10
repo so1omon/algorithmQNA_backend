@@ -1,9 +1,12 @@
 package algorithm_QnA_community.algorithm_QnA_community;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.repository.CommentRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.LikeCommentRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,9 @@ import javax.transaction.Transactional;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/04        solmin       최초 생성
+ * 2023/05/05        solmin       [공지] 애플리케이션 로드 시에 DB초기값 삽입하는 코드입니다
+ *                                초기값 삽입 원하지 않으시면 비활성화시켜주세요~~
+ * 2023/05/10        solmin       댓글 삽입 init method 추가
  */
 
 @Component
@@ -33,7 +39,8 @@ public class InitDB {
 
     @PostConstruct
     public void init() {
-        initService.dbInit();
+        initService.dbInitWithMemberAndPost();
+        initService.dbInitWithComment();
     }
 
     @Component
@@ -43,24 +50,58 @@ public class InitDB {
 
         private final MemberRepository memberRepository;
         private final PostRepository postRepository;
+        private final CommentRepository commentRepository;
 
-        public void dbInit() {
-            Member member = Member.createMember()
+        public void dbInitWithMemberAndPost() {
+            Member member1 = Member.createMember()
                 .name("solmin")
                 .email("solmin3665@gmail.com")
                 .role(Role.ROLE_USER)
                 .build();
-            memberRepository.save(member);
+
+            Member member2 = Member.createMember()
+                .name("yoonhee")
+                .email("yooonhee@gmail.com")
+                .role(Role.ROLE_USER)
+                .build();
+            memberRepository.save(member1);
+            memberRepository.save(member2);
 
             for (int i = 0; i < 4; i++) {
                 postRepository.save(Post.createPost()
                     .title("게시글" + i)
                     .category(PostCategory.DFS_BFS)
                     .content("<p>bfs어려워요" + i + "</p")
-                    .member(member)
+                    .member(member1)
                     .build()
                 );
             }
-        }
+
+
+        } // 멤버, 게시글
+
+        public void dbInitWithComment() {
+            Member member1 = memberRepository.findById(1L).get();
+            Member member2 = memberRepository.findById(2L).get();
+
+            Post post = member1.getPosts().get(0);
+
+            for (int i = 0; i < 2; i++) {
+                commentRepository.save(Comment.createComment()
+                        .member(member1)
+                        .content("weanfjakwlenefa")
+                        .post(post)
+                        .build()
+                );
+            }
+            for (int i = 0; i < 2; i++) {
+                commentRepository.save(Comment.createComment()
+                    .member(member2)
+                    .content("weanfjakwlenefa")
+                    .post(post)
+                    .build()
+                );
+            }
+        } // 댓글
     }
 }

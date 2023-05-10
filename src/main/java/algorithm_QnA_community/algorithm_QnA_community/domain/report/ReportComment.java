@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
  * 2023/04/26        solmin       최초 생성
  * 2023/05/01        solmin       DynamicInsert및 update 추가, 일부 Validation 변경,
  *                                update method 통합
+ * 2023/05/10        solmin       팩토리 메소드 일부 수정
  */
 @Entity
 @Getter
@@ -56,6 +57,7 @@ public class ReportComment {
                          ReportCategory category, String detail){
         this.member = member;
         this.comment = comment;
+        this.comment.getReportComments().add(this);
         this.category = category;
         this.detail = detail;
     }

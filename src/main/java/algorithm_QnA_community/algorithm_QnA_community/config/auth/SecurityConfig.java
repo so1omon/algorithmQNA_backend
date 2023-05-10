@@ -41,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
+ * 2023/05/10        solmin         인증기능 연동 전까지만 comment 열어두겠습니다...,
  */
 
 @Slf4j
@@ -112,6 +113,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .cors().disable()
                 .authorizeRequests()
+                .antMatchers("/comment/**").permitAll()
                 .anyRequest().authenticated();
 
 
