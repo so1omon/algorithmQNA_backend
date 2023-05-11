@@ -1,13 +1,12 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.config.Exception.TokenAuthenticationException;
-import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.TokenAuthenticationException;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,9 +19,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Optional;
 
 /**
  * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
@@ -47,6 +43,7 @@ import java.util.Optional;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
+ * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱
  */
 
 
@@ -112,7 +109,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             // accessToken과 refreshUUID 둘 중 하나라도 없을 경우
             else {
                 log.info("토큰 빠트림");
-                throw new TokenAuthenticationException("토큰예외"); // Exception!
+//                throw new TokenAuthenticationException("토큰예외"); // Exception!
+                //이후로도 토큰정보 없으면 filter passing하고 SecurityConfig로 막는게 나을듯
+                filterChain.doFilter(request,response);
+                return;
             }
 
             // Cookie에 accessToken, refreshUUID 값 담음

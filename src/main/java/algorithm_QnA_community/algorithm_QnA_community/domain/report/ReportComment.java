@@ -24,14 +24,16 @@ import java.time.LocalDateTime;
  * 2023/04/26        solmin       최초 생성
  * 2023/05/01        solmin       DynamicInsert및 update 추가, 일부 Validation 변경,
  *                                update method 통합
+ * 2023/05/10        solmin       팩토리 메소드 일부 수정
+ * 2023/05/11        solmin       Docs 변경, detail null = false 로 변경
  */
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
-@DynamicInsert // RequestDto에 빈 값으로 들어오는 상황에서 null로 update하지 않고 기본값으로 insert
-@DynamicUpdate // RequestDto에 빈 값으로 들어오는 상황에서 null로 update하지 않고 기본값으로 update
+@DynamicInsert // RequestDto에 특정 필드가 빈 값으로 들어오는 상황에서 insert query에 null을 넣지 않고 값이 삽입되는 필드만 set
+@DynamicUpdate // RequestDto에 특정 필드가 빈 빈 값으로 들어오는 상황에서 update query에 null을 넣지 않고 변경된 필드만 set
 @EntityListeners(AuditingEntityListener.class)
 public class ReportComment {
     @Id
@@ -44,7 +46,7 @@ public class ReportComment {
     private ReportCategory category;
 
     @ColumnDefault("'기타 사유 없음'")
-    @Column(length = 1000)
+    @Column(length = 1000, nullable = false)
     private String detail;
 
     @LastModifiedDate
@@ -56,6 +58,7 @@ public class ReportComment {
                          ReportCategory category, String detail){
         this.member = member;
         this.comment = comment;
+        this.comment.getReportComments().add(this);
         this.category = category;
         this.detail = detail;
     }

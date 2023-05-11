@@ -17,6 +17,7 @@ import javax.persistence.*;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성
+ * 2023/05/10        solmin       팩토리 메소드 일부 수정
  */
 @Entity
 @Getter
@@ -37,6 +38,7 @@ public class LikeComment extends BaseTimeEntity {
         this.member = member;
         this.comment = comment;
         this.isLike = isLike;
+        comment.getLikeComments().add(this);
         comment.updateLikeCnt(isLike, true);
     }
 

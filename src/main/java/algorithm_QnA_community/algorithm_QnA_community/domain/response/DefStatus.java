@@ -1,6 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.domain.response;
 
-import lombok.Data;
+import lombok.*;
 
 /**
  * packageName      : algorithm_QnA_community.algorithm_QnA_community.response
@@ -15,6 +15,7 @@ import lombok.Data;
  */
 
 @Data
+@RequiredArgsConstructor
 public class DefStatus {
     private int code;
     private String message;

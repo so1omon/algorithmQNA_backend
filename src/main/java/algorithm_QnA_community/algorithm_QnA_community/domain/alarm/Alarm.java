@@ -2,6 +2,7 @@ package algorithm_QnA_community.algorithm_QnA_community.domain.alarm;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -18,11 +19,13 @@ import java.time.LocalDateTime;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/01        solmin       최초 생성
+ * 2023/05/11        solmin       DynamicInsert 추가
  */
 @Entity
 @Getter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
+@DynamicInsert // RequestDto에 특정 필드가 빈 값으로 들어오는 상황에서 insert query에 null을 넣지 않고 값이 삽입되는 필드만 set
 public class Alarm {
     @Id
     @GeneratedValue

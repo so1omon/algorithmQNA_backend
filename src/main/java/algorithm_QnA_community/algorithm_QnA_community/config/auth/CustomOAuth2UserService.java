@@ -1,8 +1,5 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
-import algorithm_QnA_community.algorithm_QnA_community.domain.Member;
-import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +23,7 @@ import java.util.Optional;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/04/20       janguni         최초 생성
+ * 2023/05/11       solmin          DOCS 수정
  */
 
 @Slf4j

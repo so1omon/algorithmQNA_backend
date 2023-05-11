@@ -1,4 +1,4 @@
-package algorithm_QnA_community.algorithm_QnA_community.config.Exception;
+package algorithm_QnA_community.algorithm_QnA_community.config.exception;
 
 import org.springframework.security.core.AuthenticationException;
 
