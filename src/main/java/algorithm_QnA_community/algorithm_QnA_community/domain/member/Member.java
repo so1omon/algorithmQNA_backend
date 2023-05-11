@@ -9,6 +9,8 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -27,11 +29,14 @@ import java.util.List;
  * 2023/04/26        solmin       최초 생성, Member 엔티티와 다대다 관계를 갖는 각 엔티티에 대해
  *                                멤버가 이러한 매핑정보들을 필수적으로 알아야 하는지 궁금
  * 2023/05/01        solmin       Validation 일부 추가 및 Alarms Mapping
+ * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
  */
 
 @Entity
 @Getter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
+@DynamicInsert // RequestDto에 특정 필드가 빈 값으로 들어오는 상황에서 insert query에 null을 넣지 않고 값이 삽입되는 필드만 set
+@DynamicUpdate // RequestDto에 특정 필드가 빈 빈 값으로 들어오는 상황에서 update query에 null을 넣지 않고 변경된 필드만 set
 public class Member extends BaseTimeEntity {
     @Id
     @GeneratedValue

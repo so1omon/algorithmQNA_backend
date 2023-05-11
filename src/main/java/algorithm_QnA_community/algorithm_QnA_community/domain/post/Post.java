@@ -7,6 +7,8 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -28,12 +30,15 @@ import java.util.List;
  * 2023/05/02        solmin       조회수 기능 추가 -> 추후 쿠키를 이용해서 중복 피할 예정
  *                                LONGTEXT -> TEXT로 변경 (요구사항이 default page size = 16K를 초과하지 않음)
  *                                추가로 XSS 방지를 위해 스크립트를 HTML 엔티티로 인코딩 이후 조회 시 디코딩하는 작업 필요
+ * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
  */
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
+@DynamicInsert // RequestDto에 특정 필드가 빈 값으로 들어오는 상황에서 insert query에 null을 넣지 않고 값이 삽입되는 필드만 set
+@DynamicUpdate // RequestDto에 특정 필드가 빈 빈 값으로 들어오는 상황에서 update query에 null을 넣지 않고 변경된 필드만 set
 public class Post extends BaseTimeEntity {
     @Id
     @GeneratedValue

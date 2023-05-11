@@ -6,9 +6,10 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +28,13 @@ import java.util.List;
  * 2023/05/05        solmin       팩토리 메소드 오류 수정
  * 2023/05/10        solmin       댓글 정보 수정 및 채택을 위한 업데이트 메소드 추가
  *                                TODO 추후 Validation Error 테스트 시마다 검증 어노테이션 메세지 추가 예정
+ * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
  */
 @Entity
 @Getter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
+@DynamicInsert // RequestDto에 특정 필드가 빈 값으로 들어오는 상황에서 insert query에 null을 넣지 않고 값이 삽입되는 필드만 set
+@DynamicUpdate // RequestDto에 특정 필드가 빈 빈 값으로 들어오는 상황에서 update query에 null을 넣지 않고 변경된 필드만 set
 public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue

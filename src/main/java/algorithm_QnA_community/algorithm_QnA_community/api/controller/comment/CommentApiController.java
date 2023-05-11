@@ -3,7 +3,6 @@ package algorithm_QnA_community.algorithm_QnA_community.api.controller.comment;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller
@@ -24,6 +22,7 @@ import java.time.LocalDateTime;
  * -----------------------------------------------------------
  * 2023/05/04        solmin       최초 생성
  * 2023/05/10        solmin       댓글 API 모두 구현 (유저인증만 남음)
+ * 2023/05/11        solmin       response data 필요없는 부분들 전부 고침
  */
 
 @RestController
@@ -52,12 +51,11 @@ public class CommentApiController {
     }
 
     @PostMapping("/{comment_id}/report")
-    public Res<CommentResultRes> reportComment(@PathVariable("comment_id") Long commentId,
+    public Res reportComment(@PathVariable("comment_id") Long commentId,
                            @RequestBody @Valid CommentReportReq commentReportReq){
-        CommentResultRes result = commentService.reportComment(commentId, commentReportReq);
+        commentService.reportComment(commentId, commentReportReq);
 
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 신고했습니다."),
-            result);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 신고했습니다."));
     }
 
     @PatchMapping("/{comment_id}")
@@ -70,11 +68,11 @@ public class CommentApiController {
     }
 
     @PatchMapping("/{comment_id}/pin")
-    public Res<CommentResultRes> pinComment(@PathVariable("comment_id") Long commentId){
+    public Res pinComment(@PathVariable("comment_id") Long commentId){
 
-        CommentResultRes result = commentService.pinComment(commentId);
+        commentService.pinComment(commentId);
 
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 채택했습니다."), result);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 채택했습니다."));
     }
 
 
@@ -83,18 +81,6 @@ public class CommentApiController {
 
         commentService.deleteComment(commentId);
 
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 삭제했습니다."),
-            new Deleted(LocalDateTime.now()));
-    }
-
-
-
-    @Data
-    static class Deleted{
-        private LocalDateTime deletedAt;
-
-        public Deleted(LocalDateTime deletedAt) {
-            this.deletedAt = deletedAt;
-        }
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 삭제했습니다."));
     }
 }
