@@ -40,7 +40,7 @@ public class InitDB {
     @PostConstruct
     public void init() {
         initService.dbInitWithMemberAndPost();
-        initService.dbInitWithComment();
+        //initService.dbInitWithComment();
     }
 
     @Component
@@ -67,41 +67,41 @@ public class InitDB {
             memberRepository.save(member1);
             memberRepository.save(member2);
 
-            for (int i = 0; i < 4; i++) {
-                postRepository.save(Post.createPost()
-                    .title("게시글" + i)
-                    .category(PostCategory.DFS_BFS)
-                    .content("<p>bfs어려워요" + i + "</p")
-                    .member(member1)
-                    .build()
-                );
-            }
+//            for (int i = 0; i < 4; i++) {
+//                postRepository.save(Post.createPost()
+//                    .title("게시글" + i)
+//                    .category(PostCategory.DFS_BFS)
+//                    .content("<p>bfs어려워요" + i + "</p")
+//                    .member(member1)
+//                    .build()
+//                );
+//            }
 
 
         } // 멤버, 게시글
 
-        public void dbInitWithComment() {
-            Member member1 = memberRepository.findById(1L).get();
-            Member member2 = memberRepository.findById(2L).get();
-
-            Post post = member1.getPosts().get(0);
-
-            for (int i = 0; i < 2; i++) {
-                commentRepository.save(Comment.createComment()
-                        .member(member1)
-                        .content("weanfjakwlenefa")
-                        .post(post)
-                        .build()
-                );
-            }
-            for (int i = 0; i < 2; i++) {
-                commentRepository.save(Comment.createComment()
-                    .member(member2)
-                    .content("weanfjakwlenefa")
-                    .post(post)
-                    .build()
-                );
-            }
-        } // 댓글
+//        public void dbInitWithComment() {
+//            Member member1 = memberRepository.findById(1L).get();
+//            Member member2 = memberRepository.findById(2L).get();
+//
+//            Post post = member1.getPosts().get(0);
+//
+//            for (int i = 0; i < 2; i++) {
+//                commentRepository.save(Comment.createComment()
+//                        .member(member1)
+//                        .content("weanfjakwlenefa")
+//                        .post(post)
+//                        .build()
+//                );
+//            }
+//            for (int i = 0; i < 2; i++) {
+//                commentRepository.save(Comment.createComment()
+//                    .member(member2)
+//                    .content("weanfjakwlenefa")
+//                    .post(post)
+//                    .build()
+//                );
+//            }
+//        } // 댓글
     }
 }

@@ -103,7 +103,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/",
                 "/login/**",
                 "/auth/not-secured",
-                "/auth/deleteCookie"
+                "/auth/deleteCookie",
+                "/post/**"
         );
     }
 
