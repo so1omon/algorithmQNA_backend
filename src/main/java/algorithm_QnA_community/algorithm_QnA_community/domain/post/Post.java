@@ -32,6 +32,7 @@ import java.util.List;
  *                                추가로 XSS 방지를 위해 스크립트를 HTML 엔티티로 인코딩 이후 조회 시 디코딩하는 작업 필요
  * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
  * 2023/05/11        janguni      PostType 변수 추가
+ * 2023/05/12        janguni      updateTitle, updateContent, updateCategory, updateType 추가
  */
 @Entity
 @Getter
@@ -54,7 +55,6 @@ public class Post extends BaseTimeEntity {
     private String content;
 
     private int likeCnt;
-
     private int dislikeCnt;
 
     private int views;
@@ -102,6 +102,22 @@ public class Post extends BaseTimeEntity {
         }else{
             dislikeCnt = isIncrement? dislikeCnt+1 : dislikeCnt-1;
         }
+    }
+
+    public void updateTitle(String changedTitle){
+        this.title = changedTitle;
+    }
+
+    public void updateContent(String changedContent){
+        this.content = changedContent;
+    }
+
+    public void updateCategory(PostCategory changedCategory) {
+        this.category = changedCategory;
+    }
+
+    public void updateType(PostType changedType) {
+        this.type = changedType;
     }
 
 

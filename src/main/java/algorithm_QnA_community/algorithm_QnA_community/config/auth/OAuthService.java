@@ -61,8 +61,9 @@ public class OAuthService {
         if (tokenInfo==null) return null; // 잘못된 인증코드로 인해 토큰을 받아오지 못함
 
         MemberInfoRes memberInfo = getMemberInfo(tokenInfo.getAccessToken(), state); // 사용자 정보 받기
-        //MemberInfoRes memberInfo = getMemberInfo("fake", state);
+
         log.info("memberInfo= {}", memberInfo);
+
         // 처음 로그인을 시도한 사용자라면 회원가입 처리
         Optional<Member> findMember = memberRepository.findByEmail(memberInfo.getName());
         if (findMember.isEmpty()){

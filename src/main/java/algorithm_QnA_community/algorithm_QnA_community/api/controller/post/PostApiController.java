@@ -40,6 +40,24 @@ public class PostApiController {
     public void writePost(@RequestBody @Valid PostCreateReq postCreateReq, PrincipalDetails principal){
         //Long memberId = principal.getMember().getId();
         postService.writePost(postCreateReq, 1L);
+    }
 
+    /**
+     * 게시물 수정
+     */
+    @PatchMapping("/{post_id}")
+    public void updatePost(@PathVariable("post_id") Long postId,
+                           @RequestBody @Valid PostCreateReq postCreateReq, PrincipalDetails principal){
+        //Long memberId = principal.getMember().getId();
+        postService.updatePost(postId,postCreateReq, 1L);
+    }
+
+    /**
+     * 게시물 삭제
+     */
+    @DeleteMapping("/{post_id}")
+    public void deletePost(@PathVariable("post_id") Long postId, PrincipalDetails principal){
+        //Long memberId = principal.getMember().getId();
+        postService.deletePost(postId, 1L);
     }
 }

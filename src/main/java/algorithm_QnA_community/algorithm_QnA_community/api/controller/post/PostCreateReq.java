@@ -37,7 +37,7 @@ public class PostCreateReq {
     @EnumValidator(target = PostCategory.class, message = "올바른 카테고리를 입력하세요.")
     private String categoryName;
 
-    @EnumValidator(target = PostType.class, message = "올바른 카테고리를 입력하세요.")
+    @EnumValidator(target = PostType.class, message = "올바른 내용타입을 입력하세요.")
     private String contentType;
 
 }
