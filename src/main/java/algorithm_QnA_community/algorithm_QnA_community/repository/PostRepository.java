@@ -15,4 +15,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 2023/05/01        solmin       최초 생성(테스트용)
  */
 public interface PostRepository extends JpaRepository<Post, Long> {
+
 }

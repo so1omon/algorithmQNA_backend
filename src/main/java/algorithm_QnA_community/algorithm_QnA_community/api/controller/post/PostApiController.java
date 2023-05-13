@@ -60,4 +60,17 @@ public class PostApiController {
         //Long memberId = principal.getMember().getId();
         postService.deletePost(postId, 1L);
     }
+
+    /**
+     * 게시물 추천
+     */
+    @PostMapping("/{post_id}/like")
+    public Res likePost(@PathVariable("post_id") Long postId,
+                         @RequestBody @Valid PostLikeReq postLikeReq,
+                         PrincipalDetails principal){
+        //Long memberId = principal.getMember().getId();
+        Res response = postService.likePost(postId, postLikeReq, 1L);
+        return response;
+    }
+
 }
