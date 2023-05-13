@@ -4,6 +4,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.*;
+import net.bytebuddy.implementation.bind.annotation.Default;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -47,6 +48,7 @@ public class ReportPost {
     private ReportCategory category;
 
     @Column(length = 1000)
+    @ColumnDefault("'기타 사유 없음'")
     private String detail;
 
     @LastModifiedDate

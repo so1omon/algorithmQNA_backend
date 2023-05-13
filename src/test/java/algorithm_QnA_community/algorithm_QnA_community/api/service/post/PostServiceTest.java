@@ -2,18 +2,20 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
-import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
+import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.repository.LikePostRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.ReportPostRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.Before;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,8 +53,11 @@ class PostServiceTest {
     @Autowired
     private LikePostRepository likePostRepository;
 
+    @Autowired
+    private ReportPostRepository reportPostRepository;
+
     @BeforeEach
-    public void membersave(){
+    public void memberSave(){
         Member member = Member.createMember()
                 .name("uni2")
                 .email("uni12345@gmail.com")
@@ -152,10 +157,9 @@ class PostServiceTest {
         PostLikeReq postLikeReq = new PostLikeReq(true, false);
 
         // when
-        Res res = postService.likePost(post.getId(), postLikeReq, findMember.get().getId());
+        postService.likePost(post.getId(), postLikeReq, findMember.get().getId());
 
         // then
-        Assertions.assertThat(res.getStatus().getCode()).isEqualTo(200);
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(1);
         Assertions.assertThat(findPost.getDislikeCnt()).isEqualTo(0);
         Assertions.assertThat(likePostRepository.findByPostIdAndMemberId(findPost.getId(), findMember.get().getId())).isNotEmpty();
@@ -198,10 +202,9 @@ class PostServiceTest {
 
         // when
         PostLikeReq postLikeReq = new PostLikeReq(false, false);
-        Res res = postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember.getId());
 
         // then
-        Assertions.assertThat(res.getStatus().getCode()).isEqualTo(200);
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(0);
         Assertions.assertThat(findPost.getDislikeCnt()).isEqualTo(1);
     }
@@ -241,10 +244,9 @@ class PostServiceTest {
 
         // when
         PostLikeReq postLikeReq = new PostLikeReq(true, true);
-        Res res = postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember.getId());
 
         // then
-        Assertions.assertThat(res.getStatus().getCode()).isEqualTo(200);
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(0);
         Assertions.assertThat(findPost.getDislikeCnt()).isEqualTo(0);
         Assertions.assertThat(likePostRepository.findByPostIdAndMemberId(findPost.getId(), findMember.getId())).isEmpty();
@@ -277,13 +279,67 @@ class PostServiceTest {
 
         // when
         PostLikeReq postLikeReq = new PostLikeReq(true, true);
-        Res res = postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember.getId());
 
         // then
-        Assertions.assertThat(res.getStatus().getCode()).isEqualTo(200);
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(0);
         Assertions.assertThat(findPost.getDislikeCnt()).isEqualTo(0);
         Assertions.assertThat(likePostRepository.findByPostIdAndMemberId(findPost.getId(), findMember.getId())).isEmpty();
+
+    }
+
+    /**
+     * (정상)
+     * 게시물 신고
+     */
+    @Test
+    @Transactional
+    void 게시물_신고() {
+
+        // given
+        Member reportedMember = memberRepository.findByEmail("uni12345@gmail.com").get();
+
+        Member reportingMember = Member.createMember()
+                .name("uni3")
+                .email("uni123456@gmail.com")
+                .role(Role.ROLE_USER)
+                .profileImgUrl("profile")
+                .build();
+        memberRepository.save(reportingMember);
+
+        Post post = Post.createPost()
+                .member(reportedMember)
+                .title("title")
+                .content("content")
+                .category(PostCategory.DP)
+                .type(PostType.QNA)
+                .build();
+
+        postRepository.save(post);
+
+        Post reportedPost = postRepository.findById(post.getId()).get();
+
+
+        // when
+        PostReportReq postReportReq = new PostReportReq("AD",null);
+        postService.reportPost(post.getId(), postReportReq, reportingMember.getId());
+
+        // then
+        Optional<ReportPost> findReportPost = reportPostRepository.findByPostIdAndMemberId(post.getId(), reportingMember.getId());
+        Assertions.assertThat(findReportPost).isNotEmpty();
+        Assertions.assertThat(findReportPost.get().getPost()).isEqualTo(post);
+        Assertions.assertThat(findReportPost.get().getMember()).isEqualTo(reportingMember);
+        Assertions.assertThat(findReportPost.get().getCategory()).isEqualTo(ReportCategory.AD);
+        Assertions.assertThat(findReportPost.get().getDetail()).isEqualTo("기타 사유 없음"); //여기부터
+
+        List<ReportPost> reportPosts = reportedPost.getReportPosts();
+        for (ReportPost rp: reportPosts) {
+            Assertions.assertThat(rp.getPost()).isEqualTo(post);
+            Assertions.assertThat(rp.getMember()).isEqualTo(reportedMember);
+            Assertions.assertThat(rp.getCategory()).isEqualTo(ReportCategory.AD);
+            Assertions.assertThat(rp.getDetail()).isEqualTo("기타 사유 없음");
+        }
+
 
     }
 

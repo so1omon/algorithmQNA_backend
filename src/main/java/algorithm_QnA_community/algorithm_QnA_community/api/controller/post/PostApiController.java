@@ -5,9 +5,11 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.Co
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,8 +71,23 @@ public class PostApiController {
                          @RequestBody @Valid PostLikeReq postLikeReq,
                          PrincipalDetails principal){
         //Long memberId = principal.getMember().getId();
-        Res response = postService.likePost(postId, postLikeReq, 1L);
-        return response;
+
+        String message = postLikeReq.getIsLike()?"추천" : "비추천";
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 "+message+"했습니다."));
+    }
+
+    /**
+     * 게시물 신고
+     */
+    @PostMapping("/{post_id}/report")
+    public Res reportPost(@PathVariable("post_id") Long postId,
+                          @RequestBody @Valid PostReportReq postReportReq,
+                          PrincipalDetails principal){
+
+        //Long memberId = principal.getMember().getId();
+        postService.reportPost(postId, postReportReq, 1L);
+
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 신고했습니다."));
     }
 
 }

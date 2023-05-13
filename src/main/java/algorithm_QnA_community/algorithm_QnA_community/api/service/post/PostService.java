@@ -2,6 +2,7 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
@@ -10,11 +11,14 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
+import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
 import algorithm_QnA_community.algorithm_QnA_community.repository.LikePostRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.ReportPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -49,6 +53,9 @@ public class PostService {
     private final MemberRepository memberRepository;
 
     private final LikePostRepository likePostRepository;
+
+    private final ReportPostRepository reportPostRepository;
+
 
     /**
      * 게시물 등록
@@ -117,7 +124,7 @@ public class PostService {
      * 게시물 추천
      */
     @Transactional
-    public Res likePost(Long postId, PostLikeReq postLikeReq, Long memberId) {
+    public void likePost(Long postId, PostLikeReq postLikeReq, Long memberId) {
         Member findMember = memberRepository.findById(memberId).get();
 
         Post findPost = postRepository.findById(postId)
@@ -148,9 +155,40 @@ public class PostService {
 
             }
         }
-        String message = postLikeReq.getIsLike()?"추천" : "비추천";
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 "+message+"했습니다."));
     }
+
+    /**
+     * 게시물 신고
+     */
+    @Transactional
+    public void reportPost(Long postId, PostReportReq postReportReq, Long memberId) {
+        Member findMember = memberRepository.findById(memberId).get();
+
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+
+        // 본인 게시물을 신고하려는 경우
+        if (findMember==findPost.getMember()){
+            throw new CustomException(ErrorCode.REPORT_MY_RESOURCE, "자신이 작성한 게시물은 신고할 수 없습니다.");
+        }
+
+        Optional<ReportPost> findReportPost = reportPostRepository.findByPostIdAndMemberId(postId, memberId);
+
+        if (!findReportPost.isPresent()){ // 해당 게시물을 신고한 적이 없다면
+            ReportPost reportPost = ReportPost.createReportPost()
+                    .post(findPost)
+                    .member(findMember)
+                    .category(ReportCategory.valueOf(postReportReq.getCategory()))
+                    .detail(postReportReq.getDetail())
+                    .build();
+
+            reportPostRepository.save(reportPost);
+        } else{
+            // 신고 카테고리, 신고사유 업데이트
+            findReportPost.get().updateReportInfo(ReportCategory.valueOf(postReportReq.getCategory()), postReportReq.getDetail());
+        }
+    }
+
 
 
     private <T> void setIfNotNull(T value, Consumer<T> setter){
