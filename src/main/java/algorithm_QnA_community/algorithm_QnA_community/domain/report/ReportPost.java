@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
  *                                update method 통합
  * 2023/05/10        solmin       팩토리 메소드 일부 수정
  * 2023/05/11        solmin       Docs 변경, detail null = false 로 변경, updated_at 필드 추가
+ * 2023/05/14        janguni      객체 생성 시 detail이 Null이라면 '기타 사유 없음'이 들어갈 수 있도록 변경
  */
 @Entity
 @Getter
@@ -60,7 +61,11 @@ public class ReportPost {
         this.member = member;
         this.post = post;
         this.category = category;
-        this.detail = detail;
+        if (detail == null) {
+            this.detail = "기타 사유 없음";
+        } else {
+            this.detail = detail;
+        }
         this.post.getReportPosts().add(this);
     }
 

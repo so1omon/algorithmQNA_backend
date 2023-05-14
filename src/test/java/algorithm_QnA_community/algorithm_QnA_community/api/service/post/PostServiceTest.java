@@ -3,6 +3,7 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
@@ -335,12 +336,43 @@ class PostServiceTest {
         List<ReportPost> reportPosts = reportedPost.getReportPosts();
         for (ReportPost rp: reportPosts) {
             Assertions.assertThat(rp.getPost()).isEqualTo(post);
-            Assertions.assertThat(rp.getMember()).isEqualTo(reportedMember);
+            Assertions.assertThat(rp.getMember()).isEqualTo(reportingMember);
             Assertions.assertThat(rp.getCategory()).isEqualTo(ReportCategory.AD);
             Assertions.assertThat(rp.getDetail()).isEqualTo("기타 사유 없음");
         }
 
 
+    }
+
+    /**
+     * (오류) - 자신이 작성한 게시물을 신고한 경우
+     * 게시물 신고
+     */
+    @Test
+    @Transactional
+    void 게시물_신고2() {
+
+        // given
+        Member reportedMember = memberRepository.findByEmail("uni12345@gmail.com").get();
+
+        Post post = Post.createPost()
+                .member(reportedMember)
+                .title("title")
+                .content("content")
+                .category(PostCategory.DP)
+                .type(PostType.QNA)
+                .build();
+
+        postRepository.save(post);
+
+        Post reportedPost = postRepository.findById(post.getId()).get();
+
+        // when
+        PostReportReq postReportReq = new PostReportReq("AD",null);
+
+        // then
+        Assertions.assertThatThrownBy(() -> postService.reportPost(post.getId(), postReportReq, reportedMember.getId()))
+                .isInstanceOf(CustomException.class);
     }
 
 }
