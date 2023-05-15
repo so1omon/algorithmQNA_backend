@@ -56,7 +56,7 @@ public class InitDB {
             Member member1 = Member.createMember()
                 .name("solmin")
                 .email("solmin3665@gmail.com")
-                .role(Role.ROLE_USER)
+                .role(Role.ROLE_ADMIN)
                 .build();
 
             Member member2 = Member.createMember()

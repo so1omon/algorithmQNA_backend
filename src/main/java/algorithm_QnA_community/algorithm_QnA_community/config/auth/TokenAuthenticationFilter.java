@@ -61,6 +61,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             String accessToken = request.getHeader("access_token");
             String refreshUUID = request.getHeader("refreshUUID");
 
+            // 임시 관리자 판별용 코드 시작 //
+            String isAdmin = request.getHeader("isAdmin");
+            if(isAdmin.equals("true")){
+                Member findMember = memberRepository.findByEmail("solmin3665@gmail.com").get(); // 예외처리 해야함!!!
+                createAuthentication(findMember);
+                filterChain.doFilter(request,response);
+                return;
+            }
+            // 임시 관리자 판별용 코드 종료 //
 
             // ============ accessToken & refreshUUID 로 토큰 유효 검증 로직 ============ //
             if (accessToken != null & refreshUUID != null) { // 두 개의 값이 모두 있을 경우
