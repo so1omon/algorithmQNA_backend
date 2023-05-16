@@ -1,6 +1,8 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
@@ -15,10 +17,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCateg
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
-import algorithm_QnA_community.algorithm_QnA_community.repository.LikePostRepository;
-import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
-import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
-import algorithm_QnA_community.algorithm_QnA_community.repository.ReportPostRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -55,6 +56,8 @@ public class PostService {
     private final LikePostRepository likePostRepository;
 
     private final ReportPostRepository reportPostRepository;
+
+    private final CommentRepository commentRepository;
 
 
     /**
@@ -189,6 +192,54 @@ public class PostService {
         }
     }
 
+    /**
+     * 상세 게시물 조회
+     */
+    public PostDetailRes readPost(Long postId, Long memberId){
+        Member findMember = memberRepository.findById(memberId).get();
+
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+
+        // depth=0, 1인 댓글 불러오기
+        List<Comment> resultComments = new ArrayList<>();
+
+        List<Comment> topComments = commentRepository.findTop10ByPostIdAndDepthEqualsOrderByCreatedDateDesc(findPost.getId(), 0);
+        for (Comment tc: topComments) {
+            resultComments.add(tc);
+            List<Comment> depth1Comments = commentRepository.findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(tc.getId(), 1);
+            for (Comment d1c: depth1Comments) {
+                resultComments.add(d1c);
+            }
+        }
+
+        List<CommentDetailRes> responseComments = new ArrayList<>();
+
+        for (Comment rc:resultComments){
+            // 해당 사용자가 추천을 눌렀는지
+            Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, memberId);
+            boolean isLiked = (findLikePost.isPresent()) ? true : false;
+
+            // 부모댓글 존재 여부
+            Long parentId = (rc.getDepth()==0) ? null : rc.getParent().getId();
+            CommentDetailRes commentDetailRes = new CommentDetailRes(rc.getId(), parentId,
+                    findMember.getId(), findMember.getName(), findMember.getProfileImgUrl(),
+                    findMember.getCommentBadgeCnt() / 10, findMember.getPostBadgeCnt() / 10, findMember.getLikeBadgeCnt() / 10,
+                    rc.getContent(), rc.getLikeCnt(), rc.getDislikeCnt(), rc.getCreatedDate(),
+                    rc.getDepth(),rc.isPinned(),isLiked);
+            responseComments.add(commentDetailRes);
+        }
+
+        boolean commentNextPage = (topComments.size()>10) ? true : false;
+        int totalCommentSize = commentRepository.findByPostId(postId).size();
+        PostDetailRes postDetailRes = new PostDetailRes(postId, findMember.getId(), findMember.getName(),
+                findMember.getCommentBadgeCnt(), findMember.getPostBadgeCnt(), findMember.getLikeBadgeCnt(),
+                findPost.getTitle(), findPost.getContent(), findPost.getCreatedDate(),
+                findPost.getLikeCnt(), findPost.getDislikeCnt(), totalCommentSize,
+                0, commentNextPage, false, responseComments.size(), responseComments);
+
+        return postDetailRes;
+    }
 
 
     private <T> void setIfNotNull(T value, Consumer<T> setter){

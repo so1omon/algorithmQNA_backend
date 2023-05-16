@@ -36,7 +36,7 @@ public class CommentApiController {
     public ResponseEntity<Res<CommentCreateRes>> writeComment(@PathVariable("post_id") Long postId,
                                                              @RequestBody @Valid CommentCreateReq commentCreateReq){
 
-        CommentCreateRes result= commentService.writeComment(postId, commentCreateReq);
+        CommentCreateRes result= commentService.writeComment(postId, commentCreateReq, 1L);
 
         return new ResponseEntity<>(Res.res(new DefStatus(HttpStatus.CREATED.value(), "성공적으로 댓글을 추가했습니다."),result),
             HttpStatus.CREATED);

@@ -52,9 +52,10 @@ public class CommentService {
     private Member member= null;
 
     @Transactional
-    public CommentCreateRes writeComment(Long postId, CommentCreateReq commentCreateReq){
+    public CommentCreateRes writeComment(Long postId, CommentCreateReq commentCreateReq, Long memberId){
         // TODO 추후 SpringContextHolder 이용해서 UserCredential 받아오기
-        member = memberRepository.findById(1L).get();
+        //member = memberRepository.findById(1L).get();
+        Member member = memberRepository.findById(memberId).get();
         Comment parentComment= null;
         if(commentCreateReq.getParentCommentId()!=null) {
             parentComment = commentRepository.findById(commentCreateReq.getParentCommentId())

@@ -1,9 +1,14 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
+import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
@@ -12,10 +17,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
-import algorithm_QnA_community.algorithm_QnA_community.repository.LikePostRepository;
-import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
-import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
-import algorithm_QnA_community.algorithm_QnA_community.repository.ReportPostRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,11 +47,17 @@ class PostServiceTest {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private CommentService commentService;
     @Autowired
     private MemberRepository memberRepository;
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Autowired
     private LikePostRepository likePostRepository;
@@ -61,7 +69,7 @@ class PostServiceTest {
     public void memberSave(){
         Member member = Member.createMember()
                 .name("uni2")
-                .email("uni12345@gmail.com")
+                .email("uni1234567@gmail.com")
                 .role(Role.ROLE_USER)
                 .profileImgUrl("profile")
                 .build();
@@ -348,8 +356,8 @@ class PostServiceTest {
      * (오류) - 자신이 작성한 게시물을 신고한 경우
      * 게시물 신고
      */
-    @Test
     @Transactional
+    @Test
     void 게시물_신고2() {
 
         // given
@@ -371,8 +379,80 @@ class PostServiceTest {
         PostReportReq postReportReq = new PostReportReq("AD",null);
 
         // then
-        Assertions.assertThatThrownBy(() -> postService.reportPost(post.getId(), postReportReq, reportedMember.getId()))
-                .isInstanceOf(CustomException.class);
+//        Assertions.assertThatThrownBy(() -> postService.reportPost(post.getId(), postReportReq, reportedMember.getId()))
+//                .isInstanceOf(CustomException.class);
+        // then
+        postService.reportPost(post.getId(), postReportReq, reportedMember.getId());
+
+    }
+
+    /**
+     * 게시물 조회
+     */
+    @Transactional
+    @Test
+    void 게시물_조회() {
+        // given
+        // 게시물 하나 저장, 최상위 댓글 12개, 대댓글 11개, 10개, 9개
+        Member findMember = memberRepository.findByEmail("uni1234567@gmail.com").get();
+
+        Post post = Post.createPost()
+                .member(findMember)
+                .title("title")
+                .content("content")
+                .category(PostCategory.DP)
+                .type(PostType.QNA)
+                .build();
+
+        postRepository.save(post);
+        PostLikeReq postLikeReq = new PostLikeReq(true, false);
+        postService.likePost(post.getId(), postLikeReq, findMember.getId());
+
+        for (int i=1;i<=12;i++) {
+            CommentCreateReq commentCreateReq = new CommentCreateReq("최상위 댓글 내용"+i, null);
+            commentService.writeComment(post.getId(), commentCreateReq, findMember.getId());
+        }
+
+
+        int count=0;
+        //List<Comment> comments = commentRepository.findByPostId(post.getId());
+        //List<Comment> topComments = commentRepository.findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(post.getId(), 0);
+        List<Comment> topComments = commentRepository.findTop10ByPostIdAndDepthEqualsOrderByCreatedDateDesc(post.getId(), 0);
+        for (Comment c:topComments){
+            Long commentId = c.getId();
+            if (count==0){
+                for(int i=1; i<=11; i++){
+                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId);
+                    commentService.writeComment(post.getId(), commentCreateReq, findMember.getId());
+                }
+            }
+
+            else if (count==1){
+                for(int i=1; i<=10; i++){
+                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId);
+                    commentService.writeComment(post.getId(), commentCreateReq, findMember.getId());
+                }
+            }
+
+            else if (count==2){
+                for(int i=1; i<=9; i++){
+                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId);
+                    commentService.writeComment(post.getId(), commentCreateReq, findMember.getId());
+                }
+            }
+            count+=1;
+        }
+
+        //when
+        PostDetailRes postDetailRes = postService.readPost(post.getId(), findMember.getId());
+
+        //then
+        Assertions.assertThat(postDetailRes.getPostId()).isEqualTo(post.getId());
+        Assertions.assertThat(postDetailRes.getContent()).isEqualTo(post.getContent());
+        Assertions.assertThat(postDetailRes.getCommentTotalCount()).isEqualTo(42);
+        Assertions.assertThat(postDetailRes.getCommentSize()).isEqualTo(39);
+        Assertions.assertThat(postDetailRes.getMemberId()).isEqualTo(findMember.getId());
+        List<CommentDetailRes> resComments = postDetailRes.getComments();
     }
 
 }

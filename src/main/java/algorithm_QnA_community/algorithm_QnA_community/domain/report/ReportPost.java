@@ -61,11 +61,12 @@ public class ReportPost {
         this.member = member;
         this.post = post;
         this.category = category;
-        if (detail == null) {
-            this.detail = "기타 사유 없음";
-        } else {
-            this.detail = detail;
-        }
+//        if (detail == null) {
+//            this.detail = "기타 사유 없음";
+//        } else {
+//            this.detail = detail;
+//        }
+        this.detail = detail;
         this.post.getReportPosts().add(this);
     }
 

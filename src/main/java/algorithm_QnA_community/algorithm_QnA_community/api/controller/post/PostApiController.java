@@ -87,7 +87,20 @@ public class PostApiController {
         //Long memberId = principal.getMember().getId();
         postService.reportPost(postId, postReportReq, 1L);
 
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 신고했습니다."));
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 신고했습니다."));
+    }
+
+    /**
+     * 게시물 조회
+     */
+    @GetMapping("/{post_id}")
+    public Res<PostDetailRes> readPost(@PathVariable("post_id") Long postId,
+                          PrincipalDetails principal){
+
+        //Long memberId = principal.getMember().getId();
+        PostDetailRes postDetailRes = postService.readPost(postId, 1L);
+
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."),postDetailRes);
     }
 
 }
