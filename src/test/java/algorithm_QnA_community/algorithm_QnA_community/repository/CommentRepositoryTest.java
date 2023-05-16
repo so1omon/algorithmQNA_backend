@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -76,28 +77,5 @@ class CommentRepositoryTest {
         Comment comment1 = findMember.getComments().get(0);
     }
 
-//    @BeforeTestExecution
-//    void getMember() {
-//        Member member = Member.createMember()
-//            .name("solmin")
-//            .email("solmin3665@gmail.com")
-//            .role(Role.ROLE_USER)
-//            .profileImgUrl("awefawefa")
-//            .build();
-//        memberRepository.save(member);
-//
-//        for (int i = 0; i < 4; i++) {
-//            postRepository.save(Post.createPost()
-//                .title("게시글" + i)
-//                .category(PostCategory.DFS_BFS)
-//                .content("<p>bfs어려워요" + i + "</p")
-//                .member(member)
-//                .build()
-//            );
-//        }
-//
-//
-//        em.flush();
-//        em.clear();
-//    }
+
 }
