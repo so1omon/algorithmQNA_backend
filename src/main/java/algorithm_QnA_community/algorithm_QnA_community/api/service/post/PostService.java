@@ -1,10 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostDetailRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
@@ -12,6 +9,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
@@ -29,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role.ROLE_USER;
 import static java.lang.Enum.valueOf;
@@ -195,7 +194,7 @@ public class PostService {
     /**
      * 상세 게시물 조회
      */
-    public PostDetailRes readPost(Long postId, Long memberId){
+    public PostDetailRes readPostDetail(Long postId, Long memberId){
         Member findMember = memberRepository.findById(memberId).get();
 
         Post findPost = postRepository.findById(postId)
@@ -241,6 +240,75 @@ public class PostService {
         return postDetailRes;
     }
 
+    public PostsResultRes readPosts(PostCategory categoryName, PostSortType sortName, int pageNumber){
+        List<Post> totalPosts=null;
+        switch (sortName) {
+            case LATESTDESC: // 최신순
+                totalPosts = postRepository.findByCategoryOrderByCreatedDateDesc(categoryName);
+                break;
+            case LATESTASC: // 오래된 순
+                totalPosts = postRepository.findByCategoryOrderByCreatedDateAsc(categoryName);
+                break;
+            case COMMENTCNTASC: // 댓글 오름차순
+                totalPosts = postRepository.findPostOrderByCommentCntAsc(categoryName);
+                break;
+            case COMMENTCNTDESC: // 댓글 내림차순
+                totalPosts = postRepository.findPostOrderByCommentCntDesc(categoryName);
+                break;
+            case LIKEASC:   // 추천 오름차순
+                totalPosts = postRepository.findByCategoryOrderByLike_DislikeASC(categoryName);
+                break;
+            case LIKEDESC:  // 추천 내림차순
+                totalPosts = postRepository.findByCategoryOrderByLike_DislikeDESC(categoryName);
+                break;
+            case VIEWCNTASC:    // 조회수 오름차순
+                totalPosts = postRepository.findByCategoryOrderByViewsAsc(categoryName);
+                break;
+            case VIEWCNTDESC:   // 조회수 내림차순
+                totalPosts = postRepository.findByCategoryOrderByViewsDesc(categoryName);
+                break;
+            case POPULAR:   // 인기순
+                totalPosts = postRepository.findByPostOrderByPopular(categoryName.toString());
+                break;
+        }
+
+        // 총 페이지 수
+        int postsSize = totalPosts.size();
+        int totalPageCount = postsSize/20;
+        if (postsSize % 20 != 0) {
+            totalPageCount += 1;
+        }
+
+        // 존재하는 페이지인지 확인
+        if (totalPageCount<pageNumber || pageNumber<=0) {
+            throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "존재하지 않은 페이지 번호 입니다.");
+        }
+
+        // 전 페이지, 후 페이지 유무
+        boolean prev = (pageNumber==1) ? false : true;
+        boolean next = (pageNumber==totalPageCount) ? false : true;
+
+
+        int startPostIdx = (pageNumber-1) * 20;
+        int lastPostIdx;
+        if (postsSize<=(startPostIdx + 19)){
+            lastPostIdx = postsSize-1;
+        } else {
+            lastPostIdx = startPostIdx + 19;
+        }
+
+        List<PostSimpleDetail> posts = new ArrayList<>();
+
+        for (int i = startPostIdx; i <= lastPostIdx; i++) {
+            Post post= totalPosts.get(i);
+            Member member = post.getMember();
+            PostSimpleDetail postSimpleDetail = new PostSimpleDetail(post.getId(), post.getTitle(), member.getId(), member.getName(), member.getProfileImgUrl(), post.getCreatedDate(), post.getViews(), post.getComments().size());
+            posts.add(postSimpleDetail);
+        }
+
+        PostsResultRes postsResultRes = new PostsResultRes(pageNumber, totalPageCount, next, prev, lastPostIdx-startPostIdx+1, posts);
+        return postsResultRes;
+    }
 
     private <T> void setIfNotNull(T value, Consumer<T> setter){
         if (value != null) {

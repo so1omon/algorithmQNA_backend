@@ -33,6 +33,7 @@ import java.util.List;
  * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
  * 2023/05/11        janguni      PostType 변수 추가
  * 2023/05/12        janguni      updateTitle, updateContent, updateCategory, updateType 추가
+ * 2023/05/16        janguni      updateViews 추가
  */
 @Entity
 @Getter
@@ -118,6 +119,10 @@ public class Post extends BaseTimeEntity {
 
     public void updateType(PostType changedType) {
         this.type = changedType;
+    }
+
+    public void updateViews(){
+        this.views +=1;
     }
 
 

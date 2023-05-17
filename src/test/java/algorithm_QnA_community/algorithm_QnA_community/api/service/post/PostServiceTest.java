@@ -2,10 +2,7 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostDetailRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostReportReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
@@ -14,6 +11,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
@@ -444,7 +442,7 @@ class PostServiceTest {
         }
 
         //when
-        PostDetailRes postDetailRes = postService.readPost(post.getId(), findMember.getId());
+        PostDetailRes postDetailRes = postService.readPostDetail(post.getId(), findMember.getId());
 
         //then
         Assertions.assertThat(postDetailRes.getPostId()).isEqualTo(post.getId());
@@ -452,7 +450,44 @@ class PostServiceTest {
         Assertions.assertThat(postDetailRes.getCommentTotalCount()).isEqualTo(42);
         Assertions.assertThat(postDetailRes.getCommentSize()).isEqualTo(39);
         Assertions.assertThat(postDetailRes.getMemberId()).isEqualTo(findMember.getId());
-        List<CommentDetailRes> resComments = postDetailRes.getComments();
+    }
+
+    /**
+     * 게시물 목록 조회
+     */
+    @Transactional
+    @Test
+    void 게시물_목록_조회() {
+        // given  - 게시물 21개
+        for (int i = 0; i < 21; i++) {
+            Member findMember = memberRepository.findByEmail("uni1234567@gmail.com").get();
+
+            Post post = Post.createPost()
+                    .member(findMember)
+                    .title("title"+i)
+                    .content("content")
+                    .category(PostCategory.DP)
+                    .type(PostType.QNA)
+                    .build();
+            postRepository.save(post);
+        }
+
+        // when
+        PostsResultRes resultRes1 = postService.readPosts(PostCategory.DP, PostSortType.LATESTDESC, 1);
+        PostsResultRes resultRes2 = postService.readPosts(PostCategory.DP, PostSortType.LATESTDESC, 2);
+
+
+        // then
+        Assertions.assertThat(resultRes1.getCurrentPage()).isEqualTo(1);
+        Assertions.assertThat(resultRes1.getTotalPageCount()).isEqualTo(2);
+        Assertions.assertThat(resultRes1.getSize()).isEqualTo(20);
+
+        Assertions.assertThat(resultRes2.getCurrentPage()).isEqualTo(2);
+        Assertions.assertThat(resultRes2.getTotalPageCount()).isEqualTo(2);
+        Assertions.assertThat(resultRes2.getSize()).isEqualTo(1);
+
+        Assertions.assertThatThrownBy(()->postService.readPosts(PostCategory.DP, PostSortType.LATESTDESC, 3))
+                .isInstanceOf(CustomException.class);
     }
 
 }

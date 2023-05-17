@@ -29,6 +29,8 @@ public enum ErrorCode {
   REPORT_MY_RESOURCE(HttpStatus.BAD_REQUEST, 400);
 
 
+
+
   private HttpStatus status;
   private int code;
 
