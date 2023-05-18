@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community
@@ -30,6 +32,7 @@ import javax.transaction.Transactional;
  * 2023/05/05        solmin       [공지] 애플리케이션 로드 시에 DB초기값 삽입하는 코드입니다
  *                                초기값 삽입 원하지 않으시면 비활성화시켜주세요~~
  * 2023/05/10        solmin       댓글 삽입 init method 추가
+ * 2023/05/16        solmin       데이터 계층적으로 10*10*10개 정도 생성
  */
 
 @Component
@@ -84,6 +87,17 @@ public class InitDB {
             Member member1 = memberRepository.findById(1L).get();
             Member member2 = memberRepository.findById(2L).get();
 
+            List<Member> members = new ArrayList<>();
+            for(int i=2;i<22;i++){
+                Member build = Member.createMember()
+                    .name("testMember" + i)
+                    .email("testMember" + i + "@gmail.com")
+                    .role(Role.ROLE_USER)
+                    .build();
+
+                memberRepository.save(build);
+                members.add(build);
+            }
             Post post = member1.getPosts().get(0);
 
             for (int i = 0; i < 2; i++) {
@@ -102,6 +116,52 @@ public class InitDB {
                     .build()
                 );
             }
+
+            Post tempPost = member1.getPosts().get(1);
+            for(int i=0;i<10;i++){
+
+                Comment save = commentRepository.save(Comment.createComment()
+                    .member(member1)
+                    .content("댓글 " + (i + 1))
+                    .post(tempPost)
+                    .build()
+                );
+
+                for(int j=0;j<20;j++) {
+                    Comment save1 = commentRepository.save(Comment.createComment()
+                        .member(members.get(j))
+                        .content("대댓글 " + (j + 1))
+                        .post(tempPost)
+                        .parent(save)
+                        .build()
+                    );
+
+                    for(int k=0;k<3;k++) {
+                        commentRepository.save(Comment.createComment()
+                            .member(member1)
+                            .content("대대댓글 " + (k + 1))
+                            .post(tempPost)
+                            .parent(save1)
+                            .build()
+                        );
+                    }
+
+                }
+
+
+            }
+            for(int i=11;i<14;i++) {
+
+                Comment save = commentRepository.save(Comment.createComment()
+                    .member(member1)
+                    .parent(commentRepository.findById(33L).get())
+                    .content("대대대댓글 " + (i + 1))
+                    .post(tempPost)
+                    .build()
+                );
+            }
+
+
         } // 댓글
     }
 }

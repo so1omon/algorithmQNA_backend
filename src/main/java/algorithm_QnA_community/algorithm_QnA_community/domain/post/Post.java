@@ -31,6 +31,7 @@ import java.util.List;
  *                                LONGTEXT -> TEXT로 변경 (요구사항이 default page size = 16K를 초과하지 않음)
  *                                추가로 XSS 방지를 위해 스크립트를 HTML 엔티티로 인코딩 이후 조회 시 디코딩하는 작업 필요
  * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
+ * 2023/05/16        solmin       엔티티 삭제를 위한 orphanRemoval 추가
  */
 @Entity
 @Getter
@@ -77,7 +78,7 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post",orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post")

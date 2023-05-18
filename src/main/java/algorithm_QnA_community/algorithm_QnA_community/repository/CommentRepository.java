@@ -1,13 +1,13 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,11 +21,12 @@ import java.util.Optional;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/04        solmin       최초 생성
+ * 2023/05/16        solmin       댓글 삭제 메소드 삭제 (JPA 기본구현)
+ * 2023/05/16        solmin       서비스단에 필요한 인터페이스 메소드 구현
+ *
  */
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    // 단일 댓글 삭제
-    void deleteById(Long commentId);
 
     // 멤버 페치조인
     @Query("select c from Comment c " +
@@ -53,4 +54,30 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         " and c.isPinned = true")
     List<Comment> findByPostIdAndPinned(@Param("post_id") Long postId);
 
+//    @Query("select c from Comment c " +
+//        " left join c.post p" +
+//        " where p.id = :post_id" +
+//        " and c.depth=0 order by c.createdDate")
+    Page<Comment> findCommentsByPostAndDepth(Post post, int depth, Pageable pageable);
+
+    @Query(value = "SELECT * FROM ( " +
+        " SELECT *, RANK() OVER (PARTITION BY c.parent_id order by c.created_at) AS RN " +
+        " FROM comment as c " +
+        " where c.parent_id in (:parentIds)" +
+        " ) AS RANKING" +
+        " WHERE RANKING.RN <= 10",
+    nativeQuery = true)
+    List<Comment> findTop10ByParent(@Param("parentIds") List<Long> parentIds);
+
+    // depth=1인 댓글들 중 자식 댓글이 존재하면 해당 댓글 아이디를 리턴
+    @Query(value = "select distinct(c.parent_id)" +
+        " from comment as c" +
+        " where c.parent_id in (:parentIds)",  nativeQuery = true)
+    List<Long> existsChildByParentIds(@Param("parentIds") List<Long> parentIds);
+
+
+//    @Query("select c from Comment c " +
+//        " where c.parent.id=:parent_id" +
+//        " order by c.createdDate")
+    Page<Comment> findCommentsByParent(Comment parent, Pageable pageable);
 }
