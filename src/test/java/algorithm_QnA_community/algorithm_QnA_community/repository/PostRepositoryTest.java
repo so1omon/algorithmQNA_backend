@@ -68,6 +68,5 @@ class PostRepositoryTest {
         for (Post post1 : posts) {
             System.out.println("post1.title " + post1.getTitle());
         }
-
     }
 }

@@ -49,7 +49,7 @@ public class OAuthController {
     /**
      * 구글 로그인 페이지로 리다이렉트
      */
-    @GetMapping("/auth/google")
+    @GetMapping("/oauth/google")
     public String redirectToGoogle(){
         return "redirect:" + oAuthService.getOauthRedirectURL();
     }
@@ -59,7 +59,7 @@ public class OAuthController {
      * @param code (인증코드)
      *         state (상태값)
      */
-    @GetMapping("/auth/login")
+    @GetMapping("/oauth/login")
     public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
 
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
@@ -95,7 +95,7 @@ public class OAuthController {
     /**
      * 토큰 인증 실패 시
      */
-    @GetMapping("/auth/not-secured")
+    @GetMapping("/oauth/not-secured")
     public ResponseEntity<Res> failTokenAuthentication() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),null));
@@ -104,7 +104,7 @@ public class OAuthController {
     /**
      * 쿠키 삭제 요청
      */
-    @GetMapping("/auth/deleteCookie")
+    @GetMapping("/oauth/deleteCookie")
     public ResponseEntity<Res> deleteCookie(HttpServletRequest request, HttpServletResponse response) {
         try {
             Cookie accessCookie = new Cookie("accessToken", "");
