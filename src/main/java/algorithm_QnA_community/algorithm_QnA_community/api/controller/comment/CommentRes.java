@@ -36,6 +36,7 @@ public class CommentRes {
     private int likeCnt;
     private int dislikeCnt;
     private boolean hasChild = false;
+    private boolean isPinned = false;
     private int depth;
 
     public CommentRes (Comment comment){
@@ -49,7 +50,7 @@ public class CommentRes {
         this.likeCnt=comment.getLikeCnt();
         this.dislikeCnt=comment.getDislikeCnt();
         this.depth=comment.getDepth();
-
+        this.isPinned = comment.isPinned();
         if(comment.getMentioner()!=null){
             this.mentionerId = comment.getMentioner().getId();
             this.mentionerName = comment.getMentioner().getName();
