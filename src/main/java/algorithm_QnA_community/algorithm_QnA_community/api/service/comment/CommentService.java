@@ -152,7 +152,8 @@ public class CommentService {
 
     @Transactional
     public void reportComment(Long commentId, CommentReportReq commentReportReq) {
-        member = memberRepository.findById(1L).get();
+        Member member = memberRepository.findById(1L).get();
+
         Comment findComment = commentRepository.findByIdWithMember(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
 
