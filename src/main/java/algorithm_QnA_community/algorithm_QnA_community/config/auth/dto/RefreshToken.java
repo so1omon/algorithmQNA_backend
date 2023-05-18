@@ -1,4 +1,4 @@
-package algorithm_QnA_community.algorithm_QnA_community.domain.dto;
+package algorithm_QnA_community.algorithm_QnA_community.config.auth.dto;
 
 import lombok.Data;
 
