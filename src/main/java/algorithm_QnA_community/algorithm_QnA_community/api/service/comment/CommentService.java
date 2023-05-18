@@ -231,7 +231,7 @@ public class CommentService {
         return CommentListRes.builder()
             .postId(postId)
             .commentPage(commentsByPost)
-            .commentList(topCommentMap.values().stream().collect(Collectors.toList()))
+            .comments(topCommentMap.values().stream().collect(Collectors.toList()))
             .build();
     }
 
