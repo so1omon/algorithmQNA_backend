@@ -57,27 +57,24 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
         try {
+
             // 액세스 토큰과 refreshUUID 값 추출
-            String accessToken = request.getHeader("access_token");
-            String refreshUUID = request.getHeader("refreshUUID");
+            String accessToken = null;
+            String refreshUUID = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie c: cookies) {
+                String name = c.getName();
+                if (name.equals("access_token")){
+                    accessToken = c.getValue();
+                } else if (name.equals("refreshUUID")) {
+                    refreshUUID = c.getValue();
+                }
+            }
 
 
             // ============ accessToken & refreshUUID 로 토큰 유효 검증 로직 ============ //
             if (accessToken != null & refreshUUID != null) { // 두 개의 값이 모두 있을 경우
 
-                // accessToken 먼저 유효 검증
-//                URL url = new URL("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken);
-//                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//                connection.setRequestMethod("GET");
-//
-//                // 유효하다면 200, 그렇지 않다면 400
-//                int responseCode = connection.getResponseCode();
-//
-//                // accessToken 유효한 경우
-//                if (responseCode == HttpURLConnection.HTTP_OK) {
-//                    log.info("accessToken이 유효함");
-//                    createAuthentication(); //authentication 객체 생성
-//                }
                 MemberInfoRes memberInfo = oAuthService.getMemberInfo(accessToken, "state");
                 if (memberInfo!=null) {
                     Member findMember = memberRepository.findByEmail(memberInfo.getEmail()).get(); // 예외처리 해야함!!!
@@ -109,10 +106,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             // accessToken과 refreshUUID 둘 중 하나라도 없을 경우
             else {
                 log.info("토큰 빠트림");
-//                throw new TokenAuthenticationException("토큰예외"); // Exception!
-                //이후로도 토큰정보 없으면 filter passing하고 SecurityConfig로 막는게 나을듯
-                filterChain.doFilter(request,response);
-                return;
+                throw new TokenAuthenticationException("토큰예외");
             }
 
             // Cookie에 accessToken, refreshUUID 값 담음
@@ -141,6 +135,4 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
-
 }
