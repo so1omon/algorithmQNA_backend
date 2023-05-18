@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,6 +83,40 @@ class PostRepositoryTest {
         for (Post post1 : posts) {
             System.out.println("post1.title " + post1.getTitle());
         }
+    }
+
+    @Test
+    @Transactional
+    public void 게시물_삭제() {
+        Member member = Member.createMember()
+                .name("solmin")
+                .email("solmin3665@gmail.com")
+                .role(Role.ROLE_USER)
+                .profileImgUrl("awefawefa")
+                .build();
+        memberRepository.save(member);
+
+
+        Post post = Post.createPost()
+                .title("게시글")
+                .category(PostCategory.DFS_BFS)
+                .content("<p>bfs어려워요</p")
+                .member(member)
+                .type(PostType.QNA)
+                .build();
+
+        postRepository.save(post);
+
+        Post findPost = postRepository.findById(post.getId()).get();
+        log.info("=====");
+        postRepository.deleteById(findPost.getId());
+        log.info("=====");
+
+
+        Member findMember = memberRepository.findById(member.getId()).get();
+        Assertions.assertThat(findMember.getPosts().size()).isEqualTo(0);
+
+
     }
 
     @Test
@@ -250,11 +285,11 @@ class PostRepositoryTest {
         }
 
         PostLikeReq postLikeReq3 = new PostLikeReq(true, false);
-        postService.likePost(post2.getId(), postLikeReq3, member1.getId());
-        postService.likePost(post2.getId(), postLikeReq3, member2.getId());
-        postService.likePost(post2.getId(), postLikeReq3, member3.getId());
+        postService.likePost(post2.getId(), postLikeReq3, member1);
+        postService.likePost(post2.getId(), postLikeReq3, member2);
+        postService.likePost(post2.getId(), postLikeReq3, member3);
         PostLikeReq postLikeReq4 = new PostLikeReq(false, false);
-        postService.likePost(post2.getId(), postLikeReq4, member4.getId());
+        postService.likePost(post2.getId(), postLikeReq4, member4);
 
         Comment comment = Comment.createComment()
                 .member(member1)
@@ -280,11 +315,11 @@ class PostRepositoryTest {
         }
 
         PostLikeReq postLikeReq1 = new PostLikeReq(true, false);
-        postService.likePost(post1.getId(), postLikeReq1, member1.getId());
-        postService.likePost(post1.getId(), postLikeReq1, member2.getId());
-        postService.likePost(post1.getId(), postLikeReq1, member3.getId());
+        postService.likePost(post1.getId(), postLikeReq1, member1);
+        postService.likePost(post1.getId(), postLikeReq1, member2);
+        postService.likePost(post1.getId(), postLikeReq1, member3);
         PostLikeReq postLikeReq2 = new PostLikeReq(false, false);
-        postService.likePost(post1.getId(), postLikeReq2, member4.getId());
+        postService.likePost(post1.getId(), postLikeReq2, member4);
 
         // 게시물 3
         // view = 11, 추천수 = 10, 비추천수 = 1, 댓글 = 0  => 5.5 + 2.7272 + 2.7272 + 0 = 8.2272
@@ -302,18 +337,18 @@ class PostRepositoryTest {
         }
 
         PostLikeReq postLikeReq5 = new PostLikeReq(true, false);
-        postService.likePost(post3.getId(), postLikeReq5, member1.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member2.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member3.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member4.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member5.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member6.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member7.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member8.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member9.getId());
-        postService.likePost(post3.getId(), postLikeReq5, member10.getId());
+        postService.likePost(post3.getId(), postLikeReq5, member1);
+        postService.likePost(post3.getId(), postLikeReq5, member2);
+        postService.likePost(post3.getId(), postLikeReq5, member3);
+        postService.likePost(post3.getId(), postLikeReq5, member4);
+        postService.likePost(post3.getId(), postLikeReq5, member5);
+        postService.likePost(post3.getId(), postLikeReq5, member6);
+        postService.likePost(post3.getId(), postLikeReq5, member7);
+        postService.likePost(post3.getId(), postLikeReq5, member8);
+        postService.likePost(post3.getId(), postLikeReq5, member9);
+        postService.likePost(post3.getId(), postLikeReq5, member10);
         PostLikeReq postLikeReq6 = new PostLikeReq(false, false);
-        postService.likePost(post3.getId(), postLikeReq6, member11.getId());
+        postService.likePost(post3.getId(), postLikeReq6, member11);
 
         Comment comment2 = Comment.createComment()
                 .member(member1)

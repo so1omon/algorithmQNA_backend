@@ -13,8 +13,6 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
-import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
-import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
 import algorithm_QnA_community.algorithm_QnA_community.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,17 +61,15 @@ public class PostService {
      * 게시물 등록
      */
     @Transactional
-    public void writePost(PostCreateReq postCreateReq, Long memberId){
-
-        Member findMember = memberRepository.findById(memberId).get();
+    public void writePost(PostCreateReq postCreateReq, Member member){
 
         // 일반 사용자가 공지사항 타입을 선택한 경우
-        if (findMember.getRole().equals(ROLE_USER) & postCreateReq.getContentType().equals(PostType.NOTICE) ) {
+        if (member.getRole()==ROLE_USER & postCreateReq.getContentType().equals(PostType.NOTICE.toString())) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "공지사항을 작성할 수 있는 권한이 없습니다.");
         }
 
         Post post = Post.createPost()
-                .member(findMember)
+                .member(member)
                 .title(postCreateReq.getTitle())
                 .content(postCreateReq.getContent())
                 .category(PostCategory.valueOf(postCreateReq.getCategoryName()))
@@ -87,35 +83,32 @@ public class PostService {
      * 게시물 수정
      */
     @Transactional
-    public void updatePost(Long postId,PostCreateReq postCreateReq, Long memberId) {
-        Member findMember = memberRepository.findById(memberId).get();
+    public void updatePost(Long postId,PostUpdateReq postUpdateReq, Member member) {
 
         // 일반 사용자가 공지사항 타입을 선택한 경우
-        if (findMember.getRole().equals(ROLE_USER) & postCreateReq.getContentType().equals(PostType.NOTICE) ) {
+        if (member.getRole()==ROLE_USER & postUpdateReq.getContentType().equals(PostType.NOTICE.toString())) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "공지사항을 작성할 수 있는 권한이 없습니다.");
         }
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
 
-        setIfNotNull(postCreateReq.getTitle(), findPost::updateTitle);
-        setIfNotNull(postCreateReq.getContent(), findPost::updateContent);
-        setIfNotNull(PostCategory.valueOf(postCreateReq.getCategoryName()), findPost::updateCategory);
-        setIfNotNull(PostType.valueOf(postCreateReq.getContentType()),findPost::updateType);
+        setIfNotNull(postUpdateReq.getTitle(), findPost::updateTitle);
+        setIfNotNull(postUpdateReq.getContent(), findPost::updateContent);
+        setIfNotNull(PostCategory.valueOf(postUpdateReq.getCategoryName()), findPost::updateCategory);
+        setIfNotNull(PostType.valueOf(postUpdateReq.getContentType()),findPost::updateType);
     }
 
     /**
      * 게시물 삭제
      */
     @Transactional
-    public void deletePost(Long postId, Long memberId) {
-        Member findMember = memberRepository.findById(memberId).get();
-
+    public void deletePost(Long postId, Member member) {
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
 
         // 게시물 작성자와 삭제하려는 사용자가 같지 않은 경우
-        if (findMember!=findPost.getMember()){
+        if (member!=findPost.getMember()){
             throw new CustomException(ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
         }
 
@@ -126,13 +119,12 @@ public class PostService {
      * 게시물 추천
      */
     @Transactional
-    public void likePost(Long postId, PostLikeReq postLikeReq, Long memberId) {
-        Member findMember = memberRepository.findById(memberId).get();
+    public void likePost(Long postId, PostLikeReq postLikeReq, Member member) {
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
 
-        Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, memberId);
+        Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, member.getId());
 
         if (postLikeReq.getCancel()){
             if (!findLikePost.isPresent()) log.info("추천정보가 존재하지 않음");
@@ -145,7 +137,7 @@ public class PostService {
         else {
             if (!findLikePost.isPresent()){
                 LikePost likePost = LikePost.createLikePost()
-                        .member(findMember)
+                        .member(member)
                         .post(findPost)
                         .isLike(postLikeReq.getIsLike())
                         .build();
@@ -163,23 +155,26 @@ public class PostService {
      * 게시물 신고
      */
     @Transactional
-    public void reportPost(Long postId, PostReportReq postReportReq, Long memberId) {
-        Member findMember = memberRepository.findById(memberId).get();
+    public void reportPost(Long postId, PostReportReq postReportReq, Member member) {
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
 
         // 본인 게시물을 신고하려는 경우
-        if (findMember==findPost.getMember()){
+        if (member==findPost.getMember()){
             throw new CustomException(ErrorCode.REPORT_MY_RESOURCE, "자신이 작성한 게시물은 신고할 수 없습니다.");
         }
 
-        Optional<ReportPost> findReportPost = reportPostRepository.findByPostIdAndMemberId(postId, memberId);
+        if (postReportReq.getCategory().equals(ReportCategory.ETC.toString()) & postReportReq.getDetail()==null){
+
+        }
+
+        Optional<ReportPost> findReportPost = reportPostRepository.findByPostIdAndMemberId(postId, member.getId());
 
         if (!findReportPost.isPresent()){ // 해당 게시물을 신고한 적이 없다면
             ReportPost reportPost = ReportPost.createReportPost()
                     .post(findPost)
-                    .member(findMember)
+                    .member(member)
                     .category(ReportCategory.valueOf(postReportReq.getCategory()))
                     .detail(postReportReq.getDetail())
                     .build();
@@ -194,11 +189,13 @@ public class PostService {
     /**
      * 상세 게시물 조회
      */
-    public PostDetailRes readPostDetail(Long postId, Long memberId){
-        Member findMember = memberRepository.findById(memberId).get();
+    public PostDetailRes readPostDetail(Long postId, Member member){
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+
+        // 게시물 작성자
+        Member postingMember = memberRepository.findById(findPost.getMember().getId()).get();
 
         // depth=0, 1인 댓글 불러오기
         List<Comment> resultComments = new ArrayList<>();
@@ -216,14 +213,15 @@ public class PostService {
 
         for (Comment rc:resultComments){
             // 해당 사용자가 추천을 눌렀는지
-            Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, memberId);
+            Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, member.getId());
             boolean isLiked = (findLikePost.isPresent()) ? true : false;
 
             // 부모댓글 존재 여부
             Long parentId = (rc.getDepth()==0) ? null : rc.getParent().getId();
+
             CommentDetailRes commentDetailRes = new CommentDetailRes(rc.getId(), parentId,
-                    findMember.getId(), findMember.getName(), findMember.getProfileImgUrl(),
-                    findMember.getCommentBadgeCnt() / 10, findMember.getPostBadgeCnt() / 10, findMember.getLikeBadgeCnt() / 10,
+                    postingMember.getId(), postingMember.getName(), postingMember.getProfileImgUrl(),
+                    postingMember.getCommentBadgeCnt() / 10, postingMember.getPostBadgeCnt() / 10, postingMember.getLikeBadgeCnt() / 10,
                     rc.getContent(), rc.getLikeCnt(), rc.getDislikeCnt(), rc.getCreatedDate(),
                     rc.getDepth(),rc.isPinned(),isLiked);
             responseComments.add(commentDetailRes);
@@ -231,8 +229,8 @@ public class PostService {
 
         boolean commentNextPage = (topComments.size()>10) ? true : false;
         int totalCommentSize = commentRepository.findByPostId(postId).size();
-        PostDetailRes postDetailRes = new PostDetailRes(postId, findMember.getId(), findMember.getName(),
-                findMember.getCommentBadgeCnt(), findMember.getPostBadgeCnt(), findMember.getLikeBadgeCnt(),
+        PostDetailRes postDetailRes = new PostDetailRes(postId, postingMember.getId(), postingMember.getName(),
+                postingMember.getCommentBadgeCnt(), postingMember.getPostBadgeCnt(), postingMember.getLikeBadgeCnt(),
                 findPost.getTitle(), findPost.getContent(), findPost.getCreatedDate(),
                 findPost.getLikeCnt(), findPost.getDislikeCnt(), totalCommentSize,
                 0, commentNextPage, false, responseComments.size(), responseComments);
@@ -242,6 +240,7 @@ public class PostService {
 
     public PostsResultRes readPosts(PostCategory categoryName, PostSortType sortName, int pageNumber){
         List<Post> totalPosts=null;
+
         switch (sortName) {
             case LATESTDESC: // 최신순
                 totalPosts = postRepository.findByCategoryOrderByCreatedDateDesc(categoryName);
@@ -315,4 +314,6 @@ public class PostService {
             setter.accept(value);
         }
     }
+
+
 }

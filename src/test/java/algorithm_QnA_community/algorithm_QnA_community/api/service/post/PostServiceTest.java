@@ -1,7 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
@@ -82,7 +81,7 @@ class PostServiceTest {
 
         PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA");
 
-        postService.writePost(postCreateReq, findMember.get().getId());
+        postService.writePost(postCreateReq, findMember.get());
 
         List<Post> posts = findMember.get().getPosts();
         Assertions.assertThat(posts.size()).isEqualTo(1);
@@ -98,13 +97,13 @@ class PostServiceTest {
 
         PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA");
 
-        postService.writePost(postCreateReq, findMember.get().getId());
+        postService.writePost(postCreateReq, findMember.get());
 
         List<Post> posts = findMember.get().getPosts();
 
         for (Post post: posts) {
-            PostCreateReq postCreateReq2 = new PostCreateReq("title2", "content2","SORT", "TIP");
-            postService.updatePost(post.getId(), postCreateReq2, findMember.get().getId());
+            PostUpdateReq postUpdateReq = new PostUpdateReq("title2", "content2","SORT", "TIP");
+            postService.updatePost(post.getId(), postUpdateReq, findMember.get());
         }
 
         List<Post> posts2 = findMember.get().getPosts();
@@ -131,9 +130,9 @@ class PostServiceTest {
 
         postRepository.save(post);
 
-        postService.deletePost(post.getId(), findMember.get().getId());
+        postService.deletePost(post.getId(), findMember.get());
 
-        Assertions.assertThat(findMember.get().getPosts().size()).isEqualTo(0); //d여기부터
+        Assertions.assertThat(findMember.get().getPosts().size()).isEqualTo(0); //여기부터
     }
 
     /**
@@ -164,7 +163,7 @@ class PostServiceTest {
         PostLikeReq postLikeReq = new PostLikeReq(true, false);
 
         // when
-        postService.likePost(post.getId(), postLikeReq, findMember.get().getId());
+        postService.likePost(post.getId(), postLikeReq, findMember.get());
 
         // then
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(1);
@@ -209,7 +208,7 @@ class PostServiceTest {
 
         // when
         PostLikeReq postLikeReq = new PostLikeReq(false, false);
-        postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember);
 
         // then
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(0);
@@ -251,7 +250,7 @@ class PostServiceTest {
 
         // when
         PostLikeReq postLikeReq = new PostLikeReq(true, true);
-        postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember);
 
         // then
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(0);
@@ -286,7 +285,7 @@ class PostServiceTest {
 
         // when
         PostLikeReq postLikeReq = new PostLikeReq(true, true);
-        postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember);
 
         // then
         Assertions.assertThat(findPost.getLikeCnt()).isEqualTo(0);
@@ -329,7 +328,7 @@ class PostServiceTest {
 
         // when
         PostReportReq postReportReq = new PostReportReq("AD",null);
-        postService.reportPost(post.getId(), postReportReq, reportingMember.getId());
+        postService.reportPost(post.getId(), postReportReq, reportingMember);
 
         // then
         Optional<ReportPost> findReportPost = reportPostRepository.findByPostIdAndMemberId(post.getId(), reportingMember.getId());
@@ -380,7 +379,7 @@ class PostServiceTest {
 //        Assertions.assertThatThrownBy(() -> postService.reportPost(post.getId(), postReportReq, reportedMember.getId()))
 //                .isInstanceOf(CustomException.class);
         // then
-        postService.reportPost(post.getId(), postReportReq, reportedMember.getId());
+        postService.reportPost(post.getId(), postReportReq, reportedMember);
 
     }
 
@@ -404,7 +403,7 @@ class PostServiceTest {
 
         postRepository.save(post);
         PostLikeReq postLikeReq = new PostLikeReq(true, false);
-        postService.likePost(post.getId(), postLikeReq, findMember.getId());
+        postService.likePost(post.getId(), postLikeReq, findMember);
 
         for (int i=1;i<=12;i++) {
             CommentCreateReq commentCreateReq = new CommentCreateReq("최상위 댓글 내용"+i, null);
@@ -442,7 +441,7 @@ class PostServiceTest {
         }
 
         //when
-        PostDetailRes postDetailRes = postService.readPostDetail(post.getId(), findMember.getId());
+        PostDetailRes postDetailRes = postService.readPostDetail(post.getId(), findMember);
 
         //then
         Assertions.assertThat(postDetailRes.getPostId()).isEqualTo(post.getId());

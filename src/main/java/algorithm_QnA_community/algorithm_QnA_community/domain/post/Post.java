@@ -34,6 +34,7 @@ import java.util.List;
  * 2023/05/11        janguni      PostType 변수 추가
  * 2023/05/12        janguni      updateTitle, updateContent, updateCategory, updateType 추가
  * 2023/05/16        janguni      updateViews 추가
+ * 2023/05/18        janguni      Member연관관계 CascadeType.ALL -> CascadeType.PERSIST로 변경
  */
 @Entity
 @Getter
@@ -80,7 +81,7 @@ public class Post extends BaseTimeEntity {
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 

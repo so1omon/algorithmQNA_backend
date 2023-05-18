@@ -4,10 +4,12 @@ import algorithm_QnA_community.algorithm_QnA_community.repository.MemberReposito
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -99,8 +101,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/",
                 "/login/**",
                 "/auth/not-secured",
-                "/auth/deleteCookie",
-                "/post/**"
+                "/auth/deleteCookie"
         );
     }
 
@@ -143,6 +144,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new AuthorizationCodeResourceDetails();
     }
 
+    @Bean
+    public FilterRegistrationBean<OpenEntityManagerInViewFilter> openEntityManagerInViewFilter() {
+        FilterRegistrationBean<OpenEntityManagerInViewFilter> filterFilterRegistrationBean = new FilterRegistrationBean<>();
+        filterFilterRegistrationBean.setFilter(new OpenEntityManagerInViewFilter());
+        filterFilterRegistrationBean.setOrder(Integer.MIN_VALUE); // 예시를 위해 최우선 순위로 Filter 등록
+        return filterFilterRegistrationBean;
+    }
 
 }
 

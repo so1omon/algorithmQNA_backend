@@ -4,16 +4,20 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.Co
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.ResponseMessage;
+import algorithm_QnA_community.algorithm_QnA_community.domain.response.StatusCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -27,7 +31,7 @@ import javax.validation.Valid;
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2023/05/11        janguni       최초 생성
+ * 2023/05/11        janguni            최초 생성
  */
 
 @RestController
@@ -42,28 +46,31 @@ public class PostApiController {
      * 게시물 등록
      */
     @PostMapping("/")
-    public void writePost(@RequestBody @Valid PostCreateReq postCreateReq, PrincipalDetails principal){
-        //Long memberId = principal.getMember().getId();
-        postService.writePost(postCreateReq, 1L);
+    public Res writePost(@RequestBody @Valid PostCreateReq postCreateReq, Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        postService.writePost(postCreateReq, findMember);
+        return new Res(new DefStatus(StatusCode.CREATED, "성공적으로 게시물을 등록했습니다."),null);
     }
 
     /**
      * 게시물 수정
      */
     @PatchMapping("/{post_id}")
-    public void updatePost(@PathVariable("post_id") Long postId,
-                           @RequestBody @Valid PostCreateReq postCreateReq, PrincipalDetails principal){
-        //Long memberId = principal.getMember().getId();
-        postService.updatePost(postId,postCreateReq, 1L);
+    public Res updatePost(@PathVariable("post_id") Long postId,
+                           @RequestBody @Valid PostUpdateReq postUpdateReq, Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        postService.updatePost(postId,postUpdateReq, findMember);
+        return new Res(new DefStatus(StatusCode.OK, "성공적으로 게시물을 수정했습니다."),null);
     }
 
     /**
      * 게시물 삭제
      */
     @DeleteMapping("/{post_id}")
-    public void deletePost(@PathVariable("post_id") Long postId, PrincipalDetails principal){
-        //Long memberId = principal.getMember().getId();
-        postService.deletePost(postId, 1L);
+    public Res deletePost(@PathVariable("post_id") Long postId, Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        postService.deletePost(postId, findMember);
+        return new Res(new DefStatus(StatusCode.OK, "성공적으로 게시물을 삭제했습니다."),null);
     }
 
     /**
@@ -72,8 +79,9 @@ public class PostApiController {
     @PostMapping("/{post_id}/like")
     public Res likePost(@PathVariable("post_id") Long postId,
                          @RequestBody @Valid PostLikeReq postLikeReq,
-                         PrincipalDetails principal){
-        //Long memberId = principal.getMember().getId();
+                        Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        postService.likePost(postId, postLikeReq, findMember);
 
         String message = postLikeReq.getIsLike()?"추천" : "비추천";
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 "+message+"했습니다."));
@@ -85,33 +93,37 @@ public class PostApiController {
     @PostMapping("/{post_id}/report")
     public Res reportPost(@PathVariable("post_id") Long postId,
                           @RequestBody @Valid PostReportReq postReportReq,
-                          PrincipalDetails principal){
-
-        //Long memberId = principal.getMember().getId();
-        postService.reportPost(postId, postReportReq, 1L);
+                          Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        postService.reportPost(postId, postReportReq, findMember);
 
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 신고했습니다."));
     }
 
     /**
-     * 게시물 조회
+     * 상세 게시물 조회
      */
     @GetMapping("/{post_id}")
-    public Res<PostDetailRes> readPostDetail(@PathVariable("post_id") Long postId,
-                          PrincipalDetails principal){
-
-        //Long memberId = principal.getMember().getId();
-        PostDetailRes postDetailRes = postService.readPostDetail(postId, 1L);
-
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."),postDetailRes);
+    public Res<PostDetailRes> readPostDetail(@PathVariable("post_id") Long postId, Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        PostDetailRes postDetailRes = postService.readPostDetail(postId, findMember);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), postDetailRes);
     }
 
-    @GetMapping("?categoryName={category_name}&sort={sort_name}&page={page_number}")
-    public Res<PostsResultRes> readPosts(@PathVariable("category_name") @Valid PostCategory categoryName,
-                          @PathVariable("sort_name")  @Valid PostSortType sortName,
-                          @PathVariable("page_number") int pageNumber){
+    /**
+     * 게시물 목록 조회
+     */
+    @GetMapping("")
+    public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory categoryName,
+                                         @RequestParam("sort") @Valid PostSortType sortName,
+                                         @RequestParam("page") int pageNumber){
         PostsResultRes postsResultRes = postService.readPosts(categoryName, sortName, pageNumber);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
+    }
+
+    private static Member getLoginMember(Authentication authentication) {
+        Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();
+        return loginMember;
     }
 
 }

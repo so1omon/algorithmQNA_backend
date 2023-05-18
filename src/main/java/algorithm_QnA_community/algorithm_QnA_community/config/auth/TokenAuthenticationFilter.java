@@ -141,4 +141,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
+
+
 }
