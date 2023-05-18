@@ -1,22 +1,18 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.post;
 
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
-import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
-import algorithm_QnA_community.algorithm_QnA_community.domain.response.ResponseMessage;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.StatusCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,7 +74,7 @@ public class PostApiController {
      */
     @PostMapping("/{post_id}/like")
     public Res likePost(@PathVariable("post_id") Long postId,
-                         @RequestBody @Valid PostLikeReq postLikeReq,
+                         @RequestBody @Valid LikeReq postLikeReq,
                         Authentication authentication){
         Member findMember = getLoginMember(authentication);
         postService.likePost(postId, postLikeReq, findMember);
@@ -92,7 +88,7 @@ public class PostApiController {
      */
     @PostMapping("/{post_id}/report")
     public Res reportPost(@PathVariable("post_id") Long postId,
-                          @RequestBody @Valid PostReportReq postReportReq,
+                          @RequestBody @Valid ReportReq postReportReq,
                           Authentication authentication){
         Member findMember = getLoginMember(authentication);
         postService.reportPost(postId, postReportReq, findMember);

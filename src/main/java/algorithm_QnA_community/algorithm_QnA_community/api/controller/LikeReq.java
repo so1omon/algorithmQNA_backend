@@ -1,31 +1,32 @@
-package algorithm_QnA_community.algorithm_QnA_community.api.controller.comment;
+package algorithm_QnA_community.algorithm_QnA_community.api.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
- * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.comment
- * fileName       : CommentCreateReq
- * author         : solmin
- * date           : 2023/05/04
- * description    :
+ * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller
+ * fileName       : LikeReq
+ * author         : janguni
+ * date           : 2023/05/18
+ * description    :         추천/비추천 정보 request
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2023/05/04        solmin       최초 생성
+ * 2023/05/18        janguni           최초 생성
  */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentLikeReq {
+public class LikeReq {
+
     @NotNull
     private Boolean isLike;
 
     @NotNull
     private Boolean cancel;
+
 }

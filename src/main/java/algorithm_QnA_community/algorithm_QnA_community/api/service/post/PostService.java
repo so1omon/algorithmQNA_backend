@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
@@ -119,7 +121,7 @@ public class PostService {
      * 게시물 추천
      */
     @Transactional
-    public void likePost(Long postId, PostLikeReq postLikeReq, Member member) {
+    public void likePost(Long postId, LikeReq postLikeReq, Member member) {
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
@@ -155,7 +157,7 @@ public class PostService {
      * 게시물 신고
      */
     @Transactional
-    public void reportPost(Long postId, PostReportReq postReportReq, Member member) {
+    public void reportPost(Long postId, ReportReq postReportReq, Member member) {
 
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));

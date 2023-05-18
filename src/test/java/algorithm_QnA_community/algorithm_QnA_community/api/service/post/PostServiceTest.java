@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
@@ -160,7 +162,7 @@ class PostServiceTest {
         }
         Post findPost = postRepository.findById(post.getId()).get();
 
-        PostLikeReq postLikeReq = new PostLikeReq(true, false);
+        LikeReq postLikeReq = new LikeReq(true, false);
 
         // when
         postService.likePost(post.getId(), postLikeReq, findMember.get());
@@ -207,7 +209,7 @@ class PostServiceTest {
         likePostRepository.save(likePost);
 
         // when
-        PostLikeReq postLikeReq = new PostLikeReq(false, false);
+        LikeReq postLikeReq = new LikeReq(false, false);
         postService.likePost(post.getId(), postLikeReq, findMember);
 
         // then
@@ -249,7 +251,7 @@ class PostServiceTest {
         likePostRepository.save(likePost);
 
         // when
-        PostLikeReq postLikeReq = new PostLikeReq(true, true);
+        LikeReq postLikeReq = new LikeReq(true, true);
         postService.likePost(post.getId(), postLikeReq, findMember);
 
         // then
@@ -284,7 +286,7 @@ class PostServiceTest {
 
 
         // when
-        PostLikeReq postLikeReq = new PostLikeReq(true, true);
+        LikeReq postLikeReq = new LikeReq(true, true);
         postService.likePost(post.getId(), postLikeReq, findMember);
 
         // then
@@ -327,7 +329,7 @@ class PostServiceTest {
 
 
         // when
-        PostReportReq postReportReq = new PostReportReq("AD",null);
+        ReportReq postReportReq = new ReportReq("AD",null);
         postService.reportPost(post.getId(), postReportReq, reportingMember);
 
         // then
@@ -370,14 +372,9 @@ class PostServiceTest {
 
         postRepository.save(post);
 
-        Post reportedPost = postRepository.findById(post.getId()).get();
-
         // when
-        PostReportReq postReportReq = new PostReportReq("AD",null);
+        ReportReq postReportReq = new ReportReq("AD",null);
 
-        // then
-//        Assertions.assertThatThrownBy(() -> postService.reportPost(post.getId(), postReportReq, reportedMember.getId()))
-//                .isInstanceOf(CustomException.class);
         // then
         postService.reportPost(post.getId(), postReportReq, reportedMember);
 
@@ -402,7 +399,7 @@ class PostServiceTest {
                 .build();
 
         postRepository.save(post);
-        PostLikeReq postLikeReq = new PostLikeReq(true, false);
+        LikeReq postLikeReq = new LikeReq(true, false);
         postService.likePost(post.getId(), postLikeReq, findMember);
 
         for (int i=1;i<=12;i++) {
@@ -412,8 +409,6 @@ class PostServiceTest {
 
 
         int count=0;
-        //List<Comment> comments = commentRepository.findByPostId(post.getId());
-        //List<Comment> topComments = commentRepository.findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(post.getId(), 0);
         List<Comment> topComments = commentRepository.findTop10ByPostIdAndDepthEqualsOrderByCreatedDateDesc(post.getId(), 0);
         for (Comment c:topComments){
             Long commentId = c.getId();

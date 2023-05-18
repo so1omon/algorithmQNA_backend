@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.comment;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
@@ -44,7 +46,7 @@ public class CommentApiController {
 
     @PostMapping("/{comment_id}/like")
     public Res likeComment(@PathVariable("comment_id") Long commentId,
-                                                              @RequestBody @Valid CommentLikeReq commentLikeReq){
+                                                              @RequestBody @Valid LikeReq commentLikeReq){
         Res result = commentService.updateLikeInfo(commentId, commentLikeReq);
 
         return result;
@@ -52,7 +54,7 @@ public class CommentApiController {
 
     @PostMapping("/{comment_id}/report")
     public Res reportComment(@PathVariable("comment_id") Long commentId,
-                           @RequestBody @Valid CommentReportReq commentReportReq){
+                           @RequestBody @Valid ReportReq commentReportReq){
         commentService.reportComment(commentId, commentReportReq);
 
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 신고했습니다."));

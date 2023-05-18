@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.comment;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.*;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
@@ -35,6 +37,7 @@ import java.util.Optional;
  * -----------------------------------------------------------
  * 2023/05/04        solmin       최초 생성
  * 2023/05/11        solmin       PR 리뷰내용 전부 반영
+ * 2023/05/18        janguni      CommentLikeReq -> LikeReq, CommentReportReq -> ReportReq로 변경
  */
 
 @Service
@@ -93,7 +96,7 @@ public class CommentService {
     }
 
     @Transactional
-    public Res updateLikeInfo(Long commentId, @Valid CommentLikeReq commentLikeReq) {
+    public Res updateLikeInfo(Long commentId, @Valid LikeReq commentLikeReq) {
         member = memberRepository.findById(2L).get();
         Comment findComment = commentRepository.findByIdWithMember(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
@@ -151,7 +154,7 @@ public class CommentService {
     }
 
     @Transactional
-    public void reportComment(Long commentId, CommentReportReq commentReportReq) {
+    public void reportComment(Long commentId, ReportReq commentReportReq) {
         Member member = memberRepository.findById(1L).get();
 
         Comment findComment = commentRepository.findByIdWithMember(commentId)
