@@ -32,7 +32,7 @@ import javax.transaction.Transactional;
  * 2023/05/10        solmin       댓글 삽입 init method 추가
  */
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class InitDB {
     private final InitService initService;

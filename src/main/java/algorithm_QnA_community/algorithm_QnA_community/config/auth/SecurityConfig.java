@@ -101,9 +101,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers(
                 "/",
-                "/login/**",
-                "/auth/not-secured",
-                "/auth/deleteCookie"
+                "/auth/**"
         );
     }
 
@@ -113,7 +111,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .cors().disable()
                 .authorizeRequests()
-                .antMatchers("/comment/**").permitAll()
+                .antMatchers().permitAll()
                 .anyRequest().authenticated();
 
 

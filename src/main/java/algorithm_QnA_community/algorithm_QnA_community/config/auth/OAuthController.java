@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
  * 2023/04/20       janguni         최초 생성
  * 2023/05/02       janguni         failTokenAuthentication() 생성
  * 2023/05/03       janguni         deleteCookie() 생성
+ * 2023/05/18       janguni         redirectToGoogle() 추가
  */
 
 @Controller
@@ -46,11 +47,19 @@ public class OAuthController {
     private final OAuthService oAuthService;
 
     /**
+     * 구글 로그인 페이지로 리다이렉트
+     */
+    @GetMapping("/auth/google")
+    public String redirectToGoogle(){
+        return "redirect:" + oAuthService.getOauthRedirectURL();
+    }
+
+    /**
      * 로그인 또는 회원가입
      * @param code (인증코드)
      *         state (상태값)
      */
-    @GetMapping("/login")
+    @GetMapping("/auth/login")
     public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
 
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
