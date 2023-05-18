@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
  * -----------------------------------------------------------
  * 2023/05/16        solmin       최초 생성 (DTO이름 추후 변경필요)
  *                                depth>=1인 댓글정보 보여주기 위한 Dto
+ * 2023/05/18        solmin       dto에 언급자 정보 추가
  */
 
 @Data
@@ -25,8 +26,10 @@ import java.time.LocalDateTime;
 public class CommentRes {
     private Long commentId;
     private Long memberId;
-    private Long parentId;
     private String memberName;
+    private Long parentId;
+    private Long mentionerId;
+    private String mentionerName;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -46,6 +49,11 @@ public class CommentRes {
         this.likeCnt=comment.getLikeCnt();
         this.dislikeCnt=comment.getDislikeCnt();
         this.depth=comment.getDepth();
+
+        if(comment.getMentioner()!=null){
+            this.mentionerId = comment.getMentioner().getId();
+            this.mentionerName = comment.getMentioner().getName();
+        }
     }
 
 }
