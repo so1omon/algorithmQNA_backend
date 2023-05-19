@@ -19,24 +19,27 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/16        solmin       최초 생성 (DTO이름 추후 변경필요)
  * 2023/05/18        solmin       필드명 변경
+ * 2023/05/19        solmin       totalPageSize 추가
  */
 @Data
 @AllArgsConstructor
-public class CommentListRes {
+public class CommentsRes {
     private Long postId;
     private List<TopCommentRes> comments;
     private int page;
+    private int totalPageSize;
     private boolean next;
     private boolean prev;
     private int size;
 
     @Builder
-    public CommentListRes(Long postId, Page<Comment> commentPage, List<TopCommentRes> comments){
+    public CommentsRes(Long postId, Page<Comment> commentPage, List<TopCommentRes> comments){
         this.postId = postId;
         this.page = commentPage.getPageable().getPageNumber();
         this.next = commentPage.hasNext();
         this.prev = commentPage.hasPrevious();
         this.size = comments.size();
+        this.totalPageSize = commentPage.getTotalPages();
         this.comments = comments;
     }
 }

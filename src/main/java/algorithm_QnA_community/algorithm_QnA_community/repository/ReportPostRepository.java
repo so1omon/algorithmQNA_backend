@@ -23,4 +23,6 @@ import java.util.Optional;
 public interface ReportPostRepository extends JpaRepository<ReportPost, Long> {
     @Query("select distinct (rp.post.id) from ReportPost rp")
     List<Long> findPostIdsByExist();
+
+    Optional<ReportPost> findByPostIdAndMemberId(Long postId, Long memberId);
 }

@@ -5,9 +5,10 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
-import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
-import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
-import algorithm_QnA_community.algorithm_QnA_community.repository.*;
+import algorithm_QnA_community.algorithm_QnA_community.repository.CommentRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.LikeCommentRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Profile;
@@ -34,15 +35,15 @@ import java.util.List;
  * 2023/05/16        solmin       데이터 계층적으로 10*10*10개 정도 생성
  */
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class InitDB {
     private final InitService initService;
 
     @PostConstruct
     public void init() {
-        initService.dbInitWithMemberAndPost();
-        initService.dbInitWithComment();
+//         initService.dbInitWithMemberAndPost();
+        //initService.dbInitWithComment();
     }
 
     @Component
@@ -53,13 +54,12 @@ public class InitDB {
         private final MemberRepository memberRepository;
         private final PostRepository postRepository;
         private final CommentRepository commentRepository;
-        private final ReportPostRepository reportPostRepository;
 
         public void dbInitWithMemberAndPost() {
             Member member1 = Member.createMember()
                 .name("solmin")
                 .email("solmin3665@gmail.com")
-                .role(Role.ROLE_ADMIN)
+                .role(Role.ROLE_USER)
                 .build();
 
             Member member2 = Member.createMember()
@@ -70,49 +70,59 @@ public class InitDB {
             memberRepository.save(member1);
             memberRepository.save(member2);
 
-            for (int i = 0; i < 4; i++) {
-                postRepository.save(Post.createPost()
-                    .title("게시글" + i)
-                    .category(PostCategory.DFS_BFS)
-                    .content("<p>bfs어려워요" + i + "</p")
-                    .member(member1)
-                    .build()
-                );
-            }
-            List<Member> members = new ArrayList<>();
-            for(int i=2;i<22;i++){
-                Member build = Member.createMember()
-                        .name("testMember" + i)
-                        .email("testMember" + i + "@gmail.com")
-                        .role(Role.ROLE_USER)
-                        .build();
-
-                memberRepository.save(build);
-                members.add(build);
-            }
+//            for (int i = 0; i < 4; i++) {
+//                postRepository.save(Post.createPost()
+//                    .title("게시글" + i)
+//                    .category(PostCategory.DFS_BFS)
+//                    .content("<p>bfs어려워요" + i + "</p")
+//                    .member(member1)
+//                    .build()
+//                );
+//            }
 
 
-            for (int i = 0; i < 4; i++) {
-                Post temp = postRepository.save(Post.createPost()
-                        .title("신고당할게시글" + i)
-                        .category(PostCategory.BINARY_SEARCH)
-                        .content("<p>신고당할내용" + i + "</p")
-                        .member(members.get(i))
-                        .build()
-                );
-                reportPostRepository.save(ReportPost.createReportPost()
-                        .member(members.get(1))
-                        .category(ReportCategory.ETC)
-                        .post(temp)
-                        .build());
-            }
         } // 멤버, 게시글
+
+
+//        public void dbInitWithComment() {
+//            Member member1 = memberRepository.findById(1L).get();
+//            Member member2 = memberRepository.findById(2L).get();
+//
+//            Post post = member1.getPosts().get(0);
+//
+//            for (int i = 0; i < 2; i++) {
+//                commentRepository.save(Comment.createComment()
+//                        .member(member1)
+//                        .content("weanfjakwlenefa")
+//                        .post(post)
+//                        .build()
+//                );
+//            }
+//            for (int i = 0; i < 2; i++) {
+//                commentRepository.save(Comment.createComment()
+//                    .member(member2)
+//                    .content("weanfjakwlenefa")
+//                    .post(post)
+//                    .build()
+//                );
+//            }
+//        } // 댓글
 
         public void dbInitWithComment() {
             Member member1 = memberRepository.findById(1L).get();
             Member member2 = memberRepository.findById(2L).get();
 
+            List<Member> members = new ArrayList<>();
+            for(int i=2;i<22;i++){
+                Member build = Member.createMember()
+                    .name("testMember" + i)
+                    .email("testMember" + i + "@gmail.com")
+                    .role(Role.ROLE_USER)
+                    .build();
 
+                memberRepository.save(build);
+                members.add(build);
+            }
             Post post = member1.getPosts().get(0);
 
             for (int i = 0; i < 2; i++) {
@@ -144,7 +154,7 @@ public class InitDB {
 
                 for(int j=0;j<20;j++) {
                     Comment save1 = commentRepository.save(Comment.createComment()
-                        .member(member2)
+                        .member(members.get(j))
                         .content("대댓글 " + (j + 1))
                         .post(tempPost)
                         .parent(save)
@@ -165,16 +175,16 @@ public class InitDB {
 
 
             }
-//            for(int i=11;i<14;i++) {
-//
-//                commentRepository.save(Comment.createComment()
-//                    .member(member1)
-//                    .parent(commentRepository.findById(33L).get())
-//                    .content("대대대댓글 " + (i + 1))
-//                    .post(tempPost)
-//                    .build()
-//                );
-//            }
+            for(int i=11;i<14;i++) {
+
+                Comment save = commentRepository.save(Comment.createComment()
+                    .member(member1)
+                    .parent(commentRepository.findById(33L).get())
+                    .content("대대대댓글 " + (i + 1))
+                    .post(tempPost)
+                    .build()
+                );
+            }
 
 
         } // 댓글

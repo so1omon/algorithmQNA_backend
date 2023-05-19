@@ -54,6 +54,23 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         " and c.isPinned = true")
     List<Comment> findByPostIdAndPinned(@Param("post_id") Long postId);
 
+
+    // 최상단 댓글 가져옴
+    List<Comment> findTop10ByPostIdAndDepthEqualsOrderByCreatedDateDesc(Long postId, int depth);
+
+
+    // 게시글 내의 최상위 댓글10개 가져오기
+    @Query(nativeQuery = true,
+            value = "select c.* from comment c" +
+                    " where c.parent_id = :parent_id" +
+                    " order by c.created_at desc" +
+                    " Limit 10")
+    List<Comment> findCommentsByParentIdLimit10(@Param("parent_id") Long parentId);
+
+    List<Comment> findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(Long parentId, int depth);
+
+
+
 //    @Query("select c from Comment c " +
 //        " left join c.post p" +
 //        " where p.id = :post_id" +

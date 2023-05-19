@@ -59,11 +59,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final OAuthService oAuthService;
     private final MemberRepository memberRepository;
 
-//    private final MemberRepository memberRepository;
-//    private final RestTemplate restTemplate;
-//    private final RedisTemplate redisTemplate;
-
-
     // == code 필요할 때 (시작)== //
     /**
     @Override
@@ -95,20 +90,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                  .userInfoEndpoint()
                 .userService(oAuth2UserService());
     }
+
     **/
     // == code 필요할 때 (끝)== //
 
 
 
     // == 실제 운영 (시작)== //
-///**
+    ///**
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers(
                 "/",
-                "/login/**",
-                "/auth/not-secured",
-                "/auth/deleteCookie"
+                "/oauth/**"
         );
     }
 
@@ -118,7 +112,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .cors().disable()
                 .authorizeRequests()
-                .antMatchers("/comment/**").permitAll()
+                .antMatchers().permitAll()
                 .anyRequest().authenticated();
 
 

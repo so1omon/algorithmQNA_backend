@@ -22,6 +22,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/16        solmin       최초 생성 (DTO이름 추후 변경필요)
  *                                depth=0인 댓글정보 보여주기 위한 Dto
+ * 2023/05/19        solmin       생성자 변경
  */
 
 @Data
@@ -39,8 +40,8 @@ public class TopCommentRes extends CommentRes{
         }
     }
 
-    public TopCommentRes(Comment comment){
-        super(comment);
+    public TopCommentRes(Comment comment, Boolean isLiked){
+        super(comment, isLiked);
     }
 
 }

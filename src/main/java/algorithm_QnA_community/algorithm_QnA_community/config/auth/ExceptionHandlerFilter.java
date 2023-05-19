@@ -31,7 +31,7 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (TokenAuthenticationException e) {
             log.info("토큰 인증 실패");
-            response.sendRedirect("/auth/not-secured");
+            response.sendRedirect("/oauth/not-secured");
         }
 
     }
