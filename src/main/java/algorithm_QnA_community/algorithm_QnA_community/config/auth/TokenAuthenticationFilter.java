@@ -45,6 +45,7 @@ import java.io.IOException;
  * 2023/05/02       janguni         최초 생성
  * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱 -> 빠꾸하는걸로 결정됨
  * 2023/05/16        solmin         간단하게 헤더에 isAdmin붙여서 oauth 인증 우회 (TEST)
+ * 2023/05/16        solmin         쿠키 키값 변경
  */
 
 
@@ -70,7 +71,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
                 String name = c.getName();
                 if (name.equals("access_token")){
                     accessToken = c.getValue();
-                } else if (name.equals("refreshUUID")) {
+                } else if (name.equals("refresh_uuid")) {
                     refreshUUID = c.getValue();
                 }
             }
@@ -116,10 +117,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             // Cookie에 accessToken, refreshUUID 값 담음
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-            Cookie accessCookie = new Cookie("accessToken", accessToken);
+            Cookie accessCookie = new Cookie("access_token", accessToken);
             accessCookie.setSecure(true);
             accessCookie.setHttpOnly(true);
-            Cookie refreshCookie = new Cookie("refreshUUID", refreshUUID);
+            Cookie refreshCookie = new Cookie("refresh_uuid", refreshUUID);
             refreshCookie.setSecure(true);
             refreshCookie.setHttpOnly(true);
 

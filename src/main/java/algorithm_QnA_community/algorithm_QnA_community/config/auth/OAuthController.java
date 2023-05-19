@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
  * 2023/05/02       janguni         failTokenAuthentication() 생성
  * 2023/05/03       janguni         deleteCookie() 생성
  * 2023/05/18       janguni         redirectToGoogle() 추가
+ * 2023/05/19       janguni         쿠키 키값 변경
  */
 
 @Controller
@@ -74,13 +75,13 @@ public class OAuthController {
         else {
             MemberInfoRes memberInfo = responseTokenAndMember.getMemberInfo();
 
-            ResponseCookie accessCookie = ResponseCookie.from("accessToken", responseTokenAndMember.getAccessToken())
+            ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
                     .secure(true)
                     .build();
 
 
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshUUID", responseTokenAndMember.getRefreshUUID())
+            ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
                     .secure(true)
                     .build();
@@ -106,10 +107,10 @@ public class OAuthController {
     @GetMapping("/oauth/deleteCookie")
     public ResponseEntity<Res> deleteCookie(HttpServletRequest request, HttpServletResponse response) {
         try {
-            Cookie accessCookie = new Cookie("accessToken", "");
+            Cookie accessCookie = new Cookie("access_token", "");
             accessCookie.setMaxAge(0);
 
-            Cookie refreshCookie = new Cookie("refreshUUID", "");
+            Cookie refreshCookie = new Cookie("refresh_token", "");
             refreshCookie.setMaxAge(0);
 
             response.addCookie(accessCookie);

@@ -30,6 +30,8 @@ import javax.validation.Valid;
  * 2023/05/11        solmin       response data 필요없는 부분들 전부 고침
  * 2023/05/15        solmin       controller 단에서 authentication 받아서 로그인한 유저 검증
  * 2023/05/16        solmin       댓글 조회, 댓글 펼쳐보기 API 구현 완료
+ * 2023/05/19        solmin       공통 DTO 참조 변경
+ * 2023/05/19        solmin       조회 api 사용 시 멤버 ID 넘겨주는 것으로 변경
  */
 
 @RestController
@@ -40,20 +42,24 @@ public class CommentApiController {
     private final CommentService commentService;
 
     @GetMapping("/{post_id}")
-    public Res<CommentListRes> getComments(@PathVariable("post_id") Long postId,
-                           @RequestParam(required = false, name = "page", defaultValue = "0") int page){
+    public Res<CommentsRes> getComments(@PathVariable("post_id") Long postId,
+                                        @RequestParam(required = false, name = "page", defaultValue = "0") int page,
+                                        Authentication authentication){
 
 
-        CommentListRes result = commentService.getComments(postId, page);
+        Long memberId = getLoginMember(authentication).getId();
+        CommentsRes result = commentService.getComments(postId, page, memberId);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글 내용을 조회했습니다."), result);
     }
 
     @GetMapping("/{comment_id}/spread")
     public Res<MoreCommentListRes> getMoreCommentsByParent(@PathVariable("comment_id") Long commentId,
-                                           @RequestParam(required = false, name = "page", defaultValue = "0") int page){
+                                                           @RequestParam(required = false, name = "page", defaultValue = "0") int page,
+                                                           Authentication authentication) {
 
+        Long memberId = getLoginMember(authentication).getId();
 
-        MoreCommentListRes result = commentService.getMoreCommentsByParent(commentId, page);
+        MoreCommentListRes result = commentService.getMoreCommentsByParent(commentId, page, memberId);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글 내용을 조회했습니다."), result);
     }
 
@@ -72,7 +78,7 @@ public class CommentApiController {
     @PostMapping("/{comment_id}/like")
     public Res likeComment(@PathVariable("comment_id") Long commentId,
 
-                           @RequestBody @Valid CommentLikeReq commentLikeReq, Authentication authentication){
+                           @RequestBody @Valid LikeReq commentLikeReq, Authentication authentication){
         Res result = commentService.updateLikeInfo(commentId, commentLikeReq, getLoginMember(authentication));
 
         return result;
@@ -81,7 +87,7 @@ public class CommentApiController {
     @PostMapping("/{comment_id}/report")
     public Res reportComment(@PathVariable("comment_id") Long commentId,
 
-                           @RequestBody @Valid CommentReportReq commentReportReq, Authentication authentication){
+                           @RequestBody @Valid ReportReq commentReportReq, Authentication authentication){
 
         commentService.reportComment(commentId, commentReportReq, getLoginMember(authentication));
 
