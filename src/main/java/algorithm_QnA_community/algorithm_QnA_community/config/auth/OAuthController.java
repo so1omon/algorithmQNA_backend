@@ -6,7 +6,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInf
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.StatusCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.CodeAndState;
-import algorithm_QnA_community.algorithm_QnA_community.domain.dto.ResponseTokenAndMember;
+import algorithm_QnA_community.algorithm_QnA_community.config.auth.dto.ResponseTokenAndMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,7 +84,6 @@ public class OAuthController {
                     .httpOnly(true)
                     .secure(true)
                     .build();
-
 
             return ResponseEntity.status(HttpStatus.OK)
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())

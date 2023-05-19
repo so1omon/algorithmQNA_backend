@@ -19,6 +19,7 @@ import javax.persistence.*;
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성
  * 2023/05/10        solmin       팩토리 메소드 일부 수정
+ * 2023/05/13        janguni      isDisLike 주석 처리, isLike 주석 변경
  */
 @Entity
 @Getter
@@ -32,10 +33,10 @@ public class LikePost extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
-    private boolean isLike = true; // 채택된 댓글인지 여부
+    private boolean isLike = true; // 추천인지 비추천인지 여부
 
-    @Column(nullable = false)
-    private boolean isDislike = false; // 채택된 댓글인지 여부
+//    @Column(nullable = false)
+//    private boolean isDislike = false; // 채택된 댓글인지 여부
 
     @Builder(builderClassName = "createLikePost", builderMethodName = "createLikePost")
     public LikePost(Post post, Member member, boolean isLike){

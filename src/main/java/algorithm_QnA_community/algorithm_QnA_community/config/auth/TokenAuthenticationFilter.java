@@ -43,7 +43,8 @@ import java.io.IOException;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
- * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱
+ * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱 -> 빠꾸하는걸로 결정됨
+ * 2023/05/16        solmin         간단하게 헤더에 isAdmin붙여서 oauth 인증 우회 (TEST)
  */
 
 
@@ -57,27 +58,26 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
         try {
-            // 액세스 토큰과 refreshUUID 값 추출
-            String accessToken = request.getHeader("access_token");
-            String refreshUUID = request.getHeader("refreshUUID");
+            // 세션 false 처리
+            request.getSession(false);
 
+            // 액세스 토큰과 refreshUUID 값 추출
+
+            String accessToken = null;
+            String refreshUUID = null;
+            Cookie[] cookies = request.getCookies();
+            for (Cookie c: cookies) {
+                String name = c.getName();
+                if (name.equals("access_token")){
+                    accessToken = c.getValue();
+                } else if (name.equals("refreshUUID")) {
+                    refreshUUID = c.getValue();
+                }
+            }
 
             // ============ accessToken & refreshUUID 로 토큰 유효 검증 로직 ============ //
             if (accessToken != null & refreshUUID != null) { // 두 개의 값이 모두 있을 경우
 
-                // accessToken 먼저 유효 검증
-//                URL url = new URL("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken);
-//                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//                connection.setRequestMethod("GET");
-//
-//                // 유효하다면 200, 그렇지 않다면 400
-//                int responseCode = connection.getResponseCode();
-//
-//                // accessToken 유효한 경우
-//                if (responseCode == HttpURLConnection.HTTP_OK) {
-//                    log.info("accessToken이 유효함");
-//                    createAuthentication(); //authentication 객체 생성
-//                }
                 MemberInfoRes memberInfo = oAuthService.getMemberInfo(accessToken, "state");
                 if (memberInfo!=null) {
                     Member findMember = memberRepository.findByEmail(memberInfo.getEmail()).get(); // 예외처리 해야함!!!
@@ -110,6 +110,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             else {
                 log.info("토큰 빠트림");
                 throw new TokenAuthenticationException("토큰예외"); // Exception!
+
             }
 
             // Cookie에 accessToken, refreshUUID 값 담음

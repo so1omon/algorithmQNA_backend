@@ -4,10 +4,12 @@ import algorithm_QnA_community.algorithm_QnA_community.repository.MemberReposito
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -42,6 +44,9 @@ import org.springframework.web.client.RestTemplate;
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
  * 2023/05/10        solmin         인증기능 연동 전까지만 comment 열어두겠습니다...,
+ * 2023/05/15        solmin         OSIV - OpenEntityManagerInterceptor의 유저객체 영속상태를 이때부터
+ *                                  유지시키기 위해서 filter로 교체 후 우선순위를 높임
+ *                                  OpenEntityManagerInView가 DelegatingFilterProxy보다 먼저 작동
  */
 
 @Slf4j
@@ -53,11 +58,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final OAuthService oAuthService;
     private final MemberRepository memberRepository;
-
-//    private final MemberRepository memberRepository;
-//    private final RestTemplate restTemplate;
-//    private final RedisTemplate redisTemplate;
-
 
     // == code 필요할 때 (시작)== //
     /**
@@ -90,13 +90,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                  .userInfoEndpoint()
                 .userService(oAuth2UserService());
     }
+
     **/
     // == code 필요할 때 (끝)== //
 
 
 
     // == 실제 운영 (시작)== //
-///**
+    ///**
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers(
@@ -144,6 +145,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new AuthorizationCodeResourceDetails();
     }
 
-
+    @Bean
+    public FilterRegistrationBean<OpenEntityManagerInViewFilter> openEntityManagerInViewFilter() {
+        FilterRegistrationBean<OpenEntityManagerInViewFilter> filterFilterRegistrationBean = new FilterRegistrationBean<>();
+        filterFilterRegistrationBean.setFilter(new OpenEntityManagerInViewFilter());
+        filterFilterRegistrationBean.setOrder(Integer.MIN_VALUE); // 예시를 위해 최우선 순위로 Filter 등록
+        return filterFilterRegistrationBean;
+    }
 }
 
