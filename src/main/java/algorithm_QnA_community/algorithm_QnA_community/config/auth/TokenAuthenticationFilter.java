@@ -109,7 +109,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             // accessToken과 refreshUUID 둘 중 하나라도 없을 경우
             else {
                 log.info("토큰 빠트림");
-                throw new TokenAuthenticationException("토큰예외");
+                throw new TokenAuthenticationException("토큰예외"); // Exception!
+
             }
 
             // Cookie에 accessToken, refreshUUID 값 담음

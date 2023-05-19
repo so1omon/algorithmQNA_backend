@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
  * 2023/04/20       janguni         최초 생성
  * 2023/05/02       janguni         failTokenAuthentication() 생성
  * 2023/05/03       janguni         deleteCookie() 생성
+ * 2023/05/18       janguni         redirectToGoogle() 추가
  */
 
 @Controller
@@ -46,11 +47,19 @@ public class OAuthController {
     private final OAuthService oAuthService;
 
     /**
+     * 구글 로그인 페이지로 리다이렉트
+     */
+    @GetMapping("/oauth/google")
+    public String redirectToGoogle(){
+        return "redirect:" + oAuthService.getOauthRedirectURL();
+    }
+
+    /**
      * 로그인 또는 회원가입
      * @param code (인증코드)
      *         state (상태값)
      */
-    @GetMapping("/login")
+    @GetMapping("/oauth/login")
     public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
 
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
@@ -85,7 +94,7 @@ public class OAuthController {
     /**
      * 토큰 인증 실패 시
      */
-    @GetMapping("/auth/not-secured")
+    @GetMapping("/oauth/not-secured")
     public ResponseEntity<Res> failTokenAuthentication() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.EXPIRATION_TOKENS),null));
@@ -94,7 +103,7 @@ public class OAuthController {
     /**
      * 쿠키 삭제 요청
      */
-    @GetMapping("/auth/deleteCookie")
+    @GetMapping("/oauth/deleteCookie")
     public ResponseEntity<Res> deleteCookie(HttpServletRequest request, HttpServletResponse response) {
         try {
             Cookie accessCookie = new Cookie("accessToken", "");

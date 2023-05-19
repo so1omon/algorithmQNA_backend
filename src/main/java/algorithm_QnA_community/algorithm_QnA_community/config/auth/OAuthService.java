@@ -19,8 +19,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
@@ -32,6 +35,7 @@ import java.util.UUID;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/04/20       janguni         최초 생성
+ * 2023/05/18       janguni         getOauthRedirectURL() 추가
  */
 
 
@@ -52,6 +56,28 @@ public class OAuthService {
 
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
+
+    @Value("${google.uri}")
+    private String googleLoginUri;
+
+
+    /**
+     * 구글 로그인 창으로 이동하는 uri 구성
+     */
+    public String getOauthRedirectURL() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("scope", "profile");
+        params.put("response_type", "code");
+        params.put("client_id", clientId);
+        params.put("redirect_uri", redirectUri);
+
+        String parameterString = params.entrySet().stream()
+                .map(x -> x.getKey() + "=" + x.getValue())
+                .collect(Collectors.joining("&"));
+
+        return googleLoginUri + "?" + parameterString;
+    }
+
 
 
     public ResponseTokenAndMember login(String code, String state){
