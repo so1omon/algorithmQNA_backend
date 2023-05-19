@@ -31,9 +31,9 @@ public class AdminApiController {
 
     private final AdminService adminService;
     @GetMapping("/post")
-    public Res getReportedPosts(@RequestParam(value = "page", required = false, defaultValue = "0") int page){
-        adminService.test();
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "게시글을 조회했습니다."));
+    public Res<ReportedPostsRes> getReportedPosts(@RequestParam(value = "page", required = false, defaultValue = "0") int page){
+        ReportedPostsRes result = adminService.getReportedPosts(page);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "게시글을 조회했습니다."), result);
     }
 
 }

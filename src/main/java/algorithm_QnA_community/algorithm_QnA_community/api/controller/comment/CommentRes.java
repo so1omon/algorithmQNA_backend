@@ -27,6 +27,7 @@ public class CommentRes {
     private Long commentId;
     private Long memberId;
     private String memberName;
+    private String memberProfileUrl;
     private Long parentId;
     private Long mentionerId;
     private String mentionerName;

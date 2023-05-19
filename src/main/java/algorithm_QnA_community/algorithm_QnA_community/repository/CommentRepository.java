@@ -80,4 +80,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 //        " where c.parent.id=:parent_id" +
 //        " order by c.createdDate")
     Page<Comment> findCommentsByParent(Comment parent, Pageable pageable);
+
+    @Query("select c from Comment c where c.post.id in :postIds")
+    List<Comment> findByPoster(@Param("postIds") List<Long> postIds);
 }

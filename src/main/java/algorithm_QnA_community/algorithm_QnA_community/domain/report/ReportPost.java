@@ -46,7 +46,8 @@ public class ReportPost {
     @Enumerated(EnumType.STRING)
     private ReportCategory category;
 
-    @Column(length = 1000)
+    @ColumnDefault("'기타 사유 없음'")
+    @Column(length = 1000, nullable = false)
     private String detail;
 
     @LastModifiedDate
