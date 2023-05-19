@@ -9,6 +9,7 @@ import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCod
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
@@ -18,7 +19,6 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role.ROLE_USER;
-import static java.lang.Enum.valueOf;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.service.post
@@ -42,6 +40,7 @@ import static java.lang.Enum.valueOf;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/11        janguni            최초 생성
+ * 2023/05/19        janguni           중복 코드 checkNoticePermission(), getPostById(), checkPostAccessPermission()로 추출
  */
 
 @Service
@@ -66,9 +65,7 @@ public class PostService {
     public void writePost(PostCreateReq postCreateReq, Member member){
 
         // 일반 사용자가 공지사항 타입을 선택한 경우
-        if (member.getRole()==ROLE_USER & postCreateReq.getContentType().equals(PostType.NOTICE.toString())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "공지사항을 작성할 수 있는 권한이 없습니다.");
-        }
+        checkNoticePermission(member.getRole(), postCreateReq.getContentType());
 
         Post post = Post.createPost()
                 .member(member)
@@ -88,12 +85,12 @@ public class PostService {
     public void updatePost(Long postId,PostUpdateReq postUpdateReq, Member member) {
 
         // 일반 사용자가 공지사항 타입을 선택한 경우
-        if (member.getRole()==ROLE_USER & postUpdateReq.getContentType().equals(PostType.NOTICE.toString())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "공지사항을 작성할 수 있는 권한이 없습니다.");
-        }
+        checkNoticePermission(member.getRole(), postUpdateReq.getContentType());
 
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+        Post findPost = getPostById(postId);
+
+        // 본인이 쓴 게시물이 맞는지 확인
+        checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
 
         setIfNotNull(postUpdateReq.getTitle(), findPost::updateTitle);
         setIfNotNull(postUpdateReq.getContent(), findPost::updateContent);
@@ -106,15 +103,18 @@ public class PostService {
      */
     @Transactional
     public void deletePost(Long postId, Member member) {
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+        Post findPost = getPostById(postId);
 
-        // 게시물 작성자와 삭제하려는 사용자가 같지 않은 경우
-        if (member!=findPost.getMember()){
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
-        }
+        // 본인이 쓴 게시물이 맞는지 확인
+        checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
 
         postRepository.delete(findPost);
+    }
+
+    private void checkPostAccessPermission(boolean member, ErrorCode unauthorized, String message) {
+        if (member){
+            throw new CustomException(unauthorized, message);
+        }
     }
 
     /**
@@ -123,8 +123,7 @@ public class PostService {
     @Transactional
     public void likePost(Long postId, LikeReq postLikeReq, Member member) {
 
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+        Post findPost = getPostById(postId);
 
         Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, member.getId());
 
@@ -153,19 +152,18 @@ public class PostService {
         }
     }
 
+
     /**
      * 게시물 신고
      */
     @Transactional
     public void reportPost(Long postId, ReportReq postReportReq, Member member) {
 
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+        Post findPost = getPostById(postId);
 
         // 본인 게시물을 신고하려는 경우
-        if (member==findPost.getMember()){
-            throw new CustomException(ErrorCode.REPORT_MY_RESOURCE, "자신이 작성한 게시물은 신고할 수 없습니다.");
-        }
+        checkPostAccessPermission(member == findPost.getMember(), ErrorCode.REPORT_MY_RESOURCE, "자신이 작성한 게시물은 신고할 수 없습니다.");
+
 
         if (postReportReq.getCategory().equals(ReportCategory.ETC.toString()) & postReportReq.getDetail()==null){
 
@@ -193,8 +191,7 @@ public class PostService {
      */
     public PostDetailRes readPostDetail(Long postId, Member member){
 
-        Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+        Post findPost = getPostById(postId);
 
         // 게시물 작성자
         Member postingMember = memberRepository.findById(findPost.getMember().getId()).get();
@@ -281,9 +278,7 @@ public class PostService {
         }
 
         // 존재하는 페이지인지 확인
-        if (totalPageCount<pageNumber || pageNumber<=0) {
-            throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "존재하지 않은 페이지 번호 입니다.");
-        }
+        checkPostAccessPermission(totalPageCount < pageNumber || pageNumber <= 0, ErrorCode.RESOURCE_NOT_FOUND, "존재하지 않은 페이지 번호 입니다.");
 
         // 전 페이지, 후 페이지 유무
         boolean prev = (pageNumber==1) ? false : true;
@@ -309,6 +304,16 @@ public class PostService {
 
         PostsResultRes postsResultRes = new PostsResultRes(pageNumber, totalPageCount, next, prev, lastPostIdx-startPostIdx+1, posts);
         return postsResultRes;
+    }
+
+    private Post getPostById(Long postId) {
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+        return findPost;
+    }
+
+    private void checkNoticePermission(Role role, String postType) {
+        checkPostAccessPermission(role == ROLE_USER & postType.equals(PostType.NOTICE.toString()), ErrorCode.UNAUTHORIZED, "공지사항을 작성할 수 있는 권한이 없습니다.");
     }
 
     private <T> void setIfNotNull(T value, Consumer<T> setter){

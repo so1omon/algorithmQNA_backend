@@ -1,6 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostLikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
@@ -18,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 
 import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.repository
@@ -284,11 +281,11 @@ class PostRepositoryTest {
             post2.updateViews();
         }
 
-        PostLikeReq postLikeReq3 = new PostLikeReq(true, false);
+        LikeReq postLikeReq3 = new LikeReq(true, false);
         postService.likePost(post2.getId(), postLikeReq3, member1);
         postService.likePost(post2.getId(), postLikeReq3, member2);
         postService.likePost(post2.getId(), postLikeReq3, member3);
-        PostLikeReq postLikeReq4 = new PostLikeReq(false, false);
+        LikeReq postLikeReq4 = new LikeReq(false, false);
         postService.likePost(post2.getId(), postLikeReq4, member4);
 
         Comment comment = Comment.createComment()
@@ -314,11 +311,11 @@ class PostRepositoryTest {
             post1.updateViews();
         }
 
-        PostLikeReq postLikeReq1 = new PostLikeReq(true, false);
+        LikeReq postLikeReq1 = new LikeReq(true, false);
         postService.likePost(post1.getId(), postLikeReq1, member1);
         postService.likePost(post1.getId(), postLikeReq1, member2);
         postService.likePost(post1.getId(), postLikeReq1, member3);
-        PostLikeReq postLikeReq2 = new PostLikeReq(false, false);
+        LikeReq postLikeReq2 = new LikeReq(false, false);
         postService.likePost(post1.getId(), postLikeReq2, member4);
 
         // 게시물 3
@@ -336,7 +333,7 @@ class PostRepositoryTest {
             post3.updateViews();
         }
 
-        PostLikeReq postLikeReq5 = new PostLikeReq(true, false);
+        LikeReq postLikeReq5 = new LikeReq(true, false);
         postService.likePost(post3.getId(), postLikeReq5, member1);
         postService.likePost(post3.getId(), postLikeReq5, member2);
         postService.likePost(post3.getId(), postLikeReq5, member3);
@@ -347,7 +344,7 @@ class PostRepositoryTest {
         postService.likePost(post3.getId(), postLikeReq5, member8);
         postService.likePost(post3.getId(), postLikeReq5, member9);
         postService.likePost(post3.getId(), postLikeReq5, member10);
-        PostLikeReq postLikeReq6 = new PostLikeReq(false, false);
+        LikeReq postLikeReq6 = new LikeReq(false, false);
         postService.likePost(post3.getId(), postLikeReq6, member11);
 
         Comment comment2 = Comment.createComment()
