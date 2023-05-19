@@ -33,8 +33,11 @@ import java.util.List;
  * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
  * 2023/05/11        janguni      PostType 변수 추가
  * 2023/05/12        janguni      updateTitle, updateContent, updateCategory, updateType 추가
+ * 2023/05/16        solmin       엔티티 삭제를 위한 orphanRemoval 추가
  * 2023/05/16        janguni      updateViews 추가
  * 2023/05/18        janguni      Member연관관계 CascadeType.ALL -> CascadeType.PERSIST로 변경
+
+
  */
 @Entity
 @Getter
@@ -85,7 +88,7 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post",orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post")

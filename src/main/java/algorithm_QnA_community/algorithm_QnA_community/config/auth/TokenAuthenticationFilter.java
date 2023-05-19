@@ -43,7 +43,8 @@ import java.io.IOException;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
- * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱
+ * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱 -> 빠꾸하는걸로 결정됨
+ * 2023/05/16        solmin         간단하게 헤더에 isAdmin붙여서 oauth 인증 우회 (TEST)
  */
 
 
@@ -61,6 +62,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             request.getSession(false);
 
             // 액세스 토큰과 refreshUUID 값 추출
+
             String accessToken = null;
             String refreshUUID = null;
             Cookie[] cookies = request.getCookies();
@@ -72,7 +74,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
                     refreshUUID = c.getValue();
                 }
             }
-
 
             // ============ accessToken & refreshUUID 로 토큰 유효 검증 로직 ============ //
             if (accessToken != null & refreshUUID != null) { // 두 개의 값이 모두 있을 경우

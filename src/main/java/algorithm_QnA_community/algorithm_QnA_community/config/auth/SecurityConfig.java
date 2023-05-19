@@ -44,6 +44,9 @@ import org.springframework.web.client.RestTemplate;
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
  * 2023/05/10        solmin         인증기능 연동 전까지만 comment 열어두겠습니다...,
+ * 2023/05/15        solmin         OSIV - OpenEntityManagerInterceptor의 유저객체 영속상태를 이때부터
+ *                                  유지시키기 위해서 filter로 교체 후 우선순위를 높임
+ *                                  OpenEntityManagerInView가 DelegatingFilterProxy보다 먼저 작동
  */
 
 @Slf4j
@@ -151,6 +154,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         filterFilterRegistrationBean.setOrder(Integer.MIN_VALUE); // 예시를 위해 최우선 순위로 Filter 등록
         return filterFilterRegistrationBean;
     }
-
 }
 

@@ -30,6 +30,7 @@ import java.util.List;
  *                                멤버가 이러한 매핑정보들을 필수적으로 알아야 하는지 궁금
  * 2023/05/01        solmin       Validation 일부 추가 및 Alarms Mapping
  * 2023/05/11        solmin       DynamicInsert, DynamicUpdate 추가
+ * 2023/05/16        solmin       엔티티 삭제를 위한 orphanRemoval 추가
  */
 
 @Entity
@@ -69,13 +70,13 @@ public class Member extends BaseTimeEntity {
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Alarm> alarms = new ArrayList<>();
 
     // 멤버가 이 정보들을 알고 있지 않는게 낫다고 판단

@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -81,6 +82,7 @@ class CommentRepositoryTest {
         Member findMember = memberRepository.findByName("solmin").get(0);
         Comment comment1 = findMember.getComments().get(0);
     }
+
 
     @Test
     @Transactional
