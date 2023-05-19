@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.comment;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
@@ -60,6 +62,7 @@ public class CommentApiController {
                                                               @RequestBody @Valid CommentCreateReq commentCreateReq,
                                                               Authentication authentication){
 
+
         CommentCreateRes result= commentService.writeComment(postId, commentCreateReq, getLoginMember(authentication));
 
         return new ResponseEntity<>(Res.res(new DefStatus(HttpStatus.CREATED.value(), "성공적으로 댓글을 추가했습니다."),result),
@@ -68,6 +71,7 @@ public class CommentApiController {
 
     @PostMapping("/{comment_id}/like")
     public Res likeComment(@PathVariable("comment_id") Long commentId,
+
                            @RequestBody @Valid CommentLikeReq commentLikeReq, Authentication authentication){
         Res result = commentService.updateLikeInfo(commentId, commentLikeReq, getLoginMember(authentication));
 
@@ -76,6 +80,7 @@ public class CommentApiController {
 
     @PostMapping("/{comment_id}/report")
     public Res reportComment(@PathVariable("comment_id") Long commentId,
+
                            @RequestBody @Valid CommentReportReq commentReportReq, Authentication authentication){
 
         commentService.reportComment(commentId, commentReportReq, getLoginMember(authentication));

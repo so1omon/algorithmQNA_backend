@@ -76,7 +76,6 @@ public class OAuthController {
                     .secure(true)
                     .build();
 
-
             return ResponseEntity.status(HttpStatus.OK)
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
                     .body(new Res(new DefStatus(StatusCode.OK, ResponseMessage.SUCCESS_AUTHORIZE), memberInfo));
