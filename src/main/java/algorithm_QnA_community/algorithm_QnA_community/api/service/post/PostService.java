@@ -40,7 +40,7 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/11        janguni            최초 생성
- * 2023/05/19        janguni           중복 코드 checkNoticePermission(), getPostById(), checkPostAccessPermission()로 추출
+ * 2023/05/19        janguni            중복 코드 checkNoticePermission(), getPostById(), checkPostAccessPermission()로 추출
  */
 
 @Service
@@ -237,7 +237,10 @@ public class PostService {
         return postDetailRes;
     }
 
-    public PostsResultRes readPosts(PostCategory categoryName, PostSortType sortName, int pageNumber){
+    /**
+     * 게시물 목록 조회
+     */
+    public PostsResultRes readPosts(PostCategory categoryName,PostSortType sortName, int pageNumber){
         List<Post> totalPosts=null;
 
         switch (sortName) {

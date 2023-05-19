@@ -2,6 +2,7 @@ package algorithm_QnA_community.algorithm_QnA_community.repository;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,6 +31,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 추천-비추천 내림차순
     @Query("select p from Post p" +
             " where p.category = :category" +
+            " and p.type = :postType" +
             " order by p.likeCnt-p.dislikeCnt desc")
     List<Post> findByCategoryOrderByLike_DislikeDESC(@Param("category") PostCategory category);
 

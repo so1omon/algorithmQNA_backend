@@ -7,6 +7,7 @@ import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDeta
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.StatusCode;
@@ -111,6 +112,7 @@ public class PostApiController {
      */
     @GetMapping("")
     public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory categoryName,
+                                         @RequestParam("type") @Valid PostType type,
                                          @RequestParam("sort") @Valid PostSortType sortName,
                                          @RequestParam("page") int pageNumber){
         PostsResultRes postsResultRes = postService.readPosts(categoryName, sortName, pageNumber);
