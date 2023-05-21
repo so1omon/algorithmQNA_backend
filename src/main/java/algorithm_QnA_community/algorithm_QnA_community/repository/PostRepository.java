@@ -23,10 +23,13 @@ import java.util.List;
  */
 public interface PostRepository extends JpaRepository<Post, Long> {
     // 최신순으로 정렬
-    List<Post> findByCategoryOrderByCreatedDateDesc(PostCategory category);
+    List<Post> findByCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType);
 
     // 오래된 순으로 정렬
-    List<Post> findByCategoryOrderByCreatedDateAsc(PostCategory category);
+    List<Post> findByCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType);
+
+    @Query("select count(c) from Post p left join p.comments c ")
+    int countCommentByPost(@Param("post") Post post);
 
     // 추천-비추천 내림차순
     @Query("select p from Post p" +

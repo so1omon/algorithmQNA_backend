@@ -3,10 +3,14 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
+import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
+import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikeComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
@@ -43,7 +47,8 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/19        janguni            중복 코드 checkNoticePermission(), getPostById(), checkPostAccessPermission()로 추출
  * 2023/05/19        solmin             게시글 작성 메소드 리턴타입 변경
  * 2023/05/19        solmin             TODO 메세지 작성
- */
+ * 2023/05/21        janguni            게시물 조회 시 추천/비추천(게시물) 정보 코드 추가,
+ *                                                  추천/비추천(댓글) 정보 코드 수정*/
 
 @Service
 @RequiredArgsConstructor
@@ -55,9 +60,13 @@ public class PostService {
 
     private final LikePostRepository likePostRepository;
 
+    private final LikeCommentRepository likeCommentRepository;
+
     private final ReportPostRepository reportPostRepository;
 
     private final CommentRepository commentRepository;
+
+    private final CommentService commentService;
 
 
     /**
@@ -195,67 +204,101 @@ public class PostService {
      */
     public PostDetailRes readPostDetail(Long postId, Member member){
 
-        Post findPost = getPostById(postId);
+        //**** 게시물 정보 ****//
+        Post findPost = getPostById(postId); // 게시물
+        Boolean isLikedPost = checkPostLike(postId, member); // 게시물 추천 정보
 
-        // 게시물 작성자
+
+
+        //**** 작성자 정보 ****//
         Member postingMember = memberRepository.findById(findPost.getMember().getId()).get();
 
+
+
+        //**** 댓글 정보 ****//
+        CommentsRes commentsRes = commentService.getComments(postId, 0, member.getId());
+
+
         // depth=0, 1인 댓글 불러오기
-        List<Comment> resultComments = new ArrayList<>();
+//        List<Comment> resultComments = new ArrayList<>();
+//        List<Comment> topComments = commentRepository.findTop10ByPostIdAndDepthEqualsOrderByCreatedDateDesc(findPost.getId(), 0);
+//        int topCommentSize = topComments.size();
+//        for (Comment tc: topComments) {
+//            resultComments.add(tc);
+//            List<Comment> depth1Comments = commentRepository.findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(tc.getId(), 1);
+//            for (Comment d1c: depth1Comments) {
+//                resultComments.add(d1c);
+//            }
+//        }
+//
+//        // 불러온 댓글 response 형태로 커스텀
+//        List<CommentRes> commentsDto = new ArrayList<>();
+//        for (Comment rc:resultComments){
+//
+//            // 사용자의 해당 댓글의 추천정보
+//            Optional<LikeComment> likeComment = likeCommentRepository.findByCommentIdAndMemberId(rc.getId(), member.getId());
+//            Boolean isLikedComment = checkCommentLike(likeComment);
+//
+//            CommentRes commentRes = new CommentRes(rc, isLikedComment);
+//            commentsDto.add(commentRes);
+//        }
+//
+//        // 총 댓글 갯수
+            int totalCommentSize = commentRepository.countCommentByPostId(postId);
+//
+//        // 댓글 다음 페이지 여부
+//        boolean commentNextPage = topComments.size()>10;
+//
+//        // 댓글 총 페이지 갯수
+//        int totalPageSize = getTotalPageSize(totalCommentSize);
 
-        List<Comment> topComments = commentRepository.findTop10ByPostIdAndDepthEqualsOrderByCreatedDateDesc(findPost.getId(), 0);
-        for (Comment tc: topComments) {
-            resultComments.add(tc);
-            List<Comment> depth1Comments = commentRepository.findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(tc.getId(), 1);
-            for (Comment d1c: depth1Comments) {
-                resultComments.add(d1c);
-            }
-        }
-
-        List<CommentDetailRes> responseComments = new ArrayList<>();
-
-        for (Comment rc:resultComments){
-            // 해당 사용자가 추천을 눌렀는지
-            Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, member.getId());
-            boolean isLiked = (findLikePost.isPresent()) ? true : false;
-
-            // 부모댓글 존재 여부
-            Long parentId = (rc.getDepth()==0) ? null : rc.getParent().getId();
-
-            CommentDetailRes commentDetailRes = new CommentDetailRes(rc.getId(), parentId,
-                    postingMember.getId(), postingMember.getName(), postingMember.getProfileImgUrl(),
-                    postingMember.getCommentBadgeCnt() / 10, postingMember.getPostBadgeCnt() / 10, postingMember.getLikeBadgeCnt() / 10,
-                    rc.getContent(), rc.getLikeCnt(), rc.getDislikeCnt(), rc.getCreatedDate(),
-                    rc.getDepth(),rc.isPinned(),isLiked);
-            responseComments.add(commentDetailRes);
-        }
-
-        boolean commentNextPage = (topComments.size()>10) ? true : false;
-
-        // TODO 이부분 CountQuery로 변경
-        int totalCommentSize = commentRepository.findByPostId(postId).size();
-//        PostDetailRes postDetailRes = new PostDetailRes(postId, postingMember.getId(), postingMember.getName(),
-//                postingMember.getCommentBadgeCnt(), postingMember.getPostBadgeCnt(), postingMember.getLikeBadgeCnt(),
-//                findPost.getTitle(), findPost.getContent(), findPost.getCreatedDate(),
-//                findPost.getLikeCnt(), findPost.getDislikeCnt(), totalCommentSize,
-//                0, commentNextPage, false, responseComments.size(), responseComments);
+        //**** Response 객체 생성 ****//
         PostDetailRes postDetailRes =
-            new PostDetailRes(findPost, member, totalCommentSize, 0, 0, commentNextPage, false, responseComments);
+            new PostDetailRes(findPost, member, isLikedPost, commentsRes, totalCommentSize);
         return postDetailRes;
+    }
+
+    private int getTotalPageSize(int totalCommentSize) {
+        int totalPageSize = totalCommentSize / 10;
+        if (totalPageSize % 10 !=0) {
+            totalPageSize +=1;
+        }
+        return totalPageSize;
+    }
+
+    private Boolean checkCommentLike(Optional<LikeComment> likeComment) {
+        Boolean isLikedComment;
+        if (likeComment.isPresent()){
+            isLikedComment = likeComment.get().isLike();
+        } else {
+            isLikedComment = null;
+        }
+        return isLikedComment;
+    }
+
+    private Boolean checkPostLike(Long postId, Member member) {
+        Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, member.getId());
+        Boolean isLikedPost;
+        if (findLikePost.isPresent()){
+            isLikedPost = findLikePost.get().isLike();
+        } else {
+            isLikedPost = null;
+        }
+        return isLikedPost;
     }
 
     /**
      * 게시물 목록 조회
      */
-    public PostsResultRes readPosts(PostCategory categoryName,PostSortType sortName, int pageNumber){
+    public PostsResultRes readPosts(PostCategory categoryName, PostType postType,PostSortType sortName, int pageNumber){
         List<Post> totalPosts=null;
 
         switch (sortName) {
             case LATESTDESC: // 최신순
-                totalPosts = postRepository.findByCategoryOrderByCreatedDateDesc(categoryName);
+                totalPosts = postRepository.findByCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType);
                 break;
             case LATESTASC: // 오래된 순
-                totalPosts = postRepository.findByCategoryOrderByCreatedDateAsc(categoryName);
+                totalPosts = postRepository.findByCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType);
                 break;
             case COMMENTCNTASC: // 댓글 오름차순
                 totalPosts = postRepository.findPostOrderByCommentCntAsc(categoryName);

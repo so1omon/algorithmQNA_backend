@@ -202,7 +202,8 @@ class CommentRepositoryTest {
             }
         }
 
-
+        int totalCommentCount = commentRepository.countCommentByPostId(post.getId());
+        Assertions.assertThat(totalCommentCount).isEqualTo(7);
 
     }
 
