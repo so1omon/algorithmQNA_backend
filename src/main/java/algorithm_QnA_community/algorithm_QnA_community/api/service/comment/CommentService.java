@@ -28,6 +28,8 @@ import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.*;
+
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.service.comment
  * fileName       : CommentService
@@ -42,6 +44,8 @@ import java.util.stream.Collectors;
  * 2023/05/15        solmin       controller 단에서 authentication 받아서 로그인한 유저 검증
  * 2023/05/16        solmin       페이지를 이용한 댓글 리스트 조회 및 일부 댓글 조회 로직 구현
  * 2023/05/18        janguni      CommentLikeReq -> LikeReq, CommentReportReq -> ReportReq로 변경
+ * 2023/05/19        solmin       나의 반응 리스트를 미리 조회해서 CommetRes 생성 시 나의 반응정보 같이 삽입
+ * 2023/05/19        solmin       공통 DTO 참조 변경
  */
 
 @Service
@@ -100,7 +104,7 @@ public class CommentService {
 
     @Transactional
 
-    public Res updateLikeInfo(Long commentId, @Valid CommentLikeReq commentLikeReq, Member member) {
+    public Res updateLikeInfo(Long commentId, @Valid LikeReq commentLikeReq, Member member) {
         Comment findComment = commentRepository.findByIdWithMember(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
         Optional<LikeComment> findLikeComment = likeCommentRepository.findByCommentIdAndMemberId(commentId, member.getId());
@@ -158,7 +162,7 @@ public class CommentService {
 
     @Transactional
 
-    public void reportComment(Long commentId, CommentReportReq commentReportReq, Member member) {
+    public void reportComment(Long commentId, ReportReq commentReportReq, Member member) {
 
         Comment findComment = commentRepository.findByIdWithMember(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
@@ -199,10 +203,16 @@ public class CommentService {
 
 
     @Transactional
-    public CommentListRes getComments(Long postId, int page) {
+    public CommentsRes getComments(Long postId, int page, Long memberId) {
         // 0. 게시글 조회 (없으면 404)
         Post findPost = postRepository.findById(postId)
             .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
+        // 0-1. 내가 좋아요 누른 댓글들 목록을 Map으로 구성
+        // TODO 추후 outer join을 통해 최적화된 DTO로 구성하기 (현재는 full scan)
+
+        // key : commentId, value : isLike
+        Map<Long, Boolean> myLikeInfoMap = likeCommentRepository.findByMemberId(memberId).stream()
+            .collect(toMap(lc->lc.getComment().getId(), lc->lc.isLike()));
 
         // 1. page 내의 최상위 댓글들 가져오기
         Page<Comment> commentsByPost = commentRepository.findCommentsByPostAndDepth(findPost,0, PageRequest.of(page, 10));
@@ -212,7 +222,7 @@ public class CommentService {
         Map<Long, TopCommentRes> topCommentMap = new LinkedHashMap<>();
 
         for(Comment comment : commentsByPost){
-            topCommentMap.put(comment.getId(), new TopCommentRes(comment));
+            topCommentMap.put(comment.getId(), new TopCommentRes(comment, myLikeInfoMap.getOrDefault(comment.getId(), null)));
         }
 
         List<Long> commentIds = topCommentMap.keySet().stream().collect(Collectors.toList());
@@ -222,7 +232,7 @@ public class CommentService {
         Map<Long, CommentRes> childCommentMap = new LinkedHashMap<>();
 
         for(Comment comment : commentRepository.findTop10ByParent(commentIds)){
-            childCommentMap.put(comment.getId(), new CommentRes(comment));
+            childCommentMap.put(comment.getId(), new CommentRes(comment, myLikeInfoMap.getOrDefault(comment.getId(), null)));
         }
 
         // 4. 자식 댓글들 Id 리스트를 보내고 이중 자식 댓글을 갖고 있는 댓글 ID만 map에 hasChild update
@@ -234,18 +244,23 @@ public class CommentService {
             topCommentMap.get(commentRes.getParentId()).addChild(commentRes);
         });
 
-        return CommentListRes.builder()
+        return CommentsRes.builder()
             .postId(postId)
             .commentPage(commentsByPost)
             .comments(topCommentMap.values().stream().collect(Collectors.toList()))
             .build();
     }
 
-    public MoreCommentListRes getMoreCommentsByParent(Long parentCommentId, int page) {
+    public MoreCommentListRes getMoreCommentsByParent(Long parentCommentId, int page, Long memberId) {
         // 0. 게시글 조회 (없으면 404)
         Comment parentComment = commentRepository.findById(parentCommentId)
             .orElseThrow(() -> new EntityNotFoundException("부모 댓글이 존재하지 않습니다."));
+        // 0-1. 내가 좋아요 누른 댓글들 목록을 Map으로 구성
+        // TODO 추후 outer join을 통해 최적화된 DTO로 구성하기 (현재는 full scan)
 
+        // key : commentId, value : isLike
+        Map<Long, Boolean> myLikeInfoMap = likeCommentRepository.findByMemberId(memberId).stream()
+            .collect(toMap(lc->lc.getComment().getId(), lc->lc.isLike()));
 
         // TODO 위와 마찬가지로 모든 댓글 작성자 Id를 set에 넣고 영속성 컨텍스트 초기화
         // 1. 부모 댓글 id에 해당하는 자식 댓글 리스트(depth=2)를 page에 따라서 가져오기
@@ -253,7 +268,7 @@ public class CommentService {
         Map<Long, CommentRes> commentMap = new LinkedHashMap<>();
 
         for(Comment comment : commentsByPost){
-            commentMap.put(comment.getId(), new CommentRes(comment));
+            commentMap.put(comment.getId(), new CommentRes(comment, myLikeInfoMap.getOrDefault(comment.getId(), null)));
         }
 
         for(Long id : commentRepository.existsChildByParentIds(new ArrayList<>(commentMap.keySet()))){

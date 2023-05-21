@@ -29,6 +29,7 @@ import javax.validation.Valid;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/11        janguni            최초 생성
+ * 2023/05/19        solmin             게시글 작성 시 postId, 작성일 정보 리턴
  */
 
 @RestController
@@ -43,11 +44,12 @@ public class PostApiController {
      * 게시물 등록
      */
     @PostMapping("/")
-    public Res writePost(@RequestBody @Valid PostCreateReq postCreateReq, Authentication authentication){
+    public Res<PostWriteRes> writePost(@RequestBody @Valid PostCreateReq postCreateReq, Authentication authentication){
         Member findMember = getLoginMember(authentication);
-        postService.writePost(postCreateReq, findMember);
-        return new Res(new DefStatus(StatusCode.CREATED, "성공적으로 게시물을 등록했습니다."),null);
+        PostWriteRes result = postService.writePost(postCreateReq, findMember);
+        return new Res(new DefStatus(StatusCode.CREATED, "성공적으로 게시물을 등록했습니다."),result);
     }
+
 
     /**
      * 게시물 수정

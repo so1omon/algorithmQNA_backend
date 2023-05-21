@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/15        janguni       최초 생성
+ * 2023/05/19        janguni       isLiked 필드 추가
  */
 
 @Data
@@ -37,5 +38,5 @@ public class CommentDetailRes {
     private LocalDateTime createdAt;
     private int depth;
     private boolean isPinned;
-    private boolean isLiked;
+    private Boolean isLiked;
 }

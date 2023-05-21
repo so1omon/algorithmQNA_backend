@@ -41,6 +41,8 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * -----------------------------------------------------------
  * 2023/05/11        janguni            최초 생성
  * 2023/05/19        janguni            중복 코드 checkNoticePermission(), getPostById(), checkPostAccessPermission()로 추출
+ * 2023/05/19        solmin             게시글 작성 메소드 리턴타입 변경
+ * 2023/05/19        solmin             TODO 메세지 작성
  */
 
 @Service
@@ -62,20 +64,22 @@ public class PostService {
      * 게시물 등록
      */
     @Transactional
-    public void writePost(PostCreateReq postCreateReq, Member member){
+    public PostWriteRes writePost(PostCreateReq postCreateReq, Member member){
 
         // 일반 사용자가 공지사항 타입을 선택한 경우
-        checkNoticePermission(member.getRole(), postCreateReq.getContentType());
+        checkNoticePermission(member.getRole(), postCreateReq.getPostType());
 
         Post post = Post.createPost()
                 .member(member)
                 .title(postCreateReq.getTitle())
                 .content(postCreateReq.getContent())
-                .category(PostCategory.valueOf(postCreateReq.getCategoryName()))
-                .type(PostType.valueOf(postCreateReq.getContentType()))
+                .category(PostCategory.valueOf(postCreateReq.getPostCategory()))
+                .type(PostType.valueOf(postCreateReq.getPostType()))
                 .build();
 
-        postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+
+        return new PostWriteRes(savedPost.getId(), savedPost.getCreatedDate());
     }
 
     /**
@@ -85,7 +89,7 @@ public class PostService {
     public void updatePost(Long postId,PostUpdateReq postUpdateReq, Member member) {
 
         // 일반 사용자가 공지사항 타입을 선택한 경우
-        checkNoticePermission(member.getRole(), postUpdateReq.getContentType());
+        checkNoticePermission(member.getRole(), postUpdateReq.getPostType());
 
         Post findPost = getPostById(postId);
 
@@ -94,8 +98,8 @@ public class PostService {
 
         setIfNotNull(postUpdateReq.getTitle(), findPost::updateTitle);
         setIfNotNull(postUpdateReq.getContent(), findPost::updateContent);
-        setIfNotNull(PostCategory.valueOf(postUpdateReq.getCategoryName()), findPost::updateCategory);
-        setIfNotNull(PostType.valueOf(postUpdateReq.getContentType()),findPost::updateType);
+        setIfNotNull(PostCategory.valueOf(postUpdateReq.getPostCategory()), findPost::updateCategory);
+        setIfNotNull(PostType.valueOf(postUpdateReq.getPostType()),findPost::updateType);
     }
 
     /**
@@ -227,13 +231,16 @@ public class PostService {
         }
 
         boolean commentNextPage = (topComments.size()>10) ? true : false;
-        int totalCommentSize = commentRepository.findByPostId(postId).size();
-        PostDetailRes postDetailRes = new PostDetailRes(postId, postingMember.getId(), postingMember.getName(),
-                postingMember.getCommentBadgeCnt(), postingMember.getPostBadgeCnt(), postingMember.getLikeBadgeCnt(),
-                findPost.getTitle(), findPost.getContent(), findPost.getCreatedDate(),
-                findPost.getLikeCnt(), findPost.getDislikeCnt(), totalCommentSize,
-                0, commentNextPage, false, responseComments.size(), responseComments);
 
+        // TODO 이부분 CountQuery로 변경
+        int totalCommentSize = commentRepository.findByPostId(postId).size();
+//        PostDetailRes postDetailRes = new PostDetailRes(postId, postingMember.getId(), postingMember.getName(),
+//                postingMember.getCommentBadgeCnt(), postingMember.getPostBadgeCnt(), postingMember.getLikeBadgeCnt(),
+//                findPost.getTitle(), findPost.getContent(), findPost.getCreatedDate(),
+//                findPost.getLikeCnt(), findPost.getDislikeCnt(), totalCommentSize,
+//                0, commentNextPage, false, responseComments.size(), responseComments);
+        PostDetailRes postDetailRes =
+            new PostDetailRes(findPost, member, totalCommentSize, 0, 0, commentNextPage, false, responseComments);
         return postDetailRes;
     }
 
