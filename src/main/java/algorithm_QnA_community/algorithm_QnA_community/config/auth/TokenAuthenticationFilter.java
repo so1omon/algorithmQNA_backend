@@ -60,7 +60,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
         try {
             // 세션 false 처리
-            request.getSession(false);
+            //request.getSession(false);
 
             // 액세스 토큰과 refreshUUID 값 추출
 

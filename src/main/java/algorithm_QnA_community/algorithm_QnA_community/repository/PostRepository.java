@@ -65,15 +65,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 
     // 인기순
-//    @Query(value = "select p.* from post p" +
-//            " left join comment c on p.post_id = c.post_id" +
-//            " where p.category = :category" +
-//            " and p.type = :postType" +
-//            " group by p.post_id" +
-//            " order by p.views * 0.5 + (POW(p.like_cnt, 2) / (p.like_cnt + p.dislike_cnt)) * 0.3 + count(c.comment_id) * 0.2 desc" +
-//            " limit 20 offset :start", nativeQuery = true)
-//    List<Post> findByPostOrderByPopular(@Param("category") String category, @Param("postType") String postType,  @Param("start") int start);
-
     @Query(value = "select p.* from post p" +
             " left join comment c on p.post_id = c.post_id" +
             " where p.category = :category" +
