@@ -440,7 +440,7 @@ class PostServiceTest {
 
         //then
         Assertions.assertThat(postDetailRes.getPostId()).isEqualTo(post.getId());
-        Assertions.assertThat(postDetailRes.getContent()).isEqualTo(post.getContent());
+        Assertions.assertThat(postDetailRes.getPostContent()).isEqualTo(post.getContent());
         //log.info(postDetailRes.)
 
     }
@@ -460,27 +460,26 @@ class PostServiceTest {
                     .title("title"+i)
                     .content("content")
                     .category(PostCategory.DP)
-                    .type(PostType.QNA)
+                    .type(PostType.TIP)
                     .build();
             postRepository.save(post);
         }
 
         // when
-        //PostsResultRes resultRes1 = postService.readPosts(PostCategory.DP, PostSortType.LATESTDESC, 1);
-        //PostsResultRes resultRes2 = postService.readPosts(PostCategory.DP, PostSortType.LATESTDESC, 2);
-
+        log.info("----------------------");
+        PostsResultRes resultRes1 = postService.readPosts(PostCategory.DP, PostType.TIP, PostSortType.LATESTDESC, 0);
+        //PostsResultRes resultRes2 = postService.readPosts(PostCategory.DP, PostType.QNA, PostSortType.LATESTDESC, 2);
+        log.info("----------------------");
 
         // then
-//        Assertions.assertThat(resultRes1.getCurrentPage()).isEqualTo(1);
-//        Assertions.assertThat(resultRes1.getTotalPageCount()).isEqualTo(2);
-//        Assertions.assertThat(resultRes1.getSize()).isEqualTo(20);
-//
+        Assertions.assertThat(resultRes1.getCurrentPage()).isEqualTo(0);
+        //Assertions.assertThat(resultRes1.getTotalPageCount()).isEqualTo(1);
+        Assertions.assertThat(resultRes1.getSize()).isEqualTo(20);
+
 //        Assertions.assertThat(resultRes2.getCurrentPage()).isEqualTo(2);
 //        Assertions.assertThat(resultRes2.getTotalPageCount()).isEqualTo(2);
 //        Assertions.assertThat(resultRes2.getSize()).isEqualTo(1);
-//
-//        Assertions.assertThatThrownBy(()->postService.readPosts(PostCategory.DP, PostSortType.LATESTDESC, 3))
-//                .isInstanceOf(CustomException.class);
+
     }
 
 }
