@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -51,6 +52,7 @@ class PostRepositoryTest {
     EntityManager em;
 
     @Test
+    @Transactional
     public void 게시글_생성_테스트() {
         Member member = Member.createMember()
             .name("solmin")
@@ -118,6 +120,7 @@ class PostRepositoryTest {
     }
 
     @Test
+    @Transactional
     public void 게시물_정렬_댓글순(){
         Member member = Member.createMember()
                 .name("solmin")
@@ -164,17 +167,18 @@ class PostRepositoryTest {
         }
 
         // 댓글 갯수 내림차순 test
-        List<Post> posts = postRepository.findPostOrderByCommentCntDesc(PostCategory.DP);
+        List<Post> posts = postRepository.findPostOrderByCommentCntDesc(PostCategory.DP, PostType.QNA, PageRequest.of(0, 20));
         Post post = posts.get(0);
         Assertions.assertThat(post.getContent()).isEqualTo("댓글 일등");
 
         // 댓글 갯수 오름차순 test
-        List<Post> posts2 = postRepository.findPostOrderByCommentCntAsc(PostCategory.DP);
+        List<Post> posts2 = postRepository.findPostOrderByCommentCntAsc(PostCategory.DP, PostType.QNA, PageRequest.of(0, 20));
         Post post2 = posts2.get(0);
         Assertions.assertThat(post2.getContent()).isEqualTo("댓글 꼴등");
     }
 
     @Test
+    @Transactional
     void 게시물_정렬_인기순(){
 
         //given (게시물 3개)
@@ -357,7 +361,7 @@ class PostRepositoryTest {
         commentRepository.save(comment2);
 
         // when
-        List<Post> posts = postRepository.findByPostOrderByPopular("DP");
+        List<Post> posts = postRepository.findByPostOrderByPopular(PostCategory.DP.toString(), PostType.QNA.toString(), 0);
 
         // then
         Assertions.assertThat(posts.get(0)).isEqualTo(post3);
