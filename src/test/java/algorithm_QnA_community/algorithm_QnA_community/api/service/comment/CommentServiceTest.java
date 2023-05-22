@@ -1,7 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.comment;
 
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentReportReq;
+
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
@@ -100,7 +99,7 @@ class CommentServiceTest {
                 .build();
         commentRepository.save(comment);
 
-        CommentReportReq commentReportReq = new CommentReportReq("ETC", null);
+        //CommentReportReq commentReportReq = new CommentReportReq("ETC", null);
         // commentService.reportComment(comment.getId(), commentReportReq, reportingMember.getId());
 
 //        em.flush();

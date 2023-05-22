@@ -2,6 +2,9 @@ package algorithm_QnA_community.algorithm_QnA_community.api.controller.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.MemberBriefDto;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.TopCommentRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.AllArgsConstructor;
@@ -31,11 +34,13 @@ public class PostDetailRes {
 
     private Long postId;
     private MemberBriefDto member;
-    private String title;
-    private String content;
+
+    private String postTitle;
+
+    private String postContent;
     private LocalDateTime createdAt;
-    private int likeCnt;
-    private int dislikeCnt;
+    private int postLikeCnt;
+    private int postDislikeCnt;
     /* TODO isLiked 구현해야함 */
     private Boolean isLiked;
     /* TODO isLiked 구현해야함 */
@@ -44,26 +49,27 @@ public class PostDetailRes {
     private int page;
     private boolean next;
     private boolean prev;
-    private int size;
-    private List<CommentDetailRes> comments;
+    private int size; // 현재 페이지의 comments의 최상위 댓글 수
 
-    public PostDetailRes(Post post, Member member,
-                         int totalCommentSize, int page, int totalPageSize, boolean next, boolean prev,
-                         List<CommentDetailRes> comments){
+    private List<TopCommentRes> commentList;
+
+    public PostDetailRes(Post post, Member member, Boolean isLiked, CommentsRes commentsRes, int totalCommentCnt){
         this.postId = post.getId();
-        this.title = post.getTitle();
-        this.content = post.getContent();
+        this.postTitle = post.getTitle();
+        this.postContent = post.getContent();
         this.createdAt = post.getCreatedDate();
-        this.likeCnt = post.getLikeCnt();
-        this.dislikeCnt = post.getDislikeCnt();
+        this.postLikeCnt = post.getLikeCnt();
+        this.postDislikeCnt = post.getDislikeCnt();
         this.member = new MemberBriefDto(member);
+        this.isLiked = isLiked;
+        this.commentList = commentsRes.getComments();
         /* TODO 추후 페이징 구현 시작 - 생성자 파라미터 정보도 변경하기 */
-        this.page = page;
-        this.totalPageSize = totalPageSize;
-        this.totalCommentCnt = totalCommentSize;
-        this.next = next;
-        this.prev = prev;
-        this.size = comments.size();
+        this.page = commentsRes.getPage();
+        this.totalPageSize = commentsRes.getTotalPageSize();
+        this.totalCommentCnt = totalCommentCnt;
+        this.next = commentsRes.isNext();
+        this.prev = commentsRes.isPrev();
+        this.size = commentsRes.getSize();
         /* TODO 추후 페이징 구현 끝*/
 
     }

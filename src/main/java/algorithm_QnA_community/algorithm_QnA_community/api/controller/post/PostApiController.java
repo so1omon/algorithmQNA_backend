@@ -117,7 +117,7 @@ public class PostApiController {
                                          @RequestParam("type") @Valid PostType type,
                                          @RequestParam("sort") @Valid PostSortType sortName,
                                          @RequestParam("page") int pageNumber){
-        PostsResultRes postsResultRes = postService.readPosts(categoryName, sortName, pageNumber);
+        PostsResultRes postsResultRes = postService.readPosts(categoryName, type, sortName, pageNumber);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
     }
 

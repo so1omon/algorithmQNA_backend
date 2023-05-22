@@ -60,7 +60,6 @@ public class CommentService {
     private final ReportCommentRepository reportCommentRepository;
 
     @Transactional
-
     public CommentCreateRes writeComment(Long postId, CommentCreateReq commentCreateReq, Member member){
 
         Comment parentComment= null;
@@ -103,7 +102,6 @@ public class CommentService {
     }
 
     @Transactional
-
     public Res updateLikeInfo(Long commentId, @Valid LikeReq commentLikeReq, Member member) {
         Comment findComment = commentRepository.findByIdWithMember(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
