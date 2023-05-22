@@ -219,7 +219,7 @@ public class PostService {
         CommentsRes commentsRes = commentService.getComments(postId, 0, member.getId());
 
         // 총 댓글 갯수
-        int totalCommentSize = postRepository.countCommentByPost(findPost);
+        int totalCommentSize = commentRepository.countCommentByPostId(findPost.getId());
 
         //**** Response 객체 생성 ****//
         PostDetailRes postDetailRes =

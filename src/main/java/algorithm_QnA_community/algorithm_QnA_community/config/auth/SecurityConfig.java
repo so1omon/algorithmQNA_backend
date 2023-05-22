@@ -48,6 +48,7 @@ import org.springframework.web.client.RestTemplate;
  * 2023/05/15        solmin         OSIV - OpenEntityManagerInterceptor의 유저객체 영속상태를 이때부터
  *                                  유지시키기 위해서 filter로 교체 후 우선순위를 높임
  *                                  OpenEntityManagerInView가 DelegatingFilterProxy보다 먼저 작동
+ * 2023/05/22        janguni        세션 false 하는 코드 추가
  */
 
 @Slf4j

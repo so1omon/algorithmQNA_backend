@@ -68,9 +68,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             String refreshUUID = null;
             Cookie[] cookies = request.getCookies();
 
-            if (cookies==null) {
-                throw new TokenAuthenticationException("토큰예외");
-            }
 
             for (Cookie c: cookies) {
                 String name = c.getName();
