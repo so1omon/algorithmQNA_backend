@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
  * 2023/05/10        solmin       팩토리 메소드 일부 수정
  * 2023/05/11        solmin       Docs 변경, detail null = false 로 변경, updated_at 필드 추가
  * 2023/05/14        janguni      객체 생성 시 detail이 Null이라면 '기타 사유 없음'이 들어갈 수 있도록 변경
+ * 2023/05/23        solmin       일부 접근 제한자 및 삭제 편의 메소드 추가
  */
 @Entity
 @Getter
@@ -54,7 +55,7 @@ public class ReportPost {
 
     @LastModifiedDate
     @Column(name="updated_at")
-    public LocalDateTime lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 
     @Builder(builderClassName = "createReportPost", builderMethodName = "createReportPost")
     public ReportPost(Post post, Member member, ReportCategory category, String detail){
@@ -84,4 +85,9 @@ public class ReportPost {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    public void deleteReportPost() {
+        this.member = null;
+        this.post = null;
+    }
 }

@@ -106,4 +106,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             " where p.id = :postId")
     int countCommentByPostId(@Param("postId") Long postId);
 
+
+    @Query(value = "select c from Comment c where c.id in :commentIds")
+    Page<Comment> findByCommentIds(@Param("commentIds") List<Long> commentIds, Pageable pageable);
 }

@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.admin;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,21 +12,19 @@ import java.util.stream.Collectors;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.admin
- * fileName       : ReportedPostListRes
+ * fileName       : ReportedCommentsRes
  * author         : solmin
- * date           : 2023/05/18
+ * date           : 2023/05/22
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2023/05/18        solmin       최초 생성
- * 2023/05/23        solmin       totalPageSize 수정 및 필드명 변경
+ * 2023/05/22        solmin       최초 생성
  */
-
 @Data
 @AllArgsConstructor
-public class ReportedPostsRes {
-    private List<ReportedPostDto> reportedPosts;
+public class ReportedCommentsRes {
+    private List<FlatCommentDto> reportedComments;
     private int page;
     private boolean next;
     private boolean prev;
@@ -33,12 +32,13 @@ public class ReportedPostsRes {
     private int totalPageSize;
 
     @Builder
-    public ReportedPostsRes(Page<Post> postPage){
-        this.page = postPage.getPageable().getPageNumber();
-        this.next = postPage.hasNext();
-        this.prev = postPage.hasPrevious();
-        this.reportedPosts = postPage.stream().map(ReportedPostDto::new).collect(Collectors.toList());
-        this.size = reportedPosts.size();
-        this.totalPageSize = postPage.getTotalPages();
+    public ReportedCommentsRes(Page<Comment> commentPage){
+        this.page = commentPage.getPageable().getPageNumber();
+        this.next = commentPage.hasNext();
+        this.prev = commentPage.hasPrevious();
+        this.reportedComments = commentPage.stream().map(FlatCommentDto::new).collect(Collectors.toList());
+        this.size = reportedComments.size();
+        this.totalPageSize = commentPage.getTotalPages();
+
     }
 }

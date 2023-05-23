@@ -46,6 +46,7 @@ import java.io.IOException;
  * 2023/05/10        solmin         [리뷰 부탁!!!] 토큰 없을 때 그냥 패싱 -> 빠꾸하는걸로 결정됨
  * 2023/05/16        solmin         간단하게 헤더에 isAdmin붙여서 oauth 인증 우회 (TEST)
  * 2023/05/16        solmin         쿠키 키값 변경
+ * 2023/05/23        solmin         관리자 확인 위한 헤더정보 파싱 (삭제 안하셔도 됍니다!! 제가 쓸거에요,,)
  */
 
 
@@ -63,6 +64,17 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             //request.getSession(false);
 
             // 액세스 토큰과 refreshUUID 값 추출
+
+            // 관리자 테스트용 코드 시작 //
+            String isAdmin = request.getHeader("isAdmin");
+
+            if(isAdmin!=null && isAdmin.equals("true")){
+                Member findMember = memberRepository.findById(1L).get(); // 예외처리 해야함!!!
+                createAuthentication(findMember);
+                filterChain.doFilter(request, response);
+                return;
+            }
+            // 관리자 테스트용 코드 끝 //
 
             String accessToken = null;
             String refreshUUID = null;
