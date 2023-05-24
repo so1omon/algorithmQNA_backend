@@ -4,6 +4,8 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
@@ -30,6 +32,7 @@ import javax.validation.Valid;
  * -----------------------------------------------------------
  * 2023/05/11        janguni            최초 생성
  * 2023/05/19        solmin             게시글 작성 시 postId, 작성일 정보 리턴
+ * 2023/05/23        solmin             게시글 신고 시 validation 일부 추가
  */
 
 @RestController
@@ -93,6 +96,8 @@ public class PostApiController {
     public Res reportPost(@PathVariable("post_id") Long postId,
                           @RequestBody @Valid ReportReq postReportReq,
                           Authentication authentication){
+        if(!postReportReq.isValid) throw new CustomException(ErrorCode.EMPTY_DETAIL_IN_ETC_REPORT,
+            "기타 카테고리 선택 시 상세 신고사유를 작성해야 합니다.");
         Member findMember = getLoginMember(authentication);
         postService.reportPost(postId, postReportReq, findMember);
 

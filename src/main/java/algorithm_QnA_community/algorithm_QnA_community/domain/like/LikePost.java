@@ -20,6 +20,7 @@ import javax.persistence.*;
  * 2023/04/26        solmin       최초 생성
  * 2023/05/10        solmin       팩토리 메소드 일부 수정
  * 2023/05/13        janguni      isDisLike 주석 처리, isLike 주석 변경
+ * 2023/05/23        solmin       삭제 편의 메소드 추가
  */
 @Entity
 @Getter
@@ -64,5 +65,10 @@ public class LikePost extends BaseTimeEntity {
             this.post.updateLikeCnt(!isLike, false);
             this.isLike = isLike;
         }
+    }
+
+    public void deleteLikePost() {
+        this.post = null;
+        this.member = null;
     }
 }

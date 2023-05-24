@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
  * -----------------------------------------------------------
  * 2023/04/26        solmin       최초 생성, 추후 createDate를 사용하지 않거나 시간정보가 필요하지 않은 Entity는
  *                                상속 없이 별도로 구현할 예정
+ * 2023/05/23        solmin       각 필드 public -> private로 수정
  */
 
 
@@ -31,11 +32,11 @@ import java.time.LocalDateTime;
 public abstract class BaseTimeEntity {
     @CreatedDate
     @Column(name="created_at")
-    public LocalDateTime createdDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(name="updated_at")
-    public LocalDateTime lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 
 }
 

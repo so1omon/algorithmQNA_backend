@@ -5,7 +5,6 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
-import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
@@ -112,7 +111,7 @@ class PostServiceTest {
         for (Post post:posts) {
             Assertions.assertThat(post.getTitle()).isEqualTo("title2");
             Assertions.assertThat(post.getContent()).isEqualTo("content2");
-            Assertions.assertThat(post.getCategory()).isEqualTo(PostCategory.valueOf("SORT"));
+            Assertions.assertThat(post.getPostCategory()).isEqualTo(PostCategory.valueOf("SORT"));
             Assertions.assertThat(post.getType()).isEqualTo(PostType.valueOf("TIP"));
         }
     }
@@ -337,14 +336,14 @@ class PostServiceTest {
         Assertions.assertThat(findReportPost).isNotEmpty();
         Assertions.assertThat(findReportPost.get().getPost()).isEqualTo(post);
         Assertions.assertThat(findReportPost.get().getMember()).isEqualTo(reportingMember);
-        Assertions.assertThat(findReportPost.get().getCategory()).isEqualTo(ReportCategory.AD);
+        Assertions.assertThat(findReportPost.get().getReportCategory()).isEqualTo(ReportCategory.AD);
         Assertions.assertThat(findReportPost.get().getDetail()).isEqualTo("기타 사유 없음"); //여기부터
 
         List<ReportPost> reportPosts = reportedPost.getReportPosts();
         for (ReportPost rp: reportPosts) {
             Assertions.assertThat(rp.getPost()).isEqualTo(post);
             Assertions.assertThat(rp.getMember()).isEqualTo(reportingMember);
-            Assertions.assertThat(rp.getCategory()).isEqualTo(ReportCategory.AD);
+            Assertions.assertThat(rp.getReportCategory()).isEqualTo(ReportCategory.AD);
             Assertions.assertThat(rp.getDetail()).isEqualTo("기타 사유 없음");
         }
 

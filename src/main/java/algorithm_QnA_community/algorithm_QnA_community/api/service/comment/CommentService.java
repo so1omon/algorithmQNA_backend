@@ -46,6 +46,7 @@ import static java.util.stream.Collectors.*;
  * 2023/05/18        janguni      CommentLikeReq -> LikeReq, CommentReportReq -> ReportReq로 변경
  * 2023/05/19        solmin       나의 반응 리스트를 미리 조회해서 CommetRes 생성 시 나의 반응정보 같이 삽입
  * 2023/05/19        solmin       공통 DTO 참조 변경
+ * 2023/05/23        solmin       일부 @Transactional readonly 추가
  */
 
 @Service
@@ -159,7 +160,6 @@ public class CommentService {
     }
 
     @Transactional
-
     public void reportComment(Long commentId, ReportReq commentReportReq, Member member) {
 
         Comment findComment = commentRepository.findByIdWithMember(commentId)
@@ -174,7 +174,7 @@ public class CommentService {
             ReportComment reportComment = ReportComment.createReportComment()
                 .comment(findComment)
                 .member(member)
-                .category(ReportCategory.valueOf(commentReportReq.getCategory()))
+                .reportCategory(ReportCategory.valueOf(commentReportReq.getCategory()))
                 .detail(commentReportReq.getDetail())
                 .build();
             reportCommentRepository.save(reportComment);
@@ -186,21 +186,7 @@ public class CommentService {
         }
     }
 
-    private Comment checkAuthoritiesAndGetComment(Long commentId, Member member) {
-//        member = memberRepository.findById(1L).get();
-
-        // 1. comment_id에 해당하는 comment 객체 가져와서, member와 동일한 사람인지 검증
-        Comment findComment = commentRepository.findByIdWithMember(commentId)
-            .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
-
-        if(findComment.getMember().getId()!=member.getId()){
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "댓글을 수정할 수 있는 권한이 존재하지 않습니다.");
-        }
-        return findComment;
-    }
-
-
-    @Transactional
+    @Transactional(readOnly = true)
     public CommentsRes getComments(Long postId, int page, Long memberId) {
         // 0. 게시글 조회 (없으면 404)
         Post findPost = postRepository.findById(postId)
@@ -249,6 +235,7 @@ public class CommentService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public MoreCommentListRes getMoreCommentsByParent(Long parentCommentId, int page, Long memberId) {
         // 0. 게시글 조회 (없으면 404)
         Comment parentComment = commentRepository.findById(parentCommentId)
@@ -275,5 +262,18 @@ public class CommentService {
 
 
         return new MoreCommentListRes(parentCommentId, commentMap.values().stream().collect(Collectors.toList()), commentsByPost );
+    }
+
+    private Comment checkAuthoritiesAndGetComment(Long commentId, Member member) {
+//        member = memberRepository.findById(1L).get();
+
+        // 1. comment_id에 해당하는 comment 객체 가져와서, member와 동일한 사람인지 검증
+        Comment findComment = commentRepository.findByIdWithMember(commentId)
+            .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
+
+        if(findComment.getMember().getId()!=member.getId()){
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "댓글을 수정할 수 있는 권한이 존재하지 않습니다.");
+        }
+        return findComment;
     }
 }

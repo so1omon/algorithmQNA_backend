@@ -42,7 +42,7 @@ out/
 *.yml
 
 ### InitDB ###
-!**/src/main/java/algorithm_QnA_community/InitDB.java
+src/main/java/algorithm_QnA_community/algorithm_QnA_community/InitDB.java
 
 
 
