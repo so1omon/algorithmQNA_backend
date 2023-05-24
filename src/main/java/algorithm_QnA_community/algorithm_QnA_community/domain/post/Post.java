@@ -82,11 +82,11 @@ public class Post extends BaseTimeEntity {
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "post",orphanRemoval = true)
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post")

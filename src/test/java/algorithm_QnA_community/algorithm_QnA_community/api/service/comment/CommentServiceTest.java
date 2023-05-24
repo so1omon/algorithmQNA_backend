@@ -1,6 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.comment;
 
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
@@ -99,11 +100,11 @@ class CommentServiceTest {
                 .build();
         commentRepository.save(comment);
 
-        //CommentReportReq commentReportReq = new CommentReportReq("ETC", null);
-        // commentService.reportComment(comment.getId(), commentReportReq, reportingMember.getId());
+        ReportReq commentReportReq = new ReportReq("ETC", null);
+        commentService.reportComment(comment.getId(), commentReportReq, reportingMember);
 
-//        em.flush();
-//        em.clear();
+        em.flush();
+        em.clear();
 
         Optional<ReportComment> findReportComment = reportCommentRepository.findByCommentIdAndMemberId(comment.getId(), reportingMember.getId());
         Assertions.assertThat(findReportComment.get().getDetail()).isEqualTo("기타 사유 없음");

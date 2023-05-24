@@ -19,6 +19,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,8 +46,9 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/19        solmin             게시글 작성 메소드 리턴타입 변경
  * 2023/05/19        solmin             TODO 메세지 작성
  * 2023/05/21        janguni            게시물 조회 시 추천/비추천(게시물) 정보 코드 추가,
- *                                                  추천/비추천(댓글) 정보 코드 수정*/
-
+ *                                                  추천/비추천(댓글) 정보 코드 수정
+ * 2023/05/24        janguni            게시물 조회 시 해당 게시물 조회수+1 처리
+*/
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -199,12 +201,15 @@ public class PostService {
     /**
      * 상세 게시물 조회
      */
+    @Transactional
     public PostDetailRes readPostDetail(Long postId, Member member){
 
         //**** 게시물 정보 ****//
         Post findPost = getPostById(postId); // 게시물
         Boolean isLikedPost = checkPostLike(postId, member); // 게시물 추천 정보
 
+        // 게시물 조회수 + 1
+        findPost.updateViews();
 
         //**** 작성자 정보 ****//
         Member postingMember = memberRepository.findById(findPost.getMember().getId()).get();
@@ -238,56 +243,57 @@ public class PostService {
      * 게시물 목록 조회
      */
     public PostsResultRes readPosts(PostCategory categoryName, PostType postType, PostSortType sortName, int pageNumber){
-        List<Post> totalPosts=null;
+        Page<Post> pagePosts=null;
 
         switch (sortName) {
             case LATESTDESC: // 최신순
-                totalPosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case LATESTASC: // 오래된 순
-                totalPosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case COMMENTCNTASC: // 댓글 오름차순
-                totalPosts = postRepository.findPostOrderByCommentCntAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findPostOrderByCommentCntAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case COMMENTCNTDESC: // 댓글 내림차순
-                totalPosts = postRepository.findPostOrderByCommentCntDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findPostOrderByCommentCntDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case LIKEASC:   // 추천 오름차순
-                totalPosts = postRepository.findByPostCategoryOrderByLike_DislikeASC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByCategoryOrderByLike_DislikeASC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case LIKEDESC:  // 추천 내림차순
-                totalPosts = postRepository.findByCategoryOrderByLike_DislikeDESC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByCategoryOrderByLike_DislikeDESC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case VIEWCNTASC:    // 조회수 오름차순
-                totalPosts = postRepository.findByPostCategoryAndTypeOrderByViewsAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByCategoryAndTypeOrderByViewsAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case VIEWCNTDESC:   // 조회수 내림차순
-                totalPosts = postRepository.findByPostCategoryAndTypeOrderByViewsDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByCategoryAndTypeOrderByViewsDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case POPULAR:   // 인기순
-                totalPosts = postRepository.findByPostOrderByPopular(categoryName.toString(), postType.toString(), pageNumber*MAX_POST_SIZE);
+                pagePosts = postRepository.findByPopular(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
         }
 
-        // 총 페이지 수
-        int postsSize = totalPosts.size();
-        int totalPageCount = postsSize/20;
-        if (postsSize % 20 != 0) {
-            totalPageCount += 1;
+        // 게시물 데이터
+        List<Post> posts = pagePosts.getContent();
+        int postSize = posts.size();
+
+        if (postSize==0) { // 존재하지 않은 페이지 번호 일 경우
+            throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "존재하지 않은 페이지 번호 입니다.");
         }
 
-        // 존재하는 페이지인지 확인
-        checkPostAccessPermission(totalPageCount < pageNumber || pageNumber < 0, ErrorCode.RESOURCE_NOT_FOUND, "존재하지 않은 페이지 번호 입니다.");
+        // 페이징 정보
+        int totalPageCount = pagePosts.getTotalPages(); // 전체 페이지 수
+        boolean prev = pagePosts.hasPrevious(); // 전 페이지 유무
+        boolean next = pagePosts.hasNext(); // 후 페이지 유무
+        int curPageNumber = pagePosts.getNumber();
 
-        // 전 페이지, 후 페이지 유무
-        boolean prev = (pageNumber==1) ? false : true;
-        boolean next = (pageNumber==totalPageCount) ? false : true;
 
         // Post -> PostSimpleDetail
-        List<PostSimpleDetail> posts = convertToPostSimpleDetails(totalPosts);
+        List<PostSimpleDetail> postDetail = convertToPostSimpleDetails(posts);
 
-        PostsResultRes postsResultRes = new PostsResultRes(pageNumber, totalPageCount, next, prev, posts.size(), posts);
+        PostsResultRes postsResultRes = new PostsResultRes(curPageNumber, totalPageCount, next, prev, postSize, postDetail);
         return postsResultRes;
     }
 
