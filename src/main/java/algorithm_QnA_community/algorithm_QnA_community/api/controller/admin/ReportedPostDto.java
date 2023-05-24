@@ -2,6 +2,8 @@ package algorithm_QnA_community.algorithm_QnA_community.api.controller.admin;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.MemberBriefDto;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -25,6 +27,8 @@ public class ReportedPostDto {
     private Long postId;
     private String postTitle;
     private String postContent;
+    private PostCategory postCategory;
+    private PostType postType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int postLikeCnt;
@@ -42,8 +46,9 @@ public class ReportedPostDto {
         this.updatedAt = post.getLastModifiedDate();
         this.postLikeCnt = post.getLikeCnt();
         this.postDislikeCnt = post.getDislikeCnt();
-        // 1페이지당 최대 10번만 countQuery 동작
         this.commentCnt = post.getComments().size();
         this.views = post.getViews();
+        this.postType = post.getType();
+        this.postCategory = post.getPostCategory();
     }
 }

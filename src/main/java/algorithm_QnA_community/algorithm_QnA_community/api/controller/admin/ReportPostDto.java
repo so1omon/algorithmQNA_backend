@@ -31,7 +31,7 @@ public class ReportPostDto {
     public ReportPostDto(ReportPost reportPost){
         this.reportPostId = reportPost.getId();
         this.member = new MemberBriefDto(reportPost.getMember());
-        this.category = reportPost.getCategory();
+        this.category = reportPost.getReportCategory();
         this.detail = reportPost.getDetail();
         this.updatedAt = reportPost.getLastModifiedDate();
     }

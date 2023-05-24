@@ -1,10 +1,8 @@
 package algorithm_QnA_community.algorithm_QnA_community.domain.report;
 
-import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.*;
-import net.bytebuddy.implementation.bind.annotation.Default;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -47,7 +45,7 @@ public class ReportPost {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReportCategory category;
+    private ReportCategory reportCategory;
 
     @Column(length = 1000)
     @ColumnDefault("'기타 사유 없음'")
@@ -58,10 +56,10 @@ public class ReportPost {
     private LocalDateTime lastModifiedDate;
 
     @Builder(builderClassName = "createReportPost", builderMethodName = "createReportPost")
-    public ReportPost(Post post, Member member, ReportCategory category, String detail){
+    public ReportPost(Post post, Member member, ReportCategory reportCategory, String detail){
         this.member = member;
         this.post = post;
-        this.category = category;
+        this.reportCategory = reportCategory;
 //        if (detail == null) {
 //            this.detail = "기타 사유 없음";
 //        } else {
@@ -73,7 +71,7 @@ public class ReportPost {
 
     public void updateReportInfo(@NonNull ReportCategory category, @NonNull String detail){
         this.detail = detail;
-        this.category = category;
+        this.reportCategory = category;
     }
 
     //----------------- 연관관계 필드 시작 -----------------//

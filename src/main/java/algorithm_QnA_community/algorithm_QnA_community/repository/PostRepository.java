@@ -27,32 +27,32 @@ import java.util.List;
  */
 public interface PostRepository extends JpaRepository<Post, Long> {
     // 최신순으로 정렬
-    List<Post> findByCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
+    List<Post> findByPostCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
 
     // 오래된 순으로 정렬
-    List<Post> findByCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType, Pageable pageable);
+    List<Post> findByPostCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType, Pageable pageable);
 
     @Query("select count(c) from Post p left join p.comments c")
     int countCommentByPost(@Param("post") Post post);
 
     // 추천-비추천 내림차순
     @Query("select p from Post p" +
-            " where p.category = :category" +
+            " where p.postCategory = :category" +
             " and p.type = :postType" +
             " order by p.likeCnt-p.dislikeCnt desc")
     List<Post> findByCategoryOrderByLike_DislikeDESC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
     // 추천-비추천 오름차순
     @Query("select p from Post p" +
-            " where p.category = :category" +
+            " where p.postCategory = :category" +
             " and p.type = :postType" +
             " order by p.likeCnt-p.dislikeCnt asc")
-    List<Post> findByCategoryOrderByLike_DislikeASC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
+    List<Post> findByPostCategoryOrderByLike_DislikeASC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
     // 댓글 내림차순
     @Query("select p from Post p" +
             " left join p.comments c" +
-            " where p.category = :category" +
+            " where p.postCategory = :category" +
             " and p.type = :postType" +
             " group by p order by count(c) desc")
     List<Post> findPostOrderByCommentCntDesc(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
@@ -60,7 +60,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 댓글 오름차순
     @Query("select p from Post p" +
             " left join p.comments c" +
-            " where p.category = :category" +
+            " where p.postCategory = :category" +
             " and p.type = :postType" +
             " group by p order by count(c) asc")
     List<Post> findPostOrderByCommentCntAsc(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
@@ -77,10 +77,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByPostOrderByPopular(@Param("category") String category, @Param("postType") String postType,  @Param("start") int start);
 
     // 조회수 오름차순
-    List<Post> findByCategoryAndTypeOrderByViewsAsc(PostCategory category, PostType postType, Pageable pageable);
+    List<Post> findByPostCategoryAndTypeOrderByViewsAsc(PostCategory category, PostType postType, Pageable pageable);
 
     // 조회수 내림차순
-    List<Post> findByCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
+    List<Post> findByPostCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
 
     // postId 리스트에 해당하는 post를 Pageable하게 가져오기
     // AdminService에서 사용중입니다!

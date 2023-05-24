@@ -64,19 +64,19 @@ public class Post extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PostCategory category;
+    private PostCategory postCategory;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PostType type;
 
     @Builder(builderClassName = "createPost", builderMethodName = "createPost")
-    public Post(Member member, String title, String content, PostCategory category, PostType type){
+    public Post(Member member, String title, String content, PostCategory postCategory, PostType type){
         this.member = member;
         member.getPosts().add(this);
         this.title = title;
         this.content = content;
-        this.category = category;
+        this.postCategory = postCategory;
         this.type = type;
     }
 
@@ -116,7 +116,7 @@ public class Post extends BaseTimeEntity {
     }
 
     public void updateCategory(PostCategory changedCategory) {
-        this.category = changedCategory;
+        this.postCategory = changedCategory;
     }
 
     public void updateType(PostType changedType) {

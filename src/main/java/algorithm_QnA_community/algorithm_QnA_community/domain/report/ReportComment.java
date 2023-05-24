@@ -44,7 +44,7 @@ public class ReportComment {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReportCategory category;
+    private ReportCategory reportCategory;
 
     @ColumnDefault("'기타 사유 없음'")
     @Column(length = 1000, nullable = false)
@@ -56,17 +56,17 @@ public class ReportComment {
 
     @Builder(builderClassName = "createReportComment", builderMethodName = "createReportComment")
     public ReportComment(Comment comment, Member member,
-                         ReportCategory category, String detail){
+                         ReportCategory reportCategory, String detail){
         this.member = member;
         this.comment = comment;
         this.comment.getReportComments().add(this);
-        this.category = category;
+        this.reportCategory = reportCategory;
         this.detail = detail;
     }
 
     public void updateReportInfo(@NonNull ReportCategory category, String detail){
         this.detail = detail;
-        this.category = category;
+        this.reportCategory = category;
     }
 
     //----------------- 연관관계 필드 시작 -----------------//

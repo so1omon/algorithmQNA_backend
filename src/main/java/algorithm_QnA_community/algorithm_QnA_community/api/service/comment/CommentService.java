@@ -174,7 +174,7 @@ public class CommentService {
             ReportComment reportComment = ReportComment.createReportComment()
                 .comment(findComment)
                 .member(member)
-                .category(ReportCategory.valueOf(commentReportReq.getCategory()))
+                .reportCategory(ReportCategory.valueOf(commentReportReq.getCategory()))
                 .detail(commentReportReq.getDetail())
                 .build();
             reportCommentRepository.save(reportComment);

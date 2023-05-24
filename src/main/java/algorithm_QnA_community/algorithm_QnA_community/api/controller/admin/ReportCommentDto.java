@@ -3,7 +3,6 @@ package algorithm_QnA_community.algorithm_QnA_community.api.controller.admin;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.MemberBriefDto;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
-import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +32,7 @@ public class ReportCommentDto {
     public ReportCommentDto(ReportComment reportComment){
         this.reportCommentId = reportComment.getId();
         this.member = new MemberBriefDto(reportComment.getMember());
-        this.category = reportComment.getCategory();
+        this.category = reportComment.getReportCategory();
         this.detail = reportComment.getDetail();
         this.updatedAt = reportComment.getLastModifiedDate();
     }
