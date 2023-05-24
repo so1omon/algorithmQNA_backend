@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -44,11 +45,12 @@ import org.springframework.web.client.RestTemplate;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/05/02       janguni         최초 생성
- * 2023/05/10        solmin         인증기능 연동 전까지만 comment 열어두겠습니다...,
- * 2023/05/15        solmin         OSIV - OpenEntityManagerInterceptor의 유저객체 영속상태를 이때부터
+ * 2023/05/10       solmin          인증기능 연동 전까지만 comment 열어두겠습니다...,
+ * 2023/05/15       solmin          OSIV - OpenEntityManagerInterceptor의 유저객체 영속상태를 이때부터
  *                                  유지시키기 위해서 filter로 교체 후 우선순위를 높임
  *                                  OpenEntityManagerInView가 DelegatingFilterProxy보다 먼저 작동
- * 2023/05/22        janguni        세션 false 하는 코드 추가
+ * 2023/05/22       janguni         세션 false 하는 코드 추가
+ * 2023/05/23       solmin          accessDeniedHandler 주입 및 configure 추가
  */
 
 @Slf4j
@@ -60,6 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final OAuthService oAuthService;
     private final MemberRepository memberRepository;
+    private final AccessDeniedHandler accessDeniedHandler;
 
     // == code 필요할 때 (시작)== //
     /**
@@ -111,14 +114,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        http.csrf().disable()
-                .cors().disable()
-                .authorizeRequests()
-                .antMatchers().permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http
+            .csrf().disable()
+            .cors().disable()
+            .authorizeRequests()
+//            .antMatchers().permitAll()
+            .antMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+            .and()
+            .exceptionHandling()
+            .accessDeniedHandler(accessDeniedHandler)
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)

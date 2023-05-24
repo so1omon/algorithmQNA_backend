@@ -13,8 +13,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +33,7 @@ import java.util.List;
  *                                EntityNotFoundException (특정 id 질의결과 없음) NotFound 처리
  *                                ErrorCode를 담고 있는 CustomException 처리
  *                                MethodArgumentNotValidException (검증오류) 처리
- *
+ * 2023/05/23        solmin       단일 필드 validation 시 오류 상황 추가
  *
  */
 @RestControllerAdvice
@@ -81,6 +83,24 @@ public class ExceptionHandlerAdvice {
 
         return Res.res(defStatus);
     }
+
+    @ExceptionHandler({
+        MethodArgumentTypeMismatchException.class,
+        ConstraintViolationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Res invalidParameter(Exception e) {
+        if(e instanceof MethodArgumentTypeMismatchException){
+            String requiredType = ((MethodArgumentTypeMismatchException) e).getRequiredType().toString();
+            String parameter = ((MethodArgumentTypeMismatchException) e).getName();
+            return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
+                parameter+"의 타입은 "+requiredType+"이어야 합니다.",false));
+
+        }else{
+            return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
+                ((ConstraintViolationException) e).getConstraintViolations().stream().findFirst().get().getMessage(),false));
+        }
+    }
+
     @Data
     private static class ValidationErr{
         private String field;

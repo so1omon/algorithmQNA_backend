@@ -4,6 +4,8 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
@@ -15,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller
@@ -32,6 +35,8 @@ import javax.validation.Valid;
  * 2023/05/16        solmin       댓글 조회, 댓글 펼쳐보기 API 구현 완료
  * 2023/05/19        solmin       공통 DTO 참조 변경
  * 2023/05/19        solmin       조회 api 사용 시 멤버 ID 넘겨주는 것으로 변경
+ * 2023/05/23        solmin       page query parameter validation 추가
+ * 2023/05/23        solmin       기타 사유 + 빈 신고사유 보내면 오류 처리하도록 변경
  */
 
 @RestController
@@ -43,7 +48,7 @@ public class CommentApiController {
 
     @GetMapping("/{post_id}")
     public Res<CommentsRes> getComments(@PathVariable("post_id") Long postId,
-                                        @RequestParam(required = false, name = "page", defaultValue = "0") int page,
+                                        @RequestParam(required = false, name = "page", defaultValue = "0") @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page,
                                         Authentication authentication){
 
 
@@ -54,7 +59,7 @@ public class CommentApiController {
 
     @GetMapping("/{comment_id}/spread")
     public Res<MoreCommentListRes> getMoreCommentsByParent(@PathVariable("comment_id") Long commentId,
-                                                           @RequestParam(required = false, name = "page", defaultValue = "0") int page,
+                                                           @RequestParam(required = false, name = "page", defaultValue = "0") @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page,
                                                            Authentication authentication) {
 
         Long memberId = getLoginMember(authentication).getId();
@@ -89,6 +94,8 @@ public class CommentApiController {
 
                            @RequestBody @Valid ReportReq commentReportReq, Authentication authentication){
 
+        if(!commentReportReq.isValid) throw new CustomException(ErrorCode.EMPTY_DETAIL_IN_ETC_REPORT,
+            "기타 카테고리 선택 시 상세 신고사유를 작성해야 합니다.");
         commentService.reportComment(commentId, commentReportReq, getLoginMember(authentication));
 
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글을 신고했습니다."));

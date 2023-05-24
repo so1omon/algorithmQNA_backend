@@ -2,15 +2,11 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
-import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
-import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikeComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
@@ -25,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,7 +81,7 @@ public class PostService {
                 .member(member)
                 .title(postCreateReq.getTitle())
                 .content(postCreateReq.getContent())
-                .category(PostCategory.valueOf(postCreateReq.getPostCategory()))
+                .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
                 .type(PostType.valueOf(postCreateReq.getPostType()))
                 .build();
 
@@ -192,7 +187,7 @@ public class PostService {
             ReportPost reportPost = ReportPost.createReportPost()
                     .post(findPost)
                     .member(member)
-                    .category(ReportCategory.valueOf(postReportReq.getCategory()))
+                    .reportCategory( ReportCategory.valueOf(postReportReq.getCategory()))
                     .detail(postReportReq.getDetail())
                     .build();
 

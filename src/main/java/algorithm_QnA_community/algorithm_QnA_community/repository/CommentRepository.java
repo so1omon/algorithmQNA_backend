@@ -98,10 +98,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 //        " order by c.createdDate")
     Page<Comment> findCommentsByParent(Comment parent, Pageable pageable);
 
+    @Query("select c from Comment c where c.post.id in :postIds")
+    List<Comment> findByPoster(@Param("postIds") List<Long> postIds);
     // 게시글 내의 댓글 갯수 구하기
     @Query("select count(c) from Comment c " +
             " left join c.post p" +
             " where p.id = :postId")
     int countCommentByPostId(@Param("postId") Long postId);
 
+
+    @Query(value = "select c from Comment c where c.id in :commentIds")
+    Page<Comment> findByCommentIds(@Param("commentIds") List<Long> commentIds, Pageable pageable);
 }

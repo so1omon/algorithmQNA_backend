@@ -4,7 +4,6 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.BaseTimeEntity;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
-import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -36,8 +35,7 @@ import java.util.List;
  * 2023/05/16        solmin       엔티티 삭제를 위한 orphanRemoval 추가
  * 2023/05/16        janguni      updateViews 추가
  * 2023/05/18        janguni      Member연관관계 CascadeType.ALL -> CascadeType.PERSIST로 변경
-
-
+ * 2023/05/23        solmin       삭제 편의 연관관계 메소드 추가
  */
 @Entity
 @Getter
@@ -66,19 +64,19 @@ public class Post extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PostCategory category;
+    private PostCategory postCategory;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PostType type;
 
     @Builder(builderClassName = "createPost", builderMethodName = "createPost")
-    public Post(Member member, String title, String content, PostCategory category, PostType type){
+    public Post(Member member, String title, String content, PostCategory postCategory, PostType type){
         this.member = member;
         member.getPosts().add(this);
         this.title = title;
         this.content = content;
-        this.category = category;
+        this.postCategory = postCategory;
         this.type = type;
     }
 
@@ -118,7 +116,7 @@ public class Post extends BaseTimeEntity {
     }
 
     public void updateCategory(PostCategory changedCategory) {
-        this.category = changedCategory;
+        this.postCategory = changedCategory;
     }
 
     public void updateType(PostType changedType) {
@@ -129,5 +127,20 @@ public class Post extends BaseTimeEntity {
         this.views +=1;
     }
 
+
+    public void deletePost(){
+
+        for(Comment comment : comments){
+            comment.deleteComment();
+        }
+        for(ReportPost reportPost : reportPosts){
+            reportPost.deleteReportPost();
+        }
+        for(LikePost likePost : likePosts){
+            likePost.deleteLikePost();
+        }
+
+        this.member = null;
+    }
 
 }
