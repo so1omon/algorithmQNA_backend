@@ -48,7 +48,7 @@ public class ReportPost {
     @Enumerated(EnumType.STRING)
     private ReportCategory category;
 
-    @Column(length = 1000)
+    @Column(length = 1000, nullable = false)
     @ColumnDefault("'기타 사유 없음'")
     private String detail;
 
@@ -61,11 +61,6 @@ public class ReportPost {
         this.member = member;
         this.post = post;
         this.category = category;
-//        if (detail == null) {
-//            this.detail = "기타 사유 없음";
-//        } else {
-//            this.detail = detail;
-//        }
         this.detail = detail;
         this.post.getReportPosts().add(this);
     }

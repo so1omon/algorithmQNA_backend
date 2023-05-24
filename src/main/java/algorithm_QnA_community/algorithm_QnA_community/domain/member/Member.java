@@ -70,7 +70,7 @@ public class Member extends BaseTimeEntity {
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Post> posts = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
