@@ -59,7 +59,7 @@ public class ReportPost {
     public ReportPost(Post post, Member member, ReportCategory reportCategory, String detail){
         this.member = member;
         this.post = post;
-        this.category = category;
+        this.reportCategory = reportCategory;
 
         this.detail = detail;
         this.post.getReportPosts().add(this);
