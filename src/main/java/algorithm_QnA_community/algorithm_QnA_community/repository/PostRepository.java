@@ -27,10 +27,10 @@ import java.util.List;
  */
 public interface PostRepository extends JpaRepository<Post, Long> {
     // 최신순으로 정렬
-    Page<Post> findByCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
 
     // 오래된 순으로 정렬
-    Page<Post> findByCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType, Pageable pageable);
 
 
     // 추천-비추천 내림차순
@@ -38,7 +38,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             " where p.postCategory = :category" +
             " and p.type = :postType" +
             " order by p.likeCnt-p.dislikeCnt desc")
-    Page<Post> findByCategoryOrderByLike_DislikeDESC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryOrderByLike_DislikeDESC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
     // 추천-비추천 오름차순
     @Query("select p from Post p" +
@@ -46,7 +46,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             " and p.type = :postType" +
             " order by p.likeCnt-p.dislikeCnt asc")
 
-    Page<Post> findByCategoryOrderByLike_DislikeASC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryOrderByLike_DislikeASC(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
     // 댓글 내림차순
     @Query("select p from Post p" +
@@ -73,10 +73,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByPopular(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
     // 조회수 오름차순
-    Page<Post> findByCategoryAndTypeOrderByViewsAsc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByViewsAsc(PostCategory category, PostType postType, Pageable pageable);
 
     // 조회수 내림차순
-    Page<Post> findByCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
 
 
     // postId 리스트에 해당하는 post를 Pageable하게 가져오기
