@@ -48,6 +48,8 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/21        janguni            게시물 조회 시 추천/비추천(게시물) 정보 코드 추가,
  *                                                  추천/비추천(댓글) 정보 코드 수정
  * 2023/05/24        janguni            게시물 조회 시 해당 게시물 조회수+1 처리
+ * 2023/05/26        solmin             좋아요 정보 삭제 시 연관관계 끊는 메소드 수행
+ *                                      (원래 안건드릴려고 했는데 likeComment랑 너무 겹치는 내용이라 수정했어요 ㅜㅜ)
 */
 @Service
 @RequiredArgsConstructor
@@ -143,6 +145,7 @@ public class PostService {
             if (!findLikePost.isPresent()) log.info("추천정보가 존재하지 않음");
             else {
                 findPost.updateLikeCnt(postLikeReq.getIsLike(), false);
+                findLikePost.get().deleteLikePost();
                 likePostRepository.delete(findLikePost.get());
             }
         }

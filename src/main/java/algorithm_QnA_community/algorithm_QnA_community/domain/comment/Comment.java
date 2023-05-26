@@ -2,6 +2,7 @@ package algorithm_QnA_community.algorithm_QnA_community.domain.comment;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.BaseTimeEntity;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikeComment;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Badge;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
@@ -33,6 +34,7 @@ import java.util.List;
  * 2023/05/16        solmin       삭제 편의 연관 관계 메소드 추가, 추후 다음 링크 참고해서 튜닝할 것
  *                                https://www.inflearn.com/questions/39769/%EB%B6%80%EB%AA%A8-%EC%9E%90%EC%8B%9D%EA%B4%80%EA%B3%84%EC%97%90%EC%84%9C-%EB%B6%80%EB%AA%A8-%EC%82%AD%EC%A0%9C%EC%8B%9C-set-null%EB%B0%A9%EB%B2%95%EC%97%90-%EB%8C%80%ED%95%B4%EA%B6%81%EA%B8%88%ED%95%A9%EB%8B%88%EB%8B%A4
  * 2023/05/23        solmin       신고 리스트와 좋아요 리스트에 대한 삭제 편의 연관 관계 메소드 추가
+ * 2023/05/26        solmin       일부 연관관계 메소드 수정
  */
 @Entity
 @Getter
@@ -77,10 +79,10 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "mentioner_id")
     private Member mentioner;
 
-    @OneToMany(mappedBy = "comment")
+    @OneToMany(mappedBy = "comment", orphanRemoval = true)
     private List<LikeComment> likeComments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "comment")
+    @OneToMany(mappedBy = "comment", orphanRemoval = true)
     private List<ReportComment> reportComments = new ArrayList<>();
 
     //----------------- 연관관계 메소드 시작 -----------------//
@@ -121,6 +123,7 @@ public class Comment extends BaseTimeEntity {
 
     public void updatePin(boolean isPinned){
         this.isPinned = isPinned;
+        this.member.updateMemberBadgeCnt(Badge.Like, this.isPinned?1:-1);
     }
 
     // TODO 추후 배치 update JPQL(객체지향 쿼리 언어2 - 벌크 연산 참고)을 사용해서
@@ -136,8 +139,15 @@ public class Comment extends BaseTimeEntity {
         for(LikeComment likeComment : likeComments){
             likeComment.deleteLikeComment();
         }
+        this.member.updateMemberBadgeCnt(Badge.COMMENT, -1);
         this.parent = null;
         this.member = null;
         this.post = null;
     }
+
+    @PrePersist
+    public void beforeSave(){
+        this.member.updateMemberBadgeCnt(Badge.COMMENT, 1);
+    }
+
 }

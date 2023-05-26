@@ -27,9 +27,8 @@ public enum ErrorCode {
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 401),
   DUPLICATED_TASK(HttpStatus.BAD_REQUEST, 400),
   REPORT_MY_RESOURCE(HttpStatus.BAD_REQUEST, 400),
-  EMPTY_DETAIL_IN_ETC_REPORT(HttpStatus.BAD_REQUEST, 400);
-
-
+  EMPTY_DETAIL_IN_ETC_REPORT(HttpStatus.BAD_REQUEST, 400),
+  INCOMPATIBLE_PARAMETER(HttpStatus.BAD_REQUEST, 400);
 
   private HttpStatus status;
   private int code;

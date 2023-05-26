@@ -4,6 +4,8 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.Repo
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedCommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostsRes;
+import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.Alarm;
+import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.AlarmType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
@@ -31,6 +33,8 @@ import java.util.List;
  * 2023/05/11        solmin       최초 생성
  * 2023/05/23        solmin       트랜잭션 시 조회만 하는 경우 readOnly 옵션 추가
  * 2023/05/23        solmin       관리자 서비스 구현 완료
+ * 2023/05/26        solmin       댓글/글 삭제시 알람 생성 구현
+ *                                TODO 추후 계층 분리해서 작성할 예정
  */
 @Service
 @RequiredArgsConstructor
@@ -42,6 +46,8 @@ public class AdminService {
     private final LikeCommentRepository likeCommentRepository;
     private final ReportCommentRepository reportCommentRepository;
     private final ReportPostRepository reportPostRepository;
+    private final AlarmRepository alarmRepository;
+
     private static final int MAX_SIZE =10;
     @Transactional(readOnly = true)
     public ReportedPostsRes getReportedPosts(int page) {
@@ -113,15 +119,26 @@ public class AdminService {
         Post findPost = postRepository.findById(postId)
             .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
+        alarmRepository.save(Alarm.createAlarm()
+            .member(findPost.getMember())
+            .type(AlarmType.DELETE_POST)
+            .msg("관리자에 의해서 댓글이 삭제되었습니다.")
+            .build());
+
         findPost.deletePost();
         postRepository.delete(findPost);
     }
-
 
     @Transactional
     public void deleteReportedComment(Long commentId) {
         Comment findComment = commentRepository.findById(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
+
+        alarmRepository.save(Alarm.createAlarm()
+            .member(findComment.getMember())
+            .type(AlarmType.DELETE_COMMENT)
+            .msg("관리자에 의해서 댓글이 삭제되었습니다.")
+            .build());
 
         findComment.deleteComment();
         commentRepository.deleteById(commentId);
