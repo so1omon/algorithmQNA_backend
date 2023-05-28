@@ -33,6 +33,7 @@ import javax.validation.Valid;
  * 2023/05/11        janguni            최초 생성
  * 2023/05/19        solmin             게시글 작성 시 postId, 작성일 정보 리턴
  * 2023/05/23        solmin             게시글 신고 시 validation 일부 추가
+ * 2023/05/28        janguni            게시물 목록 조회 필터링 조건 추가
  */
 
 @RestController
@@ -46,7 +47,7 @@ public class PostApiController {
     /**
      * 게시물 등록
      */
-    @PostMapping("/")
+    @PostMapping()
     public Res<PostWriteRes> writePost(@RequestBody @Valid PostCreateReq postCreateReq, Authentication authentication){
         Member findMember = getLoginMember(authentication);
         PostWriteRes result = postService.writePost(postCreateReq, findMember);
@@ -117,12 +118,17 @@ public class PostApiController {
     /**
      * 게시물 목록 조회
      */
-    @GetMapping("")
+    @GetMapping()
     public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory categoryName,
                                          @RequestParam("type") @Valid PostType type,
                                          @RequestParam("sort") @Valid PostSortType sortName,
-                                         @RequestParam("page") int pageNumber){
-        PostsResultRes postsResultRes = postService.readPosts(categoryName, type, sortName, pageNumber);
+                                         @RequestParam("page") int pageNumber,
+                                         @RequestParam(required = false, name = "hasCommentCond") boolean hasCommentCond,
+                                         @RequestParam(required = false, name = "keyWordCond") String keyWordCond,
+                                         @RequestParam(required = false, name = "titleCond") String titleCond,
+                                         @RequestParam(required = false, name = "memberNameCond") String memberNameCond,
+                                         @RequestParam(required = false, name = "isAcceptedCond") boolean isAcceptedCommentCond) {
+        PostsResultRes postsResultRes = postService.readPosts(categoryName, type, sortName, pageNumber, hasCommentCond, keyWordCond, titleCond, memberNameCond, isAcceptedCommentCond);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
     }
 

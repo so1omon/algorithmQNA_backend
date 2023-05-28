@@ -242,7 +242,7 @@ public class PostService {
     /**
      * 게시물 목록 조회
      */
-    public PostsResultRes readPosts(PostCategory categoryName, PostType postType, PostSortType sortName, int pageNumber){
+    public PostsResultRes readPosts(PostCategory categoryName, PostType postType, PostSortType sortName, int pageNumber, boolean hasCommentCond, String keyWordCond, String titleCond, String memberNameCond, boolean isAcceptedCommentCond){
         Page<Post> pagePosts=null;
 
         switch (sortName) {
