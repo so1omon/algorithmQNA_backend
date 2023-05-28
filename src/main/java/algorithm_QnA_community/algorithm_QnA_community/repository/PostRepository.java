@@ -27,10 +27,10 @@ import java.util.List;
  */
 public interface PostRepository extends JpaRepository<Post, Long> {
     // 최신순으로 정렬
-    Page<Post> findByCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
 
     // 오래된 순으로 정렬
-    Page<Post> findByCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByCreatedDateAsc(PostCategory category, PostType postType, Pageable pageable);
 
 
     // 추천-비추천 내림차순
@@ -66,17 +66,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("select p from Post p" +
             " left join p.comments c" +
-            " where p.category = :category" +
+            " where p.postCategory = :category" +
             " and p.type = :postType" +
             " group by p" +
             " order by p.views * 0.5 + ((p.likeCnt)*(p.likeCnt) / (p.likeCnt + p.dislikeCnt)) * 0.3 + count(c) * 0.2 desc")
     Page<Post> findByPopular(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
     // 조회수 오름차순
-    Page<Post> findByCategoryAndTypeOrderByViewsAsc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByViewsAsc(PostCategory category, PostType postType, Pageable pageable);
 
     // 조회수 내림차순
-    Page<Post> findByCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
+    Page<Post> findByPostCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
 
 
     // postId 리스트에 해당하는 post를 Pageable하게 가져오기
