@@ -65,11 +65,15 @@ public class OAuthService {
      * 구글 로그인 창으로 이동하는 uri 구성
      */
     public String getOauthRedirectURL() {
+
         Map<String, Object> params = new HashMap<>();
-        params.put("scope", "profile");
+        params.put("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile");
         params.put("response_type", "code");
         params.put("client_id", clientId);
         params.put("redirect_uri", redirectUri);
+        params.put("access_type", "offline");
+        params.put("approval_prompt", "force");
+        params.put("state", UUID.randomUUID().toString());
 
         String parameterString = params.entrySet().stream()
                 .map(x -> x.getKey() + "=" + x.getValue())
@@ -81,6 +85,8 @@ public class OAuthService {
 
 
     public ResponseTokenAndMember login(String code, String state){
+        log.info("      code={}", code);
+        log.info("      state={}", state);
 
         AccessTokenAndRefreshUUID tokenInfo = getToken(code); // 액세스 토큰과 refreshUUID 얻어옴
 
@@ -88,11 +94,11 @@ public class OAuthService {
 
         MemberInfoRes memberInfo = getMemberInfo(tokenInfo.getAccessToken(), state); // 사용자 정보 받기
 
-        log.info("memberInfo= {}", memberInfo);
 
         // 처음 로그인을 시도한 사용자라면 회원가입 처리
-        Optional<Member> findMember = memberRepository.findByEmail(memberInfo.getName());
+        Optional<Member> findMember = memberRepository.findByEmail(memberInfo.getEmail());
         if (findMember.isEmpty()){
+            log.info("처음 들어온 회원={}", memberInfo.getName());
             Member member = Member.createMember()
                     .email(memberInfo.getEmail())
                     .name(memberInfo.getName())
@@ -146,9 +152,6 @@ public class OAuthService {
 
     public MemberInfoRes getMemberInfo(String accessToken, String state) {
         try {
-
-            log.info("accessToken = {}", accessToken);
-
             String GOOGLE_USERINFO_REQUEST_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
             //header에 accessToken을 담는다.
@@ -161,7 +164,8 @@ public class OAuthService {
 
             // getForObject 메소드를 사용하여 구글 사용자 정보를 가져온다.
             ResponseEntity<String> response = restTemplate.exchange(GOOGLE_USERINFO_REQUEST_URL, HttpMethod.GET, request, String.class);
-            log.info("memberInfo body = {}", response.getBody());
+            log.info("구글로 부터 받아온");
+            log.info("  memberInfo body = {}", response.getBody());
 
             JsonParser jsonParser = new JsonParser();
             JsonElement jsonElement = jsonParser.parse(response.getBody());
@@ -170,6 +174,7 @@ public class OAuthService {
             String profile = jsonElement.getAsJsonObject().get("picture").getAsString();
 
             MemberInfoRes memberInfoRes = new MemberInfoRes(email, name, profile, state);
+            log.info("memberInfoRes={}", memberInfoRes);
             return memberInfoRes;
         } catch (Exception e) {
             return null;
@@ -182,7 +187,6 @@ public class OAuthService {
      * @return accessToken refreshUUID
      */
     private AccessTokenAndRefreshUUID getToken(String code) {
-
 
         // HTTP 요청에 필요한 파라미터를 설정
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
@@ -197,7 +201,8 @@ public class OAuthService {
         // HTTP 헤더를 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        URI uri = URI.create("https://accounts.google.com/o/oauth2/token");
+        //URI uri = URI.create("https://accounts.google.com/o/oauth2/token");
+        URI uri = URI.create("https://oauth2.googleapis.com/token");
 
         // HTTP 요청을 보내고 OAuth2 Access Token을 받아옴
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
@@ -214,6 +219,10 @@ public class OAuthService {
         JsonElement jsonElement = jsonParser.parse(response.getBody());
         String accessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
         String refreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
+
+        log.info("google로 부터 받아온");
+        log.info("  access_token= {}", accessToken);
+        log.info("  refresh_token={}", refreshToken);
 
         // refreshToken redis에 저장(uuid가 key)
         ValueOperations<String, String> vop = redisTemplate.opsForValue();

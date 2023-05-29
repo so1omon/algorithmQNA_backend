@@ -121,7 +121,7 @@ public class PostService {
 
         // 본인이 쓴 게시물이 맞는지 확인
         checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
-
+        findPost.deletePost();
         postRepository.delete(findPost);
     }
 
