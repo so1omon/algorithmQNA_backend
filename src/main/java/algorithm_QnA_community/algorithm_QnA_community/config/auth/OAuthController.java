@@ -78,6 +78,7 @@ public class OAuthController {
 
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
+                    .path("/")
                     //.secure(true)
                     .build();
 
@@ -85,6 +86,7 @@ public class OAuthController {
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
                     //.secure(true)
+                    .path("/")
                     .build();
 
             return ResponseEntity.status(HttpStatus.OK)

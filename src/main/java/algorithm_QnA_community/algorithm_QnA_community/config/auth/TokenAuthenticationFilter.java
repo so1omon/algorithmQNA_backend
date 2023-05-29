@@ -60,10 +60,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
         try {
-            // 세션 false 처리
-            //request.getSession(false);
-
-            // 액세스 토큰과 refreshUUID 값 추출
 
             // 관리자 테스트용 코드 시작 //
             String isAdmin = request.getHeader("isAdmin");
@@ -76,6 +72,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             }
             // 관리자 테스트용 코드 끝 //
 
+
+            // 액세스 토큰과 refreshUUID 값 추출
             String accessToken = null;
             String refreshUUID = null;
             Cookie[] cookies = request.getCookies();
@@ -132,10 +130,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
             Cookie accessCookie = new Cookie("access_token", accessToken);
+            accessCookie.setDomain("/");
             //accessCookie.setSecure(true);
             accessCookie.setHttpOnly(true);
             Cookie refreshCookie = new Cookie("refresh_uuid", refreshUUID);
             //refreshCookie.setSecure(true);
+            accessCookie.setDomain("/");
             refreshCookie.setHttpOnly(true);
 
             httpResponse.addCookie(accessCookie);
