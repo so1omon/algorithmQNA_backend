@@ -122,7 +122,7 @@ public class AdminService {
         alarmRepository.save(Alarm.createAlarm()
             .member(findPost.getMember())
             .type(AlarmType.DELETE_POST)
-            .msg("관리자에 의해서 댓글이 삭제되었습니다.")
+            .msg("관리자에 의해서 게시글이 삭제되었습니다.")
             .build());
 
         findPost.deletePost();

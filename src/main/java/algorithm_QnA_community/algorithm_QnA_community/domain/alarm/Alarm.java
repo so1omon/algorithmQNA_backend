@@ -66,7 +66,7 @@ public class Alarm {
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
