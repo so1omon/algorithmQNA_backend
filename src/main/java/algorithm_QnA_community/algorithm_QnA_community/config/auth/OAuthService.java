@@ -84,6 +84,8 @@ public class OAuthService {
 
 
     public ResponseTokenAndMember login(String code, String state){
+        log.info("      code={}", code);
+        log.info("      state={}", state);
 
         AccessTokenAndRefreshUUID tokenInfo = getToken(code); // 액세스 토큰과 refreshUUID 얻어옴
 
@@ -185,7 +187,6 @@ public class OAuthService {
      * @return accessToken refreshUUID
      */
     private AccessTokenAndRefreshUUID getToken(String code) {
-
 
         // HTTP 요청에 필요한 파라미터를 설정
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();

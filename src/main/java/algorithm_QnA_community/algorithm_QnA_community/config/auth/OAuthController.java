@@ -62,7 +62,7 @@ public class OAuthController {
      */
     @GetMapping("/oauth/login")
     public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
-
+        log.info("======= 로그인 시도=======");
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code, state);
 
