@@ -65,14 +65,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AccessDeniedHandler accessDeniedHandler;
 
     // == code 필요할 때 (시작)== //
-    /**
+    ///**
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(
                 "/",
                 "/login/**",
                 "/auth/not-secured",
-                "/google/callback/**"
+                "/google/callback/**",
+                "/oauth/**"
         );
     }
 
@@ -96,13 +97,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .userService(oAuth2UserService());
     }
 
-    **/
+    //**/
     // == code 필요할 때 (끝)== //
 
 
 
     // == 실제 운영 (시작)== //
-    ///**
+    /**
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers(

@@ -65,11 +65,14 @@ public class OAuthService {
      * 구글 로그인 창으로 이동하는 uri 구성
      */
     public String getOauthRedirectURL() {
+
+
         Map<String, Object> params = new HashMap<>();
         params.put("scope", "profile");
         params.put("response_type", "code");
         params.put("client_id", clientId);
         params.put("redirect_uri", redirectUri);
+        params.put("state", UUID.randomUUID().toString());
 
         String parameterString = params.entrySet().stream()
                 .map(x -> x.getKey() + "=" + x.getValue())

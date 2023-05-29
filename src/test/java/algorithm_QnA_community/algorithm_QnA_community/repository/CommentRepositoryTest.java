@@ -7,27 +7,15 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.Before;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.event.annotation.BeforeTestExecution;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.*;
 
 
 /**
@@ -83,7 +71,8 @@ class CommentRepositoryTest {
     }
 
 
-    @BeforeTestExecution
+    //@BeforeTestExecution
+    @BeforeEach
     void getMember() {
         Member member = Member.createMember()
             .name("solmin")
@@ -98,6 +87,7 @@ class CommentRepositoryTest {
                 .title("게시글" + i)
                 .postCategory(PostCategory.DFS_BFS)
                 .content("<p>bfs어려워요" + i + "</p")
+                            .type(PostType.QNA)
                 .member(member)
                 .build()
             );

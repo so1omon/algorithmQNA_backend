@@ -77,13 +77,13 @@ public class OAuthController {
 
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
-                    .secure(true)
+                    //.secure(true)
                     .build();
 
 
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
-                    .secure(true)
+                    //.secure(true)
                     .build();
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -127,12 +127,12 @@ public class OAuthController {
 
 
     // ====================== 임시용 ====================== //
-    @GetMapping("/google/callback")
-    public ResponseEntity<CodeAndState> callback(@RequestParam String code, @RequestParam String state){
-        CodeAndState codeAndState = new CodeAndState(code, state);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(codeAndState);
-    }
+//    @GetMapping("/google/callback")
+//    public ResponseEntity<CodeAndState> callback(@RequestParam String code, @RequestParam String state){
+//        CodeAndState codeAndState = new CodeAndState(code, state);
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(codeAndState);
+//    }
 
     @GetMapping("/test")
     public ResponseEntity<String> test(@AuthenticationPrincipal PrincipalDetails principal){
