@@ -66,12 +66,13 @@ public class OAuthService {
      */
     public String getOauthRedirectURL() {
 
-
         Map<String, Object> params = new HashMap<>();
-        params.put("scope", "profile");
+        params.put("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile");
         params.put("response_type", "code");
         params.put("client_id", clientId);
         params.put("redirect_uri", redirectUri);
+        params.put("access_type", "offline");
+        params.put("approval_prompt", "force");
         params.put("state", UUID.randomUUID().toString());
 
         String parameterString = params.entrySet().stream()
@@ -151,9 +152,6 @@ public class OAuthService {
 
     public MemberInfoRes getMemberInfo(String accessToken, String state) {
         try {
-
-            log.info("accessToken = {}", accessToken);
-
             String GOOGLE_USERINFO_REQUEST_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
             //header에 accessToken을 담는다.
@@ -166,7 +164,8 @@ public class OAuthService {
 
             // getForObject 메소드를 사용하여 구글 사용자 정보를 가져온다.
             ResponseEntity<String> response = restTemplate.exchange(GOOGLE_USERINFO_REQUEST_URL, HttpMethod.GET, request, String.class);
-            log.info("memberInfo body = {}", response.getBody());
+            log.info("구글로 부터 받아온");
+            log.info("  memberInfo body = {}", response.getBody());
 
             JsonParser jsonParser = new JsonParser();
             JsonElement jsonElement = jsonParser.parse(response.getBody());
@@ -175,6 +174,7 @@ public class OAuthService {
             String profile = jsonElement.getAsJsonObject().get("picture").getAsString();
 
             MemberInfoRes memberInfoRes = new MemberInfoRes(email, name, profile, state);
+            log.info("memberInfoRes={}", memberInfoRes);
             return memberInfoRes;
         } catch (Exception e) {
             return null;
@@ -219,6 +219,10 @@ public class OAuthService {
         JsonElement jsonElement = jsonParser.parse(response.getBody());
         String accessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
         String refreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
+
+        log.info("google로 부터 받아온");
+        log.info("  access_token= {}", accessToken);
+        log.info("  refresh_token={}", refreshToken);
 
         // refreshToken redis에 저장(uuid가 key)
         ValueOperations<String, String> vop = redisTemplate.opsForValue();
