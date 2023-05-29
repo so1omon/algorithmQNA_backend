@@ -67,7 +67,7 @@ class PostRepositoryTest {
         for (int i = 0; i < 4; i++) {
             postRepository.save(Post.createPost()
                 .title("게시글" + i)
-                .category(PostCategory.DFS_BFS)
+                .postCategory(PostCategory.DFS_BFS)
                 .content("<p>bfs어려워요" + i + "</p")
                 .member(member)
                 .build()
@@ -102,7 +102,7 @@ class PostRepositoryTest {
 
         Post post = Post.createPost()
                 .title("게시글")
-                .category(PostCategory.DFS_BFS)
+                .postCategory(PostCategory.DFS_BFS)
                 .content("<p>bfs어려워요</p")
                 .member(member)
                 .type(PostType.QNA)
@@ -150,7 +150,7 @@ class PostRepositoryTest {
                     .member(member)
                     .title("게시물 제목")
                     .content("게시물 내용")
-                    .category(PostCategory.DP)
+                    .postCategory(PostCategory.DP)
                     .type(PostType.QNA)
                     .build();
             postRepository.save(post);
@@ -292,7 +292,7 @@ class PostRepositoryTest {
                 .member(member1)
                 .title("게시물2")
                 .content("게시물 내용")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
         postRepository.save(post2);
@@ -322,7 +322,7 @@ class PostRepositoryTest {
                 .member(member1)
                 .title("게시물1")
                 .content("게시물 내용")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
         postRepository.save(post1);
@@ -344,7 +344,7 @@ class PostRepositoryTest {
                 .member(member1)
                 .title("게시물3")
                 .content("게시물 내용")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
         postRepository.save(post3);

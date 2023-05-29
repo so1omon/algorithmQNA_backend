@@ -1,6 +1,5 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
-import algorithm_QnA_community.algorithm_QnA_community.InitDB;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
@@ -97,7 +96,7 @@ class CommentRepositoryTest {
         for (int i = 0; i < 4; i++) {
             postRepository.save(Post.createPost()
                 .title("게시글" + i)
-                .category(PostCategory.DFS_BFS)
+                .postCategory(PostCategory.DFS_BFS)
                 .content("<p>bfs어려워요" + i + "</p")
                 .member(member)
                 .build()
@@ -126,7 +125,7 @@ class CommentRepositoryTest {
                 .member(member)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 

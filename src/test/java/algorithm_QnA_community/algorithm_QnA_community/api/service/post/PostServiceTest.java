@@ -5,6 +5,7 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
@@ -130,7 +131,7 @@ class PostServiceTest {
                 .member(findMember.get())
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
@@ -158,7 +159,7 @@ class PostServiceTest {
                 .member(findMember.get())
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
@@ -194,7 +195,7 @@ class PostServiceTest {
                 .member(findMember)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
@@ -236,7 +237,7 @@ class PostServiceTest {
                 .member(findMember)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
@@ -281,7 +282,7 @@ class PostServiceTest {
                 .member(findMember)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
@@ -323,13 +324,13 @@ class PostServiceTest {
                 .member(reportedMember)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
         postRepository.save(post);
 
         // when
-        ReportReq postReportReq = new ReportReq("ETC",null);
+        ReportReq postReportReq = new ReportReq("SLANG", null, true);
         postService.reportPost(post.getId(), postReportReq, reportingMember);
         em.flush();
         em.clear();
@@ -339,7 +340,7 @@ class PostServiceTest {
         Assertions.assertThat(findReportPost).isNotEmpty();
 
         Assertions.assertThat(findReportPost.get().getDetail()).isEqualTo("기타 사유 없음");
-
+    }
 
     /**
      * (오류) - 자신이 작성한 게시물을 신고한 경우
@@ -356,14 +357,14 @@ class PostServiceTest {
                 .member(reportedMember)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
         postRepository.save(post);
 
         // when
-        ReportReq postReportReq = new ReportReq("AD",null);
+        ReportReq postReportReq = new ReportReq("AD",null, true);
 
         // then
         Assertions.assertThatThrownBy(() ->postService.reportPost(post.getId(), postReportReq, reportedMember))
@@ -385,7 +386,7 @@ class PostServiceTest {
                 .member(findMember)
                 .title("title")
                 .content("content")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
 
@@ -449,7 +450,7 @@ class PostServiceTest {
                     .member(findMember)
                     .title("title"+i)
                     .content("content")
-                    .category(PostCategory.DP)
+                    .postCategory(PostCategory.DP)
                     .type(PostType.TIP)
                     .build();
             postRepository.save(post);

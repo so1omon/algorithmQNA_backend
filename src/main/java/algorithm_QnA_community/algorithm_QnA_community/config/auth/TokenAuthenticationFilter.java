@@ -132,10 +132,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter implements I
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
             Cookie accessCookie = new Cookie("access_token", accessToken);
-            accessCookie.setSecure(true);
+            //accessCookie.setSecure(true);
             accessCookie.setHttpOnly(true);
             Cookie refreshCookie = new Cookie("refresh_uuid", refreshUUID);
-            refreshCookie.setSecure(true);
+            //refreshCookie.setSecure(true);
             refreshCookie.setHttpOnly(true);
 
             httpResponse.addCookie(accessCookie);
