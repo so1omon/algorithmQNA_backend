@@ -5,6 +5,8 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.*;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
+import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.Alarm;
+import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.AlarmType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikeComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
@@ -47,6 +49,8 @@ import static java.util.stream.Collectors.*;
  * 2023/05/19        solmin       나의 반응 리스트를 미리 조회해서 CommetRes 생성 시 나의 반응정보 같이 삽입
  * 2023/05/19        solmin       공통 DTO 참조 변경
  * 2023/05/23        solmin       일부 @Transactional readonly 추가
+ * 2023/05/26        solmin       댓글 작성, 채택 시 관련된 멤버에게 알림 생성
+ *                                TODO 추후 계층 분리해서 작성할 예정
  */
 
 @Service
@@ -59,6 +63,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final LikeCommentRepository likeCommentRepository;
     private final ReportCommentRepository reportCommentRepository;
+    private final AlarmRepository alarmRepository;
 
     @Transactional
     public CommentCreateRes writeComment(Long postId, CommentCreateReq commentCreateReq, Member member){
@@ -81,7 +86,34 @@ public class CommentService {
             .parent(parentComment)
             .build();
 
-        commentRepository.save(comment);
+        Long savedCommentId = commentRepository.save(comment).getId();
+
+        String message  = member.getName()+ "님이 댓글을 남겼습니다.";
+
+        List<Member> membersToNotify = new ArrayList<>();
+        // 1. 게시글 작성자에게
+        if(comment.getPost().getMember().getId()!=member.getId()) {
+            membersToNotify.add(comment.getPost().getMember());
+        }
+        // 2. 내 부모 댓글에게
+        if(comment.getParent()!=null && comment.getParent().getMember().getId()!= member.getId()){
+            membersToNotify.add(comment.getParent().getMember());
+        }
+        // 3. mentioner에게
+        if(comment.getMentioner()!=null && comment.getMentioner().getId()!= member.getId()){
+            membersToNotify.add(comment.getMentioner());
+        }
+        membersToNotify.forEach(targetMember -> {
+            alarmRepository.save(Alarm.createAlarm()
+                .member(targetMember)
+                .type(AlarmType.COMMENT_WRITE)
+                .msg(message)
+                .subjectMemberName(member.getName())
+                .member(targetMember)
+                .commentId(savedCommentId)
+                .eventUrl("/post/"+comment.getPost().getId())
+                .build());
+        });
 
         return new CommentCreateRes(comment);
     }
@@ -108,16 +140,10 @@ public class CommentService {
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
         Optional<LikeComment> findLikeComment = likeCommentRepository.findByCommentIdAndMemberId(commentId, member.getId());
 
-        if(commentLikeReq.getCancel()){ // 만약 나의 추천정보 삭제라면
-            try{
-                if(findLikeComment.isPresent()) {
-                    findComment.updateLikeCnt(findLikeComment.get().isLike(), false);
-                }
-                likeCommentRepository.deleteByCommentIdAndMemberId(commentId, member.getId());
-            }catch (EmptyResultDataAccessException e){
-                log.info("존재하지 않는 추천정보 삭제 시도");
-            }
-
+        if(commentLikeReq.getCancel() && findLikeComment.isPresent()){ // 만약 나의 추천정보 삭제라면
+            findComment.updateLikeCnt(findLikeComment.get().isLike(), false);
+            findLikeComment.get().deleteLikeComment();
+            likeCommentRepository.deleteById(findLikeComment.get().getId());
             return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 추천정보를 삭제했습니다."));
         }else{
             // 1. 만약 존재한다면 업데이트하고 끝 (updateState)
@@ -141,7 +167,7 @@ public class CommentService {
 
     @Transactional
     public void pinComment(Long commentId, Member member) {
-//        member = memberRepository.findById(1L).get();
+
         Comment findComment = commentRepository.findByIdWithPost(commentId)
             .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
 
@@ -157,6 +183,18 @@ public class CommentService {
             c.updatePin(false);
         });
         findComment.updatePin(true);
+
+        // 채택 시 알람 생성
+        if(member.getId()!=findComment.getMember().getId()) {
+            alarmRepository.save(Alarm.createAlarm()
+                .member(findComment.getMember())
+                .type(AlarmType.PINNED)
+                .msg(member.getName() + "님이 댓글을 채택했습니다.")
+                .eventUrl("/post/" + findComment.getPost().getId())
+                .subjectMemberName(member.getName())
+                .build());
+        }
+
     }
 
     @Transactional

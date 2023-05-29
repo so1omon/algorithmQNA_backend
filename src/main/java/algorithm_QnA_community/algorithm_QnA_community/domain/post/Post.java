@@ -3,6 +3,7 @@ package algorithm_QnA_community.algorithm_QnA_community.domain.post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.BaseTimeEntity;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Badge;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import lombok.*;
@@ -36,6 +37,7 @@ import java.util.List;
  * 2023/05/16        janguni      updateViews 추가
  * 2023/05/18        janguni      Member연관관계 CascadeType.ALL -> CascadeType.PERSIST로 변경
  * 2023/05/23        solmin       삭제 편의 연관관계 메소드 추가
+ * 2023/05/26        solmin       생성 시 멤버 뱃지 카운트 변경
  */
 @Entity
 @Getter
@@ -139,8 +141,14 @@ public class Post extends BaseTimeEntity {
         for(LikePost likePost : likePosts){
             likePost.deleteLikePost();
         }
-
+        this.member.updateMemberBadgeCnt(Badge.POST, -1);
         this.member = null;
     }
+
+    @PrePersist
+    public void beforeSave(){
+        this.member.updateMemberBadgeCnt(Badge.POST, 1);
+    }
+
 
 }
