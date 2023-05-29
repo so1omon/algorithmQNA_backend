@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
  * -----------------------------------------------------------
  * 2023/05/01        solmin       최초 생성
  * 2023/05/11        solmin       DynamicInsert 추가
+ * 2023/05/26        solmin       일부 필드 및 생성자, 연관관계 메소드 수정
  */
 @Entity
 @Getter
@@ -32,8 +33,10 @@ public class Alarm {
     @Column(name = "alarm_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String subjectMemberName;
+
+    private Long commentId;
 
     private String eventUrl;
 
@@ -46,27 +49,35 @@ public class Alarm {
     @Column(nullable = false)
     private AlarmType type;
 
-
     @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdDate;
 
     @Builder(builderClassName = "createAlarm", builderMethodName = "createAlarm")
-    private Alarm(Member member, String subjectMemberName, String eventUrl, AlarmType type){
+    private Alarm(Member member, String subjectMemberName, String eventUrl, AlarmType type, String msg, Long commentId){
         this.member = member;
-        member.getAlarms().add(this);
         this.subjectMemberName = subjectMemberName;
         this.eventUrl = eventUrl;
         this.type = type;
+        this.msg = msg;
+        this.member.getAlarms().add(this);
+        this.commentId = commentId;
     }
 
     //----------------- 연관관계 필드 시작 -----------------//
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "member_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
+
 
     //----------------- 연관관계 메소드 시작 -----------------//
 
+    public void check(){
+        this.checked = true;
+    }
 
+    public void deleteAlarm(){
+        this.member = null;
+    }
 }

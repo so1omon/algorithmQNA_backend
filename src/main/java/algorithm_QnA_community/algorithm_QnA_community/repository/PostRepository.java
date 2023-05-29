@@ -60,7 +60,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("select p from Post p" +
             " left join p.comments c" +
             " where p.postCategory = :category" +
-            " and p.type = :postType" +
+            " and p.type    = :postType" +
             " group by p order by count(c) asc")
     Page<Post> findPostOrderByCommentCntAsc(@Param("category") PostCategory category, @Param("postType") PostType postType, Pageable pageable);
 
