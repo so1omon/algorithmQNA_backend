@@ -3,6 +3,7 @@ package algorithm_QnA_community.algorithm_QnA_community.config.exception;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatusWithBadRequest;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
+import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import javax.naming.SizeLimitExceededException;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.config.Exception
@@ -64,9 +69,23 @@ public class ExceptionHandlerAdvice {
     public Res<List<ValidationErr>> validException(MethodArgumentNotValidException e) {
         List<ValidationErr> validationErrs = new ArrayList<>();
 
+        Map<String, String> errorMap = new HashMap<>();
+
+
+
         e.getBindingResult().getAllErrors().forEach(error->{
-            validationErrs.add(new ValidationErr(((FieldError) error).getField(), error.getDefaultMessage()));
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errorMap.put(field, message);
+//            validationErrs.add(new ValidationErr(((FieldError) error).getField(), error.getDefaultMessage()));
         });
+
+        for(String key : errorMap.keySet()){
+            validationErrs.add(ValidationErr.builder()
+                .field(key)
+                .message(errorMap.get(key))
+                .build());
+        }
 
         DefStatus defStatus = new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
             "입력값 중 검증에 실패한 값이 있습니다.",true);
@@ -102,6 +121,7 @@ public class ExceptionHandlerAdvice {
     }
 
     @Data
+    @Builder
     private static class ValidationErr{
         private String field;
         private String message;

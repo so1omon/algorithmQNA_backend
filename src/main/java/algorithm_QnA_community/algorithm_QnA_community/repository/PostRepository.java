@@ -83,4 +83,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // AdminService에서 사용중입니다!
     @Query(value = "select p from Post p where p.id in :postIds")
     Page<Post> findByPostIds(@Param("postIds") List<Long> postIds, Pageable pageable);
+
+    Page<Post> findByPostTypeOrderByCreatedDateDesc(PostType postType, Pageable pageable);
 }

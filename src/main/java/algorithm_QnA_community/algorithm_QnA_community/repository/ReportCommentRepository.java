@@ -2,6 +2,7 @@ package algorithm_QnA_community.algorithm_QnA_community.repository;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,6 +23,7 @@ import java.util.Optional;
  * 2023/05/09        solmin       최초 생성
  * 2023/05/23        solmin       일부 인터페이스 추가
  */
+@Qualifier()
 public interface ReportCommentRepository extends JpaRepository<ReportComment, Long> {
     @Query("select distinct (rp.comment.id) from ReportComment rp")
     List<Long> findCommentIdsByExist();

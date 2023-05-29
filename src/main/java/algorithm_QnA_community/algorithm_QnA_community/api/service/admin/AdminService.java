@@ -3,14 +3,17 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.admin;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedCommentDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedCommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostDetailRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostsRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.PostPageRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.Alarm;
 import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.AlarmType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.repository.*;
+import algorithm_QnA_community.algorithm_QnA_community.utils.annotation.EnumValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,7 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.service.admin
@@ -50,14 +56,14 @@ public class AdminService {
 
     private static final int MAX_SIZE =10;
     @Transactional(readOnly = true)
-    public ReportedPostsRes getReportedPosts(int page) {
+    public PostPageRes getReportedPosts(int page) {
         // 1. 신고당한 내역이 존재하는 postId 리스트 모두 가져오기
         List<Long> reportedPostIds = reportPostRepository.findPostIdsByExist();
 
         // 2. post 정보들을 Pageable하게 가져오기
         Page<Post> posts = postRepository.findByPostIds(reportedPostIds, PageRequest.of(page, MAX_SIZE));
 
-        return ReportedPostsRes.builder()
+        return PostPageRes.builder()
                 .postPage(posts)
                 .build();
     }
@@ -144,4 +150,17 @@ public class AdminService {
         commentRepository.deleteById(commentId);
     }
 
+    @Transactional(readOnly = true)
+    public PostPageRes getNotices(int page, ) {
+        PostCategory postCategory = PostCategory.valueOf(postCategoryDto.getPostCategory());
+
+        return new PostPageRes(postRepository
+            .findByPostCategoryAndTypeOrderByCreatedDateDesc(postCategory, PostType.NOTICE, PageRequest.of(page, MAX_SIZE)));
+    }
+
+    @Transactional(readOnly = true)
+    public PostPageRes getNotices(int page) {
+        return new PostPageRes(postRepository
+            .findByPostTypeOrderByCreatedDateDesc(PostType.NOTICE,PageRequest.of(page, MAX_SIZE)));
+    }
 }

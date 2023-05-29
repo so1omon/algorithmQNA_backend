@@ -33,9 +33,9 @@ public class AdminApiController {
 
     private final AdminService adminService;
     @GetMapping("/post")
-    public Res<ReportedPostsRes> getReportedPosts(@RequestParam(required = false, name = "page", defaultValue = "0")
+    public Res<PostPageRes> getReportedPosts(@RequestParam(required = false, name = "page", defaultValue = "0")
                                                       @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page){
-        ReportedPostsRes result = adminService.getReportedPosts(page);
+        PostPageRes result = adminService.getReportedPosts(page);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 신고된 게시글을 조회했습니다."), result);
     }
 
@@ -60,6 +60,21 @@ public class AdminApiController {
 
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 신고된 게시글 상세내용을 조회했습니다."), result);
     }
+
+    @GetMapping("/admin/notice")
+    public Res<PostPageRes> getNotices(@RequestParam(required = false, name = "page", defaultValue = "0") @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page,
+                                       @RequestParam(required = false, name = "postCategory") String postCategory){
+
+        PostPageRes result;
+        if(postCategory==null){
+            result = adminService.getNotices(page);
+        }else{
+            result = adminService.getNotices(page, postCategory);
+        }
+
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 공지사항을 조회했습니다."), result);
+    }
+
 
     @DeleteMapping("/report/post/{report_post_id}")
     public Res deleteReportPost(@PathVariable("report_post_id") Long reportPostId){
