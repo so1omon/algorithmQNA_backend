@@ -83,7 +83,6 @@ public class OAuthController {
                     //.secure(true)
                     .build();
 
-
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
                     //.secure(true)

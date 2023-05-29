@@ -46,7 +46,7 @@ public class PostApiController {
     /**
      * 게시물 등록
      */
-    @PostMapping("/")
+    @PostMapping
     public Res<PostWriteRes> writePost(@RequestBody @Valid PostCreateReq postCreateReq, Authentication authentication){
         Member findMember = getLoginMember(authentication);
         PostWriteRes result = postService.writePost(postCreateReq, findMember);
@@ -117,7 +117,7 @@ public class PostApiController {
     /**
      * 게시물 목록 조회
      */
-    @GetMapping("")
+    @GetMapping
     public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory categoryName,
                                          @RequestParam("type") @Valid PostType type,
                                          @RequestParam("sort") @Valid PostSortType sortName,
