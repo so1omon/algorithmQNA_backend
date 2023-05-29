@@ -94,11 +94,11 @@ public class OAuthService {
 
         MemberInfoRes memberInfo = getMemberInfo(tokenInfo.getAccessToken(), state); // 사용자 정보 받기
 
-        log.info("memberInfo= {}", memberInfo);
 
         // 처음 로그인을 시도한 사용자라면 회원가입 처리
-        Optional<Member> findMember = memberRepository.findByEmail(memberInfo.getName());
+        Optional<Member> findMember = memberRepository.findByEmail(memberInfo.getEmail());
         if (findMember.isEmpty()){
+            log.info("처음 들어온 회원={}", memberInfo.getName());
             Member member = Member.createMember()
                     .email(memberInfo.getEmail())
                     .name(memberInfo.getName())

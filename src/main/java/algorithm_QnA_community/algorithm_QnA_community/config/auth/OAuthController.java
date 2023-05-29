@@ -79,6 +79,7 @@ public class OAuthController {
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
                     .path("/")
+                    .domain("13.54.50.218")
                     //.secure(true)
                     .build();
 
@@ -86,6 +87,7 @@ public class OAuthController {
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
                     //.secure(true)
+                    .domain("13.54.50.218")
                     .path("/")
                     .build();
 
