@@ -68,6 +68,7 @@ public class OAuthController {
 
 
         if (responseTokenAndMember == null) {
+            log.info("로그인에 실패하여 결국 forbidden");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.FAIL_AUTHORIZE_CODE), null));
         }

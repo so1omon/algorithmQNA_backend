@@ -200,7 +200,8 @@ public class OAuthService {
         // HTTP 헤더를 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        URI uri = URI.create("https://accounts.google.com/o/oauth2/token");
+        //URI uri = URI.create("https://accounts.google.com/o/oauth2/token");
+        URI uri = URI.create("https://oauth2.googleapis.com/token");
 
         // HTTP 요청을 보내고 OAuth2 Access Token을 받아옴
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
