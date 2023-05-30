@@ -6,9 +6,11 @@ import algorithm_QnA_community.algorithm_QnA_community.utils.annotation.EnumVali
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.post
@@ -21,6 +23,7 @@ import javax.validation.constraints.Size;
  * -----------------------------------------------------------
  * 2023/05/11        janguni       최초 생성
  * 2023/05/19        solmin        필드명 일부 변경
+ * 2023/05/30        janguni       keyWord 필드 추가
  */
 
 @Data
@@ -40,5 +43,8 @@ public class PostCreateReq {
 
     @EnumValidator(target = PostType.class, message = "올바른 내용타입을 입력하세요.")
     private String postType;
+
+    @Nullable
+    private List<String> keyWords;
 
 }

@@ -85,6 +85,7 @@ public class PostService {
                 .content(postCreateReq.getContent())
                 .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
                 .type(PostType.valueOf(postCreateReq.getPostType()))
+                .keyWords(postCreateReq.getKeyWords())
                 .build();
 
         Post savedPost = postRepository.save(post);
