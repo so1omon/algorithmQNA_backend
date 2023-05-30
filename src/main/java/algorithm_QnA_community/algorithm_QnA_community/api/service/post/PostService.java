@@ -50,6 +50,7 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/24        janguni            게시물 조회 시 해당 게시물 조회수+1 처리
  * 2023/05/26        solmin             좋아요 정보 삭제 시 연관관계 끊는 메소드 수행
  *                                      (원래 안건드릴려고 했는데 likeComment랑 너무 겹치는 내용이라 수정했어요 ㅜㅜ)
+ * 2023/05/30        janguni            게시물 등록, 수정, 조회 시 keyWords 관련 코드 추가
 */
 @Service
 @RequiredArgsConstructor
@@ -111,6 +112,7 @@ public class PostService {
         setIfNotNull(postUpdateReq.getContent(), findPost::updateContent);
         setIfNotNull(PostCategory.valueOf(postUpdateReq.getPostCategory()), findPost::updateCategory);
         setIfNotNull(PostType.valueOf(postUpdateReq.getPostType()),findPost::updateType);
+        setIfNotNull(postUpdateReq.getKeyWords(), findPost::updateKeyWords);
     }
 
     /**

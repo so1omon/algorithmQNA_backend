@@ -147,6 +147,10 @@ public class Post extends BaseTimeEntity {
         this.views +=1;
     }
 
+    public void updateKeyWords(List<String> keyWords) {
+        this.keyWords = combineKeyWords(keyWords);
+    }
+
 
     public void deletePost(){
 

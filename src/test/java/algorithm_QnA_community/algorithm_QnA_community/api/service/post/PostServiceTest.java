@@ -43,6 +43,7 @@ import static org.assertj.core.api.Assertions.*;
  * -----------------------------------------------------------
  * 2023/05/12        janguni       최초 생성
  * 2023/05/24        janguni       게시물 목록 test 중 존재하지 않은 페이지 번호 테스트
+ * 2023/05/30        janguni       게시물 등록, 수정, 조회 test 에서 keyWord 추가
  */
 
 @SpringBootTest
@@ -114,25 +115,33 @@ class PostServiceTest {
     @Test
     @Transactional
     void 게시물_수정(){
+
+        // given
         Optional<Member> findMember = memberRepository.findByEmail("uni12345@gmail.com");
 
         PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA", null);
 
         postService.writePost(postCreateReq, findMember.get());
 
+        // when
         List<Post> posts = findMember.get().getPosts();
+        List<String> keyWords= new ArrayList<>();
+        keyWords.add("카카오 기출");
+        keyWords.add("어려움");
+        keyWords.add("반복문");
 
         for (Post post: posts) {
-            PostUpdateReq postUpdateReq = new PostUpdateReq("title2", "content2","SORT", "TIP");
+            PostUpdateReq postUpdateReq = new PostUpdateReq("title2", "content2","SORT", "TIP", keyWords);
             postService.updatePost(post.getId(), postUpdateReq, findMember.get());
         }
 
-        List<Post> posts2 = findMember.get().getPosts();
-        for (Post post:posts) {
+        List<Post> findPosts = findMember.get().getPosts();
+        for (Post post:findPosts) {
             assertThat(post.getTitle()).isEqualTo("title2");
             assertThat(post.getContent()).isEqualTo("content2");
             assertThat(post.getPostCategory()).isEqualTo(PostCategory.valueOf("SORT"));
             assertThat(post.getType()).isEqualTo(PostType.valueOf("TIP"));
+            assertThat(post.getKeyWords()).isEqualTo("카카오 기출,어려움,반복문");
         }
     }
 
@@ -396,12 +405,18 @@ class PostServiceTest {
         // 게시물 하나 저장, 최상위 댓글 12개, 대댓글 11개, 10개, 9개
         Member findMember = memberRepository.findByEmail("uni12345@gmail.com").get();
 
+        List<String> keyWords= new ArrayList<>();
+        keyWords.add("카카오 기출");
+        keyWords.add("어려움");
+        keyWords.add("반복문");
+
         Post post = Post.createPost()
                 .member(findMember)
                 .title("title")
                 .content("content")
                 .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
+                .keyWords(keyWords)
                 .build();
 
         postRepository.save(post);
@@ -447,7 +462,12 @@ class PostServiceTest {
         //then
         assertThat(postDetailRes.getPostId()).isEqualTo(post.getId());
         assertThat(postDetailRes.getPostContent()).isEqualTo(post.getContent());
-        //log.info(postDetailRes.)
+
+        List<String> checkKeyWords= new ArrayList<>();
+        checkKeyWords.add("카카오 기출");
+        checkKeyWords.add("어려움");
+        checkKeyWords.add("반복문");
+        assertThat(postDetailRes.getKeyWords()).isEqualTo(checkKeyWords);
 
     }
 
