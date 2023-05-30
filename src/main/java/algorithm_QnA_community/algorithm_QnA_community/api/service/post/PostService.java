@@ -48,6 +48,8 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/21        janguni            게시물 조회 시 추천/비추천(게시물) 정보 코드 추가,
  *                                                  추천/비추천(댓글) 정보 코드 수정
  * 2023/05/24        janguni            게시물 조회 시 해당 게시물 조회수+1 처리
+ * 2023/05/26        solmin             좋아요 정보 삭제 시 연관관계 끊는 메소드 수행
+ *                                      (원래 안건드릴려고 했는데 likeComment랑 너무 겹치는 내용이라 수정했어요 ㅜㅜ)
 */
 @Service
 @RequiredArgsConstructor
@@ -119,7 +121,7 @@ public class PostService {
 
         // 본인이 쓴 게시물이 맞는지 확인
         checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
-
+        findPost.deletePost();
         postRepository.delete(findPost);
     }
 
@@ -143,6 +145,7 @@ public class PostService {
             if (!findLikePost.isPresent()) log.info("추천정보가 존재하지 않음");
             else {
                 findPost.updateLikeCnt(postLikeReq.getIsLike(), false);
+                findLikePost.get().deleteLikePost();
                 likePostRepository.delete(findLikePost.get());
             }
         }
@@ -247,10 +250,10 @@ public class PostService {
 
         switch (sortName) {
             case LATESTDESC: // 최신순
-                pagePosts = postRepository.findByCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case LATESTASC: // 오래된 순
-                pagePosts = postRepository.findByCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case COMMENTCNTASC: // 댓글 오름차순
                 pagePosts = postRepository.findPostOrderByCommentCntAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
@@ -259,16 +262,16 @@ public class PostService {
                 pagePosts = postRepository.findPostOrderByCommentCntDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case LIKEASC:   // 추천 오름차순
-                pagePosts = postRepository.findByCategoryOrderByLike_DislikeASC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByPostCategoryOrderByLike_DislikeASC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case LIKEDESC:  // 추천 내림차순
-                pagePosts = postRepository.findByCategoryOrderByLike_DislikeDESC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByPostCategoryOrderByLike_DislikeDESC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case VIEWCNTASC:    // 조회수 오름차순
-                pagePosts = postRepository.findByCategoryAndTypeOrderByViewsAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByPostCategoryAndTypeOrderByViewsAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case VIEWCNTDESC:   // 조회수 내림차순
-                pagePosts = postRepository.findByCategoryAndTypeOrderByViewsDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+                pagePosts = postRepository.findByPostCategoryAndTypeOrderByViewsDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
             case POPULAR:   // 인기순
                 pagePosts = postRepository.findByPopular(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));

@@ -80,7 +80,7 @@ class AdminServiceTest {
                 .member(member1)
                 .content("weafaweef")
                 .title("awefeawf")
-                .category(PostCategory.DFS_BFS)
+                .postCategory(PostCategory.DFS_BFS)
                 .type(PostType.QNA)
                 .build()
             );
@@ -90,7 +90,7 @@ class AdminServiceTest {
         // 3. 멤버가 게시물 신고
         for(int i=0;i<15;i++) {
             reportPostRepository.save(ReportPost.createReportPost()
-                .category(ReportCategory.AD)
+                .reportCategory(ReportCategory.AD)
                 .detail("ewafewaw")
                 .member(member2)
                 .post(posts.get(i))

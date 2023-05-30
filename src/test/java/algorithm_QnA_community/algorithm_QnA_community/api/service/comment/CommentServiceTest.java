@@ -87,7 +87,7 @@ class CommentServiceTest {
                 .member(reportedMember)
                 .title("게시물")
                 .content("게시물 내용")
-                .category(PostCategory.DP)
+                .postCategory(PostCategory.DP)
                 .type(PostType.QNA)
                 .build();
         postRepository.save(post);
@@ -100,7 +100,7 @@ class CommentServiceTest {
                 .build();
         commentRepository.save(comment);
 
-        ReportReq commentReportReq = new ReportReq("ETC", null);
+        ReportReq commentReportReq = new ReportReq("SLANG", null, true);
         commentService.reportComment(comment.getId(), commentReportReq, reportingMember);
 
         em.flush();

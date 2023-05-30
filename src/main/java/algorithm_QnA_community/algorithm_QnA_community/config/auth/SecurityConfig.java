@@ -72,7 +72,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/",
                 "/login/**",
                 "/auth/not-secured",
-                "/google/callback/**"
+                "/google/callback/**",
+                "/oauth/**"
         );
     }
 
