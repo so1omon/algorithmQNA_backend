@@ -248,10 +248,11 @@ public class PostService {
     /**
      * 게시물 목록 조회
      */
-    public PostsResultRes readPosts(PostCategory categoryName, PostType postType, PostSortType sortName, int pageNumber, boolean hasCommentCond, String keyWordCond, String titleCond, String memberNameCond, boolean isAcceptedCommentCond){
+    /**
+    public PostsResultRes readPosts(PostSearchDto postSearchDto){
         Page<Post> pagePosts=null;
 
-        switch (sortName) {
+        switch (PostSortType.valueOf(postSearchDto.getPostSort())) {
             case LATESTDESC: // 최신순
                 pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
@@ -279,7 +280,37 @@ public class PostService {
             case POPULAR:   // 인기순
                 pagePosts = postRepository.findByPopular(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
-        }
+
+
+        switch (PostSortType.valueOf(postSearchDto.getPostSort())) {
+        case LATESTDESC: // 최신순
+            pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case LATESTASC: // 오래된 순
+            pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case COMMENTCNTASC: // 댓글 오름차순
+            pagePosts = postRepository.findPostOrderByCommentCntAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case COMMENTCNTDESC: // 댓글 내림차순
+            pagePosts = postRepository.findPostOrderByCommentCntDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case LIKEASC:   // 추천 오름차순
+            pagePosts = postRepository.findByPostCategoryOrderByLike_DislikeASC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case LIKEDESC:  // 추천 내림차순
+            pagePosts = postRepository.findByPostCategoryOrderByLike_DislikeDESC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case VIEWCNTASC:    // 조회수 오름차순
+            pagePosts = postRepository.findByPostCategoryAndTypeOrderByViewsAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case VIEWCNTDESC:   // 조회수 내림차순
+            pagePosts = postRepository.findByPostCategoryAndTypeOrderByViewsDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+        case POPULAR:   // 인기순
+            pagePosts = postRepository.findByPopular(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
+            break;
+    }
 
         // 게시물 데이터
         List<Post> posts = pagePosts.getContent();
@@ -302,12 +333,13 @@ public class PostService {
         PostsResultRes postsResultRes = new PostsResultRes(curPageNumber, totalPageCount, next, prev, postSize, postDetail);
         return postsResultRes;
     }
+    **/
 
-    private List<PostSimpleDetail> convertToPostSimpleDetails(List<Post> totalPosts) {
-        List<PostSimpleDetail> posts = new ArrayList<>();
+    private List<PostSimpleDto> convertToPostSimpleDetails(List<Post> totalPosts) {
+        List<PostSimpleDto> posts = new ArrayList<>();
         for (Post post : totalPosts) {
             Member member = post.getMember();
-            PostSimpleDetail postSimpleDetail = new PostSimpleDetail(post.getId(), post.getTitle(), member.getId(), member.getName(), member.getProfileImgUrl(), post.getCreatedDate(), post.getViews(), post.getComments().size());
+            PostSimpleDto postSimpleDetail = new PostSimpleDto(post.getId(), post.getTitle(), member.getId(), member.getName(), member.getProfileImgUrl(), post.getCreatedDate(), post.getViews(), post.getViews());
             posts.add(postSimpleDetail);
         }
         return posts;

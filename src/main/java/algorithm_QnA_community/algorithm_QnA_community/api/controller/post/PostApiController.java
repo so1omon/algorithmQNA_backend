@@ -34,6 +34,7 @@ import javax.validation.Valid;
  * 2023/05/19        solmin             게시글 작성 시 postId, 작성일 정보 리턴
  * 2023/05/23        solmin             게시글 신고 시 validation 일부 추가
  * 2023/05/28        janguni            게시물 목록 조회 필터링 조건 추가
+ * 2023/05/31        janguni            게시물 목록 조회 @RequestBody로 변경
  */
 
 @RestController
@@ -119,8 +120,7 @@ public class PostApiController {
     /**
      * 게시물 목록 조회
      */
-
-
+    /**
     @GetMapping
     public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory categoryName,
                                          @RequestParam("type") @Valid PostType type,
@@ -134,6 +134,16 @@ public class PostApiController {
         PostsResultRes postsResultRes = postService.readPosts(categoryName, type, sortName, pageNumber, hasCommentCond, keyWordCond, titleCond, memberNameCond, isAcceptedCommentCond);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
     }
+    **/
+
+    /**
+    @GetMapping
+    public Res<PostsResultRes> readPosts(@RequestBody PostSearchDto postSearchDto) {
+        PostsResultRes postsResultRes = postService.readPosts(postSearchDto);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
+    }
+    **/
+
 
     private static Member getLoginMember(Authentication authentication) {
         Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();
