@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
@@ -84,5 +85,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "select p from Post p where p.id in :postIds")
     Page<Post> findByPostIds(@Param("postIds") List<Long> postIds, Pageable pageable);
 
-    Page<Post> findByPostTypeOrderByCreatedDateDesc(PostType postType, Pageable pageable);
+    Page<Post> findByTypeOrderByCreatedDateDesc(PostType postType, Pageable pageable);
+
+    Page<Post> findByMemberOrderByCreatedDateDesc(Member member, Pageable pageable);
 }

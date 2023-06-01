@@ -30,7 +30,8 @@ public enum ErrorCode {
   EMPTY_DETAIL_IN_ETC_REPORT(HttpStatus.BAD_REQUEST),
   INCOMPATIBLE_PARAMETER(HttpStatus.BAD_REQUEST),
   S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
-  INVALID_EXTENSION(HttpStatus.BAD_REQUEST);
+  INVALID_EXTENSION(HttpStatus.BAD_REQUEST),
+  DELAYED_UPLOAD(HttpStatus.BAD_REQUEST);
 
   private HttpStatus status;
   private int code;

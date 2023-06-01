@@ -6,9 +6,12 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Badge;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
+import algorithm_QnA_community.algorithm_QnA_community.utils.listner.CommentListener;
+import algorithm_QnA_community.algorithm_QnA_community.utils.listner.PostListener;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -38,6 +41,7 @@ import java.util.List;
  * 2023/05/18        janguni      Member연관관계 CascadeType.ALL -> CascadeType.PERSIST로 변경
  * 2023/05/23        solmin       삭제 편의 연관관계 메소드 추가
  * 2023/05/26        solmin       생성 시 멤버 뱃지 카운트 변경
+ * 2023/05/26        solmin       삭제 시 s3 이미지 삭제해주는 EntityListener 연동
  */
 @Entity
 @Getter
@@ -46,6 +50,7 @@ import java.util.List;
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @DynamicInsert // RequestDto에 특정 필드가 빈 값으로 들어오는 상황에서 insert query에 null을 넣지 않고 값이 삽입되는 필드만 set
 @DynamicUpdate // RequestDto에 특정 필드가 빈 빈 값으로 들어오는 상황에서 update query에 null을 넣지 않고 변경된 필드만 set
+@EntityListeners({AuditingEntityListener.class, PostListener.class})
 public class Post extends BaseTimeEntity {
     @Id
     @GeneratedValue

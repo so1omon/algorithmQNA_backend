@@ -41,6 +41,7 @@ import java.util.stream.Stream;
  * 2023/05/23        solmin       관리자 서비스 구현 완료
  * 2023/05/26        solmin       댓글/글 삭제시 알람 생성 구현
  *                                TODO 추후 계층 분리해서 작성할 예정
+ * 2023/06/01        solmin       공지사항 조회 API 삭제
  */
 @Service
 @RequiredArgsConstructor
@@ -150,17 +151,18 @@ public class AdminService {
         commentRepository.deleteById(commentId);
     }
 
-    @Transactional(readOnly = true)
-    public PostPageRes getNotices(int page, ) {
-        PostCategory postCategory = PostCategory.valueOf(postCategoryDto.getPostCategory());
-
-        return new PostPageRes(postRepository
-            .findByPostCategoryAndTypeOrderByCreatedDateDesc(postCategory, PostType.NOTICE, PageRequest.of(page, MAX_SIZE)));
-    }
-
-    @Transactional(readOnly = true)
-    public PostPageRes getNotices(int page) {
-        return new PostPageRes(postRepository
-            .findByPostTypeOrderByCreatedDateDesc(PostType.NOTICE,PageRequest.of(page, MAX_SIZE)));
-    }
+//    @Transactional(readOnly = true)
+//    public PostPageRes getNotices(int page, String category) {
+//
+//        PostCategory postCategory = PostCategory.valueOf(category);
+//
+//        return new PostPageRes(postRepository
+//            .findByPostCategoryAndTypeOrderByCreatedDateDesc(postCategory, PostType.NOTICE, PageRequest.of(page, MAX_SIZE)));
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public PostPageRes getNotices(int page) {
+//        return new PostPageRes(postRepository
+//            .findByTypeOrderByCreatedDateDesc(PostType.NOTICE,PageRequest.of(page, MAX_SIZE)));
+//    }
 }

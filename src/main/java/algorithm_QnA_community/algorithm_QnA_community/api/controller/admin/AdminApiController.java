@@ -22,6 +22,8 @@ import javax.validation.constraints.Min;
  * -----------------------------------------------------------
  * 2023/05/11        solmin       최초 생성
  * 2023/05/23        solmin       관리자 API 구현 완료
+ * 2023/06/01        solmin       공지사항 조회 API 삭제
+ *
  */
 
 @RestController
@@ -61,19 +63,19 @@ public class AdminApiController {
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 신고된 게시글 상세내용을 조회했습니다."), result);
     }
 
-    @GetMapping("/admin/notice")
-    public Res<PostPageRes> getNotices(@RequestParam(required = false, name = "page", defaultValue = "0") @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page,
-                                       @RequestParam(required = false, name = "postCategory") String postCategory){
-
-        PostPageRes result;
-        if(postCategory==null){
-            result = adminService.getNotices(page);
-        }else{
-            result = adminService.getNotices(page, postCategory);
-        }
-
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 공지사항을 조회했습니다."), result);
-    }
+//    @GetMapping("/notice")
+//    public Res<PostPageRes> getNotices(@RequestParam(required = false, name = "page", defaultValue = "0") @Min(value = 0, message = "page는 0 이상이어야 합니다.") int page,
+//                                       @RequestParam(required = false, name = "postCategory") String postCategory){
+//
+//        PostPageRes result;
+//        if(postCategory==null){
+//            result = adminService.getNotices(page);
+//        }else{
+//            result = adminService.getNotices(page, postCategory);
+//        }
+//
+//        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 공지사항을 조회했습니다."), result);
+//    }
 
 
     @DeleteMapping("/report/post/{report_post_id}")

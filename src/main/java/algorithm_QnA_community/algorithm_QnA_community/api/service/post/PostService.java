@@ -5,6 +5,7 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
+import algorithm_QnA_community.algorithm_QnA_community.api.service.s3.S3Service;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
@@ -50,6 +51,7 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/24        janguni            게시물 조회 시 해당 게시물 조회수+1 처리
  * 2023/05/26        solmin             좋아요 정보 삭제 시 연관관계 끊는 메소드 수행
  *                                      (원래 안건드릴려고 했는데 likeComment랑 너무 겹치는 내용이라 수정했어요 ㅜㅜ)
+ * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
 */
 @Service
 @RequiredArgsConstructor
@@ -67,6 +69,8 @@ public class PostService {
     private final CommentRepository commentRepository;
 
     private final CommentService commentService;
+
+    private final S3Service s3Service;
 
 
 
@@ -88,6 +92,8 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
+
+        s3Service.moveImages(savedPost.getId(), postCreateReq.getImageIds(), S3Service.POST_DIR);
 
         return new PostWriteRes(savedPost.getId(), savedPost.getCreatedDate());
     }

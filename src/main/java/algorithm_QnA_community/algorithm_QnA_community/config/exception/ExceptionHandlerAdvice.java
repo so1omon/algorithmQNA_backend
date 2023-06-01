@@ -39,6 +39,8 @@ import java.util.concurrent.ConcurrentMap;
  *                                ErrorCode를 담고 있는 CustomException 처리
  *                                MethodArgumentNotValidException (검증오류) 처리
  * 2023/05/23        solmin       단일 필드 validation 시 오류 상황 추가
+ * 2023/06/01        solmin       IllegalArgumentException 추가
+ *
  *
  */
 @RestControllerAdvice
@@ -105,15 +107,18 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler({
         MethodArgumentTypeMismatchException.class,
-        ConstraintViolationException.class})
+        ConstraintViolationException.class,
+        IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Res invalidParameter(Exception e) {
-        if(e instanceof MethodArgumentTypeMismatchException){
+        if(e instanceof MethodArgumentTypeMismatchException) {
             String requiredType = ((MethodArgumentTypeMismatchException) e).getRequiredType().toString();
             String parameter = ((MethodArgumentTypeMismatchException) e).getName();
             return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
-                parameter+"의 타입은 "+requiredType+"이어야 합니다.",false));
-
+                parameter + "의 타입은 " + requiredType + "이어야 합니다.", false));
+        }else if(e instanceof IllegalArgumentException) {
+            return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
+                e.getMessage(), false));
         }else{
             return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
                 ((ConstraintViolationException) e).getConstraintViolations().stream().findFirst().get().getMessage(),false));
