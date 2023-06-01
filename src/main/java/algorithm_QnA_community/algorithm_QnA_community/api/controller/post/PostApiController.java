@@ -136,13 +136,14 @@ public class PostApiController {
     }
     **/
 
-    /**
+
+
     @GetMapping
-    public Res<PostsResultRes> readPosts(@RequestBody PostSearchDto postSearchDto) {
+    public Res<PostsResultRes> readPosts(@RequestBody @Valid PostSearchDto postSearchDto) {
         PostsResultRes postsResultRes = postService.readPosts(postSearchDto);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
     }
-    **/
+
 
 
     private static Member getLoginMember(Authentication authentication) {
