@@ -29,13 +29,13 @@ import java.util.List;
 @AllArgsConstructor
 public class PostSearchDto {
     @EnumValidator(target = PostCategory.class, message = "올바른 카테고리를 입력하세요.")
-    private String postCategory;
+    private PostCategory postCategory;
 
     @EnumValidator(target = PostType.class, message = "올바른 내용타입을 입력하세요.")
-    private String postType;
+    private PostType postType;
 
     @EnumValidator(target = PostSortType.class, message = "올바른 정렬타입을 입력하세요.")
-    private String postSort;
+    private PostSortType postSort;
 
     @Nullable
     private int page=0;
@@ -44,7 +44,7 @@ public class PostSearchDto {
     private Boolean hasCommentCond;
 
     @Nullable
-    private List<String> keyWordsCond;
+    private String keyWordsCond;
 
     @Nullable
     private String titleCond;

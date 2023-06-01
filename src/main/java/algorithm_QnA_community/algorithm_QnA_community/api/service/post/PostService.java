@@ -288,7 +288,7 @@ public class PostService {
     public PostsResultRes readPosts(PostSearchDto postSearchDto){
         Page<PostSimpleDto> pagePosts = null;
 
-        switch (PostSortType.valueOf(postSearchDto.getPostSort())) {
+        switch (postSearchDto.getPostSort()) {
             case LATESTDESC: // 최신순
                 postRepository.findPostsOrderByCreatedDateDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;

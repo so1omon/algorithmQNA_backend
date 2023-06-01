@@ -18,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static algorithm_QnA_community.algorithm_QnA_community.domain.comment.QComment.*;
 import static algorithm_QnA_community.algorithm_QnA_community.domain.member.QMember.*;
@@ -34,6 +36,7 @@ import static org.springframework.util.StringUtils.isEmpty;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/31        janguni           최초 생성
+ * 2023/06/01        janguni           PostSearchDto 변경 후 코드 수정 (Enum비교, keyWordsContain 변경)
  */
 @RequiredArgsConstructor
 @Repository
@@ -57,8 +60,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.createdDate.desc())
@@ -88,8 +91,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.createdDate.asc())
@@ -118,8 +121,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.likeCnt.desc())
@@ -128,7 +131,6 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .fetchResults();
         List<PostSimpleDto> content = results.getResults();
         long total = results.getTotal();
-
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -148,8 +150,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.likeCnt.asc())
@@ -178,8 +180,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.comments.size().desc())
@@ -208,8 +210,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.comments.size().asc())
@@ -238,8 +240,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.views.asc())
@@ -268,8 +270,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .orderBy(post.views.desc())
@@ -298,8 +300,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
-                .where(post.postCategory.stringValue().eq(postSearchDto.getPostCategory()),
-                        post.type.stringValue().eq(postSearchDto.getPostType()),
+                .where(post.postCategory.eq(postSearchDto.getPostCategory()),
+                        post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .groupBy(post)
@@ -316,7 +318,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
     }
 
     // 필터 조건 조합
-    private BooleanExpression allCond(List<String> keyWordsCond, String memberNameCond, String titleCond, Boolean hasCommentCond, Boolean isAcceptedCommentCond) {
+    private BooleanExpression allCond(String keyWordsCond, String memberNameCond, String titleCond, Boolean hasCommentCond, Boolean isAcceptedCommentCond) {
         BooleanExpression expression = null;
 
         if (isAcceptedCommentCond != null) {
@@ -335,7 +337,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
             expression = addExpression(expression, memberNameContain(memberNameCond));
         }
 
-        if (keyWordsCond != null && !keyWordsCond.isEmpty()) {
+        if (!StringUtils.isEmpty(keyWordsCond)) {
             expression = addExpression(expression, keyWordsContain(keyWordsCond));
         }
 
@@ -373,10 +375,14 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
 
     private BooleanExpression memberNameContain(String memberNameCond) { return isEmpty(memberNameCond) ? null : member.name.contains(memberNameCond); }
 
-    private BooleanExpression keyWordsContain(List<String> keyWordsCond) {
+    private BooleanExpression keyWordsContain(String keyWordsCond) {
+
         if (keyWordsCond.isEmpty())
             return null;
-        else
-            return keyWordsCond.stream().map(post.keyWords::contains).reduce(BooleanExpression::or).orElse(null);
+        else {
+            List<String> keyWordsCondList = Arrays.stream(keyWordsCond.split("#")).collect(Collectors.toList());
+            return keyWordsCondList.stream().map(post.keyWords::contains).reduce(BooleanExpression::or).orElse(null);
+        }
+
     }
 }

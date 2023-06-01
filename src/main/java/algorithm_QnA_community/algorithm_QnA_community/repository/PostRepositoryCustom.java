@@ -47,8 +47,10 @@ public interface PostRepositoryCustom {
     // 조회수 오름차순
     Page<PostSimpleDto> findPostsOrderByViewAsc(PostSearchDto postSearchDto, Pageable pageable);
 
+
     // 조회수 내림차순
     Page<PostSimpleDto> findPostsOrderByViewDesc(PostSearchDto postSearchDto, Pageable pageable);
+
 
     // 인기순
     Page<PostSimpleDto> findPostsOrderByPopularDesc(PostSearchDto postSearchDto, Pageable pageable);
