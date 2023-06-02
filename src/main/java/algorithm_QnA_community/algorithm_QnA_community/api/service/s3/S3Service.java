@@ -82,7 +82,7 @@ public class S3Service {
             loginMember.updateProfile(savedUrl);
             return new MemberProfileDto(savedUrl);
         } catch (IOException e) {
-            throw new CustomException(ErrorCode.S3_UPLOAD_FAILED, "에러로 인해 프로필 변경에 실패했습니다.");
+            throw new CustomException(ErrorCode.S3_UPLOAD_FAILED, "서버 내부 오류로 인해 프로필 변경에 실패했습니다.");
         }
     }
 
@@ -112,7 +112,7 @@ public class S3Service {
             return new ImageUploadRes(savedImage);
 
         } catch (IOException e) {
-            throw new CustomException(ErrorCode.S3_UPLOAD_FAILED, "에러로 인해 프로필 변경에 실패했습니다.");
+            throw new CustomException(ErrorCode.S3_UPLOAD_FAILED, "서버 내부 오류로 인해 프로필 변경에 실패했습니다.");
         }
     }
 

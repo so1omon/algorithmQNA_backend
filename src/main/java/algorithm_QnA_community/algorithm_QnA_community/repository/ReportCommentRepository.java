@@ -23,7 +23,6 @@ import java.util.Optional;
  * 2023/05/09        solmin       최초 생성
  * 2023/05/23        solmin       일부 인터페이스 추가
  */
-@Qualifier()
 public interface ReportCommentRepository extends JpaRepository<ReportComment, Long> {
     @Query("select distinct (rp.comment.id) from ReportComment rp")
     List<Long> findCommentIdsByExist();

@@ -21,7 +21,6 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/25        solmin       최초 생성
  */
-@Repository
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     List<Alarm> findTop10ByMemberIdOrderByCreatedDateDesc(Long memberId);
 
