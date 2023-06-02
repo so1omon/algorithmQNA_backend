@@ -69,20 +69,16 @@ public class S3Service {
             if(prevProfileImgUrl!=null){
                 if (amazonS3Client.doesObjectExist(bucket, prevProfileImgUrl)) {
                     amazonS3Client.deleteObject(bucket, prevProfileImgUrl);
-                    log.info("기존 멤버 프로필 url에 해당하는 이미지 발견 후 삭제");
                 }
             }
             // 2. S3에 /loginMember/{fileName} 형태로 업로드 후 memberRepository에 저장
-            log.info("content type : {}", file.getContentType());
-
-
             String fileName = getString(format, MEMBER_DIR);
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(file.getContentType());
             metadata.setContentLength(file.getSize());
             amazonS3Client.putObject(bucket, fileName, file.getInputStream(), metadata);
             String savedUrl = amazonS3Client.getUrl(bucket, fileName).toString();
-            log.info("새 멤버 프로필 등록");
+
             loginMember.updateProfile(savedUrl);
             return new MemberProfileDto(savedUrl);
         } catch (IOException e) {
@@ -98,24 +94,22 @@ public class S3Service {
         if(format==null){
             throw new CustomException(ErrorCode.INVALID_EXTENSION,"지원하지 않는 확장자입니다.");
         }
-
         try {
             // 1. 유저의 프로필 정보가 null이 아니라면 우선 삭제 (예외처리)
-
             String fileName = getString(format, TEMP_DIR);
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(file.getContentType());
             metadata.setContentLength(file.getSize());
             amazonS3Client.putObject(bucket, fileName, file.getInputStream(), metadata);
             String savedUrl = amazonS3Client.getUrl(bucket, fileName).toString();
+
             // 2. imageRepository에 저장
             Image savedImage = imageRepository.save(new Image(savedUrl));
-
             // 3. ImageUploadRes에 url, id, createdAt 담아서 저장
             return new ImageUploadRes(savedImage);
 
         } catch (IOException e) {
-            throw new CustomException(ErrorCode.S3_UPLOAD_FAILED, "서버 내부 오류로 인해 프로필 변경에 실패했습니다.");
+            throw new CustomException(ErrorCode.S3_UPLOAD_FAILED, "서버 내부 오류로 인해 이미지 업로드에 실패했습니다.");
         }
     }
 
