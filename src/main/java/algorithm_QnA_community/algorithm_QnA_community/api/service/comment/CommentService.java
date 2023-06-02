@@ -53,6 +53,7 @@ import static java.util.stream.Collectors.*;
  * 2023/05/26        solmin       댓글 작성, 채택 시 관련된 멤버에게 알림 생성
  *                                TODO 추후 계층 분리해서 작성할 예정
  * 2023/06/01        solmin       댓글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
+ * 2023/06/02        solmin       댓글 조회 페이징 형태로 변경
  */
 
 @Service
@@ -245,7 +246,6 @@ public class CommentService {
 
         // 1. page 내의 최상위 댓글들 가져오기
         Page<Comment> commentsByPost = commentRepository.findCommentsByPostAndDepth(findPost,0, PageRequest.of(page, 10));
-        // TODO 모든 댓글 작성자 Id를 set에 넣고 영속성 컨텍스트 초기화
 
         // 2. 최상위 댓글들의 아이디 목록 가져오기
         Map<Long, TopCommentRes> topCommentMap = new LinkedHashMap<>();
@@ -276,7 +276,9 @@ public class CommentService {
         return CommentsRes.builder()
             .postId(postId)
             .commentPage(commentsByPost)
-            .comments(topCommentMap.values().stream().collect(Collectors.toList()))
+            .comments(topCommentMap.values().stream()
+                .map(t->t.updatePageInfo(commentRepository.countByParentIdAndDepth(t.getCommentId(),1).intValue()))
+                .collect(Collectors.toList()))
             .build();
     }
 

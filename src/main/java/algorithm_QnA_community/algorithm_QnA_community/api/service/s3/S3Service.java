@@ -21,7 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.service.member
@@ -34,6 +36,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/26        solmin       최초 생성
  * 2023/06/01        solmin       uploadImage, moveImage 등 이미지 업로드 및 삭제에 관련된 서비스 메소드 작성
+ * 2023/06/02        solmin       스케줄러 적용, 하루가 지난 업로드 데이터 삭제
  */
 
 @Service
@@ -47,6 +50,7 @@ public class S3Service {
     public static final String COMMENT_DIR = "comment";
     public static final String MEMBER_DIR = "member";
     public static final String TEMP_DIR = "temp";
+    public static final String replaceTarget = "https://algoqnabucket.s3.ap-northeast-2.amazonaws.com/";
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -104,7 +108,6 @@ public class S3Service {
             metadata.setContentLength(file.getSize());
             amazonS3Client.putObject(bucket, fileName, file.getInputStream(), metadata);
             String savedUrl = amazonS3Client.getUrl(bucket, fileName).toString();
-
             // 2. imageRepository에 저장
             Image savedImage = imageRepository.save(new Image(savedUrl));
 
@@ -124,8 +127,8 @@ public class S3Service {
 
     public void moveImage(String oldSource, String newSource) {
         try {
-            oldSource = URLDecoder.decode(oldSource, "UTF-8");
-            newSource = URLDecoder.decode(newSource, "UTF-8");
+            oldSource = getDecodedUrl(oldSource);
+            newSource = getDecodedUrl(newSource);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -133,6 +136,16 @@ public class S3Service {
         moveS3(oldSource, newSource);
         deleteS3(oldSource);
 
+    }
+
+    private static String getDecodedUrl(String source) throws UnsupportedEncodingException {
+        try {
+            source = URLDecoder.decode(source, "UTF-8");
+            return source;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void moveS3(String oldSource, String newSource) {
@@ -153,7 +166,8 @@ public class S3Service {
             if (!url.contains("/temp/")) {
                 continue;
             }
-            String oldSource = url.replace("https://algoqnabucket.s3.ap-northeast-2.amazonaws.com/", "");
+
+            String oldSource = url.replace(replaceTarget, "");
             String newSource = dir+"/"+objectId+"/"+oldSource.split("/")[1];
             moveImage(oldSource, newSource);
 
@@ -179,6 +193,35 @@ public class S3Service {
                 break;
             }
         }
+
+    }
+    @Transactional
+    public void deleteFileByUrl(String url) {
+        try {
+            String keyName = getDecodedUrl(url.replace(replaceTarget, ""));
+            boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, keyName);
+            if (isObjectExist) {
+                log.info("{} exists", keyName);
+                deleteS3(keyName);
+            }
+        } catch (Exception e) {
+            log.debug("Delete File failed", e);
+        }
+    }
+
+    @Transactional
+    // TODO async 적용하기
+    public void removeLogImages() {
+        // 1. db에서 하루가 지난 log urls조회
+        LocalDateTime stdTime = LocalDateTime.now().minusDays(1L);
+        List<String> targetImageUrls = imageRepository.findByCreatedDateBefore(stdTime).stream()
+            .map(image -> image.getUrl()).collect(Collectors.toList());
+
+        // 2. logUrls들을 delete
+        targetImageUrls.forEach((url)->{
+            deleteFileByUrl(url);
+            imageRepository.deleteByUrl(url);
+        });
 
     }
 }

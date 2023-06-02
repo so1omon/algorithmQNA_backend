@@ -70,7 +70,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(Long parentId, int depth);
 
-
+    Long countByParentIdAndDepth(Long parentId, int depth);
 
 //    @Query("select c from Comment c " +
 //        " left join c.post p" +
