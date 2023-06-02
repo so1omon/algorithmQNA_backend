@@ -12,6 +12,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,6 +27,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/14        janguni       최초 생성
  * 2023/05/19        solmin        필드명 및 생성자 구조 변경
+ * 2023/05/30        janguni       keyWords 추가
  */
 
 @Data
@@ -39,6 +42,8 @@ public class PostDetailRes {
 
     private String postContent;
     private LocalDateTime createdAt;
+
+    private List<String> postKeyWords;
     private int postLikeCnt;
     private int postDislikeCnt;
     /* TODO isLiked 구현해야함 */
@@ -58,6 +63,7 @@ public class PostDetailRes {
         this.postTitle = post.getTitle();
         this.postContent = post.getContent();
         this.createdAt = post.getCreatedDate();
+        this.postKeyWords = convertToListKeyWords(post.getKeyWords());
         this.postLikeCnt = post.getLikeCnt();
         this.postDislikeCnt = post.getDislikeCnt();
         this.member = new MemberBriefDto(member);
@@ -71,6 +77,14 @@ public class PostDetailRes {
         this.prev = commentsRes.isPrev();
         this.size = commentsRes.getSize();
         /* TODO 추후 페이징 구현 끝*/
+    }
 
+    private List<String> convertToListKeyWords(String keyWords){
+        List<String> keyWordsList = new ArrayList<>();
+        if (keyWords != null && !keyWords.isEmpty()) {
+            String[] keyWordsArray = keyWords.split(",");
+            keyWordsList = Arrays.asList(keyWordsArray);
+        }
+        return keyWordsList;
     }
 }

@@ -26,5 +26,5 @@ public class PostsResultRes {
     private boolean next;
     private boolean prev;
     private int size;
-    private List<PostSimpleDetail> posts;
+    private List<PostSimpleDto> posts;
 }

@@ -22,7 +22,6 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
-  // COMMON
   RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND),
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
   DUPLICATED_TASK(HttpStatus.BAD_REQUEST),

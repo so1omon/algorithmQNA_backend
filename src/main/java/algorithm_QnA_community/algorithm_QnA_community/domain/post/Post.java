@@ -42,7 +42,9 @@ import java.util.List;
  * 2023/05/23        solmin       삭제 편의 연관관계 메소드 추가
  * 2023/05/26        solmin       생성 시 멤버 뱃지 카운트 변경
  * 2023/05/26        solmin       삭제 시 s3 이미지 삭제해주는 EntityListener 연동
+ * 2023/05/30        janguni      keyWords 변수 추가
  */
+
 @Entity
 @Getter
 @Builder
@@ -77,14 +79,31 @@ public class Post extends BaseTimeEntity {
     @Column(nullable = false)
     private PostType type;
 
+    private String keyWords;
+
     @Builder(builderClassName = "createPost", builderMethodName = "createPost")
-    public Post(Member member, String title, String content, PostCategory postCategory, PostType type){
+    public Post(Member member, String title, String content, PostCategory postCategory, PostType type, List<String> keyWords){
         this.member = member;
         member.getPosts().add(this);
         this.title = title;
         this.content = content;
         this.postCategory = postCategory;
         this.type = type;
+        this.keyWords = combineKeyWords(keyWords);
+    }
+
+    private String combineKeyWords(List<String> keyWords) {
+        if (keyWords == null || keyWords.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String keyword : keyWords) {
+            stringBuilder.append(keyword).append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1); // 마지막 쉼표 삭제
+
+        return stringBuilder.toString();
     }
 
     //----------------- 연관관계 필드 시작 -----------------//
@@ -132,6 +151,10 @@ public class Post extends BaseTimeEntity {
 
     public void updateViews(){
         this.views +=1;
+    }
+
+    public void updateKeyWords(List<String> keyWords) {
+        this.keyWords = combineKeyWords(keyWords);
     }
 
 

@@ -69,7 +69,6 @@ public class CommentService {
     private final AlarmRepository alarmRepository;
     private final S3Service s3Service;
 
-
     @Transactional
     public CommentCreateRes writeComment(Long postId, CommentCreateReq commentCreateReq, Member member){
 

@@ -33,6 +33,9 @@ import javax.validation.Valid;
  * 2023/05/11        janguni            최초 생성
  * 2023/05/19        solmin             게시글 작성 시 postId, 작성일 정보 리턴
  * 2023/05/23        solmin             게시글 신고 시 validation 일부 추가
+ * 2023/05/28        janguni            게시물 목록 조회 필터링 조건 추가
+ * 2023/05/31        janguni            게시물 목록 조회 @RequestBody로 변경
+ * 2023/06/01        janguni            게시물 목록 조회 @RequestParam으로 재변경
  */
 
 @RestController
@@ -46,7 +49,8 @@ public class PostApiController {
     /**
      * 게시물 등록
      */
-    @PostMapping("/")
+
+    @PostMapping
     public Res<PostWriteRes> writePost(@RequestBody @Valid PostCreateReq postCreateReq, Authentication authentication){
         Member findMember = getLoginMember(authentication);
         PostWriteRes result = postService.writePost(postCreateReq, findMember);
@@ -117,14 +121,21 @@ public class PostApiController {
     /**
      * 게시물 목록 조회
      */
-    @GetMapping("")
-    public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory categoryName,
-                                         @RequestParam("type") @Valid PostType type,
-                                         @RequestParam("sort") @Valid PostSortType sortName,
-                                         @RequestParam("page") int pageNumber){
-        PostsResultRes postsResultRes = postService.readPosts(categoryName, type, sortName, pageNumber);
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."),postsResultRes);
+    @GetMapping
+    public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory postCategory,
+                                         @RequestParam("type") @Valid PostType postType,
+                                         @RequestParam("sort") @Valid PostSortType postSortType,
+                                         @RequestParam("page") int pageNumber,
+                                         @RequestParam(required = false, name = "hasCommentCond") boolean hasCommentCond,
+                                         @RequestParam(required = false, name = "keyWordCond") String keyWordCond,
+                                         @RequestParam(required = false, name = "titleCond") String titleCond,
+                                         @RequestParam(required = false, name = "memberNameCond") String memberNameCond,
+                                         @RequestParam(required = false, name = "isAcceptedCond") boolean isAcceptedCommentCond) {
+        PostSearchDto postSearchDto = new PostSearchDto(postCategory, postType, postSortType, pageNumber, hasCommentCond, keyWordCond, titleCond, memberNameCond, isAcceptedCommentCond);
+        PostsResultRes postsResultRes = postService.readPosts(postSearchDto);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."), postsResultRes);
     }
+
 
     private static Member getLoginMember(Authentication authentication) {
         Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();

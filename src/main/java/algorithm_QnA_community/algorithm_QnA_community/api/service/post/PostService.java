@@ -51,28 +51,24 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/24        janguni            게시물 조회 시 해당 게시물 조회수+1 처리
  * 2023/05/26        solmin             좋아요 정보 삭제 시 연관관계 끊는 메소드 수행
  *                                      (원래 안건드릴려고 했는데 likeComment랑 너무 겹치는 내용이라 수정했어요 ㅜㅜ)
+ * 2023/05/30        janguni            게시물 등록, 수정, 조회 시 keyWords 관련 코드 추가
+ * 2023/06/01        janguni            게시물 목록 조회 코드 수정 (필터 적용)
  * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
 */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
+  
     static final int MAX_POST_SIZE = 20;
-
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
-
     private final LikePostRepository likePostRepository;
-
     private final ReportPostRepository reportPostRepository;
-
     private final CommentRepository commentRepository;
-
     private final CommentService commentService;
-
     private final S3Service s3Service;
-
-
 
     /**
      * 게시물 등록
@@ -89,6 +85,7 @@ public class PostService {
                 .content(postCreateReq.getContent())
                 .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
                 .type(PostType.valueOf(postCreateReq.getPostType()))
+                .keyWords(postCreateReq.getKeyWords())
                 .build();
 
         Post savedPost = postRepository.save(post);
@@ -116,6 +113,7 @@ public class PostService {
         setIfNotNull(postUpdateReq.getContent(), findPost::updateContent);
         setIfNotNull(PostCategory.valueOf(postUpdateReq.getPostCategory()), findPost::updateCategory);
         setIfNotNull(PostType.valueOf(postUpdateReq.getPostType()),findPost::updateType);
+        setIfNotNull(postUpdateReq.getKeyWords(), findPost::updateKeyWords);
     }
 
     /**
@@ -127,7 +125,7 @@ public class PostService {
 
         // 본인이 쓴 게시물이 맞는지 확인
         checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
-
+        findPost.deletePost();
         postRepository.delete(findPost);
     }
 
@@ -248,13 +246,12 @@ public class PostService {
         return isLikedPost;
     }
 
+
     /**
-     * 게시물 목록 조회
-     */
-    public PostsResultRes readPosts(PostCategory categoryName, PostType postType, PostSortType sortName, int pageNumber){
+    public PostsResultRes readPosts(PostSearchDto postSearchDto){
         Page<Post> pagePosts=null;
 
-        switch (sortName) {
+        switch (PostSortType.valueOf(postSearchDto.getPostSort())) {
             case LATESTDESC: // 최신순
                 pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
@@ -282,13 +279,50 @@ public class PostService {
             case POPULAR:   // 인기순
                 pagePosts = postRepository.findByPopular(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
                 break;
+    }
+     **/
+
+    /**
+     * 게시물 목록 조회
+     */
+    public PostsResultRes readPosts(PostSearchDto postSearchDto){
+        Page<PostSimpleDto> pagePosts = null;
+
+        switch (postSearchDto.getPostSort()) {
+            case LATESTDESC: // 최신순
+                postRepository.findPostsOrderByCreatedDateDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case LATESTASC: // 오래된 순
+                pagePosts = postRepository.findPostsOrderByCreatedDateAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case COMMENTCNTASC: // 댓글 오름차순
+                pagePosts = postRepository.findPostsOrderByCommentSizeAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case COMMENTCNTDESC: // 댓글 내림차순
+                pagePosts = postRepository.findPostsOrderByCommentSizeDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case LIKEASC:   // 추천 오름차순
+                pagePosts = postRepository.findPostsOrderByLikeAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case LIKEDESC:  // 추천 내림차순
+                pagePosts = postRepository.findPostsOrderByLikeDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case VIEWCNTASC:    // 조회수 오름차순
+                pagePosts = postRepository.findPostsOrderByViewAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case VIEWCNTDESC:   // 조회수 내림차순
+                pagePosts = postRepository.findPostsOrderByViewDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
+            case POPULAR:   // 인기순
+                pagePosts = postRepository.findPostsOrderByPopularDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                break;
         }
 
         // 게시물 데이터
-        List<Post> posts = pagePosts.getContent();
+        List<PostSimpleDto> posts = pagePosts.getContent();
         int postSize = posts.size();
 
-        if (postSize==0) { // 존재하지 않은 페이지 번호 일 경우
+        if (postSize==0 & postSearchDto.getPage()!=0) { // 존재하지 않은 페이지 번호 일 경우
             throw new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "존재하지 않은 페이지 번호 입니다.");
         }
 
@@ -298,23 +332,22 @@ public class PostService {
         boolean next = pagePosts.hasNext(); // 후 페이지 유무
         int curPageNumber = pagePosts.getNumber();
 
+        List<PostSimpleDto> postSimpleContent = pagePosts.getContent();
 
-        // Post -> PostSimpleDetail
-        List<PostSimpleDetail> postDetail = convertToPostSimpleDetails(posts);
-
-        PostsResultRes postsResultRes = new PostsResultRes(curPageNumber, totalPageCount, next, prev, postSize, postDetail);
+        PostsResultRes postsResultRes = new PostsResultRes(curPageNumber, totalPageCount, next, prev, postSize, postSimpleContent);
         return postsResultRes;
     }
 
-    private List<PostSimpleDetail> convertToPostSimpleDetails(List<Post> totalPosts) {
-        List<PostSimpleDetail> posts = new ArrayList<>();
-        for (Post post : totalPosts) {
-            Member member = post.getMember();
-            PostSimpleDetail postSimpleDetail = new PostSimpleDetail(post.getId(), post.getTitle(), member.getId(), member.getName(), member.getProfileImgUrl(), post.getCreatedDate(), post.getViews(), post.getComments().size());
-            posts.add(postSimpleDetail);
-        }
-        return posts;
-    }
+
+//    private List<PostSimpleDto> convertToPostSimpleDetails(List<Post> totalPosts) {
+//        List<PostSimpleDto> posts = new ArrayList<>();
+//        for (Post post : totalPosts) {
+//            Member member = post.getMember();
+//            PostSimpleDto postSimpleDetail = new PostSimpleDto(post.getId(), post.getTitle(), member.getId(), member.getName(), member.getProfileImgUrl(), post.getCreatedDate(), post.getViews(), post.getViews());
+//            posts.add(postSimpleDetail);
+//        }
+//        return posts;
+//    }
 
     private Post getPostById(Long postId) {
         Post findPost = postRepository.findById(postId)

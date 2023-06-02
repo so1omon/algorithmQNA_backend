@@ -6,6 +6,7 @@ import algorithm_QnA_community.algorithm_QnA_community.utils.annotation.EnumVali
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -23,6 +24,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/11        janguni       최초 생성
  * 2023/05/19        solmin        필드명 일부 변경
+ * 2023/05/30        janguni       keyWord 필드 추가
  * 2023/06/01        solmin        게시글 작성 시 imageIds 필드 추가
  */
 
@@ -30,7 +32,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostCreateReq {
-
 
     @Size(min=5,max=30, message = "게시물 제목을 5글자 이상 작성해야 합니다.")
     private String title;
@@ -45,5 +46,8 @@ public class PostCreateReq {
     private String postType;
 
     List<Long> imageIds = new ArrayList<>();
+  
+    @Nullable
+    private List<String> keyWords;
 
 }

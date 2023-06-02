@@ -62,12 +62,13 @@ public class OAuthController {
      */
     @GetMapping("/oauth/login")
     public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
-
+        log.info("======= 로그인 시도=======");
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
         ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code, state);
 
 
         if (responseTokenAndMember == null) {
+            log.info("로그인에 실패하여 결국 forbidden");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new Res(new DefStatus(StatusCode.FORBIDDEN, ResponseMessage.FAIL_AUTHORIZE_CODE), null));
         }
@@ -77,13 +78,16 @@ public class OAuthController {
 
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
-                    .secure(true)
+                    .path("/")
+                    .domain("13.54.50.218")
+                    //.secure(true)
                     .build();
-
 
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
-                    .secure(true)
+                    //.secure(true)
+                    .domain("13.54.50.218")
+                    .path("/")
                     .build();
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -127,12 +131,12 @@ public class OAuthController {
 
 
     // ====================== 임시용 ====================== //
-    @GetMapping("/google/callback")
-    public ResponseEntity<CodeAndState> callback(@RequestParam String code, @RequestParam String state){
-        CodeAndState codeAndState = new CodeAndState(code, state);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(codeAndState);
-    }
+//    @GetMapping("/google/callback")
+//    public ResponseEntity<CodeAndState> callback(@RequestParam String code, @RequestParam String state){
+//        CodeAndState codeAndState = new CodeAndState(code, state);
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(codeAndState);
+//    }
 
     @GetMapping("/test")
     public ResponseEntity<String> test(@AuthenticationPrincipal PrincipalDetails principal){
