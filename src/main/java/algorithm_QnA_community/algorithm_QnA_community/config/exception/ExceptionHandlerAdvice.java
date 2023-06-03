@@ -3,6 +3,7 @@ package algorithm_QnA_community.algorithm_QnA_community.config.exception;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatusWithBadRequest;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
+import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import javax.naming.SizeLimitExceededException;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.config.Exception
@@ -34,6 +39,8 @@ import java.util.List;
  *                                ErrorCode를 담고 있는 CustomException 처리
  *                                MethodArgumentNotValidException (검증오류) 처리
  * 2023/05/23        solmin       단일 필드 validation 시 오류 상황 추가
+ * 2023/06/01        solmin       IllegalArgumentException 추가
+ *
  *
  */
 @RestControllerAdvice
@@ -64,9 +71,23 @@ public class ExceptionHandlerAdvice {
     public Res<List<ValidationErr>> validException(MethodArgumentNotValidException e) {
         List<ValidationErr> validationErrs = new ArrayList<>();
 
+        Map<String, String> errorMap = new HashMap<>();
+
+
+
         e.getBindingResult().getAllErrors().forEach(error->{
-            validationErrs.add(new ValidationErr(((FieldError) error).getField(), error.getDefaultMessage()));
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errorMap.put(field, message);
+//            validationErrs.add(new ValidationErr(((FieldError) error).getField(), error.getDefaultMessage()));
         });
+
+        for(String key : errorMap.keySet()){
+            validationErrs.add(ValidationErr.builder()
+                .field(key)
+                .message(errorMap.get(key))
+                .build());
+        }
 
         DefStatus defStatus = new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
             "입력값 중 검증에 실패한 값이 있습니다.",true);
@@ -86,15 +107,18 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler({
         MethodArgumentTypeMismatchException.class,
-        ConstraintViolationException.class})
+        ConstraintViolationException.class,
+        IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Res invalidParameter(Exception e) {
-        if(e instanceof MethodArgumentTypeMismatchException){
+        if(e instanceof MethodArgumentTypeMismatchException) {
             String requiredType = ((MethodArgumentTypeMismatchException) e).getRequiredType().toString();
             String parameter = ((MethodArgumentTypeMismatchException) e).getName();
             return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
-                parameter+"의 타입은 "+requiredType+"이어야 합니다.",false));
-
+                parameter + "의 타입은 " + requiredType + "이어야 합니다.", false));
+        }else if(e instanceof IllegalArgumentException) {
+            return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
+                e.getMessage(), false));
         }else{
             return Res.res(new DefStatusWithBadRequest(HttpStatus.BAD_REQUEST.value(),
                 ((ConstraintViolationException) e).getConstraintViolations().stream().findFirst().get().getMessage(),false));
@@ -102,6 +126,7 @@ public class ExceptionHandlerAdvice {
     }
 
     @Data
+    @Builder
     private static class ValidationErr{
         private String field;
         private String message;

@@ -5,6 +5,7 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
+import algorithm_QnA_community.algorithm_QnA_community.api.service.s3.S3Service;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
@@ -52,25 +53,22 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  *                                      (원래 안건드릴려고 했는데 likeComment랑 너무 겹치는 내용이라 수정했어요 ㅜㅜ)
  * 2023/05/30        janguni            게시물 등록, 수정, 조회 시 keyWords 관련 코드 추가
  * 2023/06/01        janguni            게시물 목록 조회 코드 수정 (필터 적용)
+ * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
 */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
+  
     static final int MAX_POST_SIZE = 20;
-
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
-
     private final LikePostRepository likePostRepository;
-
     private final ReportPostRepository reportPostRepository;
-
     private final CommentRepository commentRepository;
-
     private final CommentService commentService;
-
-
+    private final S3Service s3Service;
 
     /**
      * 게시물 등록
@@ -91,6 +89,8 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
+
+        s3Service.moveImages(savedPost.getId(), postCreateReq.getImageIds(), S3Service.POST_DIR);
 
         return new PostWriteRes(savedPost.getId(), savedPost.getCreatedDate());
     }

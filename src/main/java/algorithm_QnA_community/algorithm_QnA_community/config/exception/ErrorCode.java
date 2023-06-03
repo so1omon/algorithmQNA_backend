@@ -22,20 +22,22 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
-  // COMMON
-  RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, 404),
-  UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 401),
-  DUPLICATED_TASK(HttpStatus.BAD_REQUEST, 400),
-  REPORT_MY_RESOURCE(HttpStatus.BAD_REQUEST, 400),
-  EMPTY_DETAIL_IN_ETC_REPORT(HttpStatus.BAD_REQUEST, 400),
-  INCOMPATIBLE_PARAMETER(HttpStatus.BAD_REQUEST, 400);
+  RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND),
+  UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
+  DUPLICATED_TASK(HttpStatus.BAD_REQUEST),
+  REPORT_MY_RESOURCE(HttpStatus.BAD_REQUEST),
+  EMPTY_DETAIL_IN_ETC_REPORT(HttpStatus.BAD_REQUEST),
+  INCOMPATIBLE_PARAMETER(HttpStatus.BAD_REQUEST),
+  S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR),
+  INVALID_EXTENSION(HttpStatus.BAD_REQUEST),
+  DELAYED_UPLOAD(HttpStatus.BAD_REQUEST);
 
   private HttpStatus status;
   private int code;
 
-  ErrorCode(HttpStatus status, int code) {
+  ErrorCode(HttpStatus status) {
     this.status = status;
-    this.code = code;
+    this.code = status.value();
   }
 
 

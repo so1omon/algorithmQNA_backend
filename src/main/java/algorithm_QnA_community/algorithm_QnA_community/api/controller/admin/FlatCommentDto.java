@@ -17,11 +17,13 @@ import java.time.LocalDateTime;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/05/22        solmin       최초 생성, 하위 댓글정보를 배제한 단순 Comment Dto
+ * 2023/06/01        solmin       postId 필드 추가
  */
 @Data
 @AllArgsConstructor
 public class FlatCommentDto {
     private Long commentId;
+    private Long postId;
     private MemberBriefDto member;
     private String content;
     private LocalDateTime createdAt;
@@ -30,6 +32,7 @@ public class FlatCommentDto {
     private int dislikeCnt;
 
     public FlatCommentDto(Comment comment){
+        this.postId = comment.getParent().getId();
         this.commentId = comment.getId();
         this.member = new MemberBriefDto(comment.getMember());
         this.content = comment.getContent();
