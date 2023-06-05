@@ -75,7 +75,23 @@ public class OAuthController {
 
         else {
             MemberInfoRes memberInfo = responseTokenAndMember.getMemberInfo();
+            /** local 시작 **/
+            ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
+                    .httpOnly(true)
+                    .path("/")
+                    //.domain("13.54.50.218")
+                    //.secure(true)
+                    .build();
 
+            ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
+                    .httpOnly(true)
+                    //.secure(true)
+                    //.domain("13.54.50.218")
+                    .path("/")
+                    .build();
+            /** local 끝 **/
+
+            /** 배포 시작 **/ /**
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
                     .path("/")
@@ -89,6 +105,7 @@ public class OAuthController {
                     .domain("13.54.50.218")
                     .path("/")
                     .build();
+            **//** 배포 끝 **/
 
             return ResponseEntity.status(HttpStatus.OK)
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())

@@ -4,6 +4,7 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.post.PostService;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
+import algorithm_QnA_community.algorithm_QnA_community.config.auth.dto.UserDetailsImpl;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -138,6 +140,11 @@ public class PostApiController {
 
 
     private static Member getLoginMember(Authentication authentication) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//        String email = userDetails.getEmail();
+//
+//        log.info(username);
+//        return null;
         Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();
         return loginMember;
     }

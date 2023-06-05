@@ -1,6 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.member;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.PostPageRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.service.member.MemberService;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.s3.S3Service;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentApiController;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;

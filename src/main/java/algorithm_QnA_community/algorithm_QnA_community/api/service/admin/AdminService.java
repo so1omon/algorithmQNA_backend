@@ -4,17 +4,14 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.Repo
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedCommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.PostPageRes;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostsRes;
+
 import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.Alarm;
 import algorithm_QnA_community.algorithm_QnA_community.domain.alarm.AlarmType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
-import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
-import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
 import algorithm_QnA_community.algorithm_QnA_community.repository.*;
-import algorithm_QnA_community.algorithm_QnA_community.utils.annotation.EnumValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,10 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.Valid;
+
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.service.admin
