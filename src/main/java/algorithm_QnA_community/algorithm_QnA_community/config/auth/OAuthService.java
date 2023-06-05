@@ -8,6 +8,7 @@ import algorithm_QnA_community.algorithm_QnA_community.config.auth.dto.ResponseT
 import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +48,8 @@ public class OAuthService {
     private final MemberRepository memberRepository;
     private final RestTemplate restTemplate;
     private final RedisTemplate redisTemplate;
+
+    private final JwtTokenProvider tokenProvider;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
@@ -106,10 +109,15 @@ public class OAuthService {
                     .profileImgUrl(memberInfo.getProfile())
                     .build();
             memberRepository.save(member);
-
         }
 
-        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(tokenInfo.getAccessToken(), tokenInfo.getRefreshUUID(), memberInfo);
+        // jwt 토큰 발급
+        log.info("jwt 토큰 발급 직전");
+        String token = tokenProvider.createToken(memberInfo.getEmail(), Role.ROLE_USER.value());
+        log.info("token={}", token);
+        log.info("jwt 토큰 발급 직후");
+
+        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(token, token, memberInfo);
         return tokenAndMember;
     }
 
@@ -220,7 +228,7 @@ public class OAuthService {
         String accessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
         String refreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
 
-        log.info("google로 부터 받아온");
+        log.info("google로 부터 받아옴");
         log.info("  access_token= {}", accessToken);
         log.info("  refresh_token={}", refreshToken);
 

@@ -10,12 +10,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -25,10 +29,13 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.Filter;
 
 
 /**
@@ -63,6 +70,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final OAuthService oAuthService;
     private final MemberRepository memberRepository;
     private final AccessDeniedHandler accessDeniedHandler;
+
+    private final UserDetailServiceImpl userDetailsService;
+
+    private final AuthEntryPointJwt unauthorizedHandler;
 
     // == code 필요할 때 (시작)== //
     /**
@@ -116,30 +127,59 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .cors().disable()
+                /** 권한 인증 관련 문제 핸들러**/
+                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
             .authorizeRequests()
 //            .antMatchers().permitAll()
+            .antMatchers("/oauth/**").permitAll()
             .antMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
             .and()
             .exceptionHandling()
             .accessDeniedHandler(accessDeniedHandler)
+                /** 세션 사용 x **/
             .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http
+                .addFilterBefore(new ExceptionHandlerFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
+        //http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
-
-        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(new ExceptionHandlerFilter(), tokenAuthenticationFilter().getClass());
+//        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+//        .addFilterBefore(new ExceptionHandlerFilter(), tokenAuthenticationFilter().getClass());
     }
 //**/
 
     // == 실제 운영 (끝) == //
 
-    public TokenAuthenticationFilter tokenAuthenticationFilter(){
-        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter(oAuthService, memberRepository);
-        //return new TokenAuthenticationFilter(new OAuthService(memberRepository, restTemplate, redisTemplate));
-        return tokenAuthenticationFilter;
+    @Bean
+    public AuthTokenFilter authenticationJwtFilter() {
+        return new AuthTokenFilter(memberRepository);
     }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
+//    @Override
+//    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception{
+//        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+//    }
+
+//    @Bean
+//    @Override
+//    public AuthenticationManager authenticationManagerBean() throws Exception {
+//        return super.authenticationManagerBean();
+//    }
+
+//    public TokenAuthenticationFilter tokenAuthenticationFilter(){
+//        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter(oAuthService, memberRepository);
+//        //return new TokenAuthenticationFilter(new OAuthService(memberRepository, restTemplate, redisTemplate));
+//        return tokenAuthenticationFilter;
+//    }
 
     @Bean
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
