@@ -21,11 +21,11 @@ jobs:
             pwd
       ## create application-dev.properties
       - name: make application.properties
-        if: contains(github.ref, 'develop')
+        if: contains(github.ref, 'main')
         run: |
             cd ./src/main/resources
             touch ./application.properties
-            echo "${{ secrets.PROPERTIES }}" > ./application-dev.properties
+            echo "${{ secrets.PROPERTIES }}" > ./application.properties
         shell: bash
         
       ## gradle build
@@ -51,6 +51,6 @@ jobs:
           script: 
             pwd
             sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/algorithmdocker
             docker-compose up -d
             docker image prune -f
