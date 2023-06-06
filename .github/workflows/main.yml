@@ -63,4 +63,3 @@ jobs:
             sudo docker rm -f $(docker ps -qa)
             docker-compose pull
             docker-compose up -d
-            sudo docker image prune -f
