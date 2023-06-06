@@ -32,7 +32,7 @@ import javax.transaction.Transactional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/member")
+@RequestMapping("/api/member")
 public class MemberApiController {
     private final MemberService memberService;
 

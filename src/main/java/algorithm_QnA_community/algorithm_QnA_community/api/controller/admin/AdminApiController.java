@@ -26,7 +26,7 @@ import javax.validation.constraints.Min;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @Slf4j
 @Validated
 public class AdminApiController {

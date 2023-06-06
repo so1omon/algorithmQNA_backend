@@ -41,7 +41,7 @@ import javax.validation.constraints.Min;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/comment")
+@RequestMapping("/api/comment")
 @Slf4j
 public class CommentApiController {
     private final CommentService commentService;

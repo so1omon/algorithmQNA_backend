@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/alarm")
+@RequestMapping("/api/alarm")
 public class AlarmApiController {
 
     private final AlarmService alarmService;
