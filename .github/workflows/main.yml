@@ -34,8 +34,8 @@ jobs:
         if: contains(github.ref, 'main')
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/algorithmdocker .
-          docker push ${{ secrets.DOCKER_REPO }}/algorithmdocker:latest
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }} .
+          docker push ${{ secrets.DOCKER_REPO }}
           
      ## deploy to develop
       - name: SSH Remote Commands
@@ -48,6 +48,6 @@ jobs:
           script: 
             pwd
             sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/algorithmdocker
+            sudo docker pull ${{ secrets.DOCKER_REPO }}
             docker-compose up -d
             docker image prune -f
