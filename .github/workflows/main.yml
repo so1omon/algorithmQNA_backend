@@ -19,3 +19,10 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             pwd
+      - name: make application.properties
+        if: contains(github.ref, 'develop')
+        run: |
+            cd ./src/main/resources
+            touch ./application.properties
+            echo "${{ secrets.PROPERTIES }}" > ./application-dev.properties
+        shell: bash
