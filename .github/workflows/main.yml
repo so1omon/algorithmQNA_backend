@@ -35,7 +35,7 @@ jobs:
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/algorithmdocker .
-          docker push ${{ secrets.DOCKER_REPO }}/algorithmdocker
+          docker push ${{ secrets.DOCKER_REPO }}/algorithmdocker:latest
           
      ## deploy to develop
       - name: SSH Remote Commands
