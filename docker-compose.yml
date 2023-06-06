@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  myapp:
+    image: openjdk:11-jdk
+    ports:
+      - 8080:8080
+    volumes:
+      - ./algorithmQNA_backend/build/libs:/build/libs
+    command: ["java", "-jar", "algorithm_QnA_community-0.0.1-SNAPSHOT.jar"]
+    depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    container_name: redis_boot
+    command: redis-server --port 6379
+    hostname: admin
+    volumes:
+      - ./redis:/data
+    ports:
+      - 6379:6379
