@@ -1,0 +1,21 @@
+name: AWS EC2 INSTANCE CI/CD 
+######### master branch에 push 되었을때만 실행#########
+on: 
+  push:            
+    branches: main
+    
+######### master branch에 push 되었을때만 실행#########
+
+jobs:
+  build: # job 이름 : build
+    runs-on: ubuntu-latest # runner 운영체제
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            pwd
