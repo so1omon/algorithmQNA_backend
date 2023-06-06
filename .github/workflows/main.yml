@@ -59,6 +59,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             pwd
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             sudo docker rm -f $(docker ps -qa)
             docker-compose pull
             docker-compose up -d
