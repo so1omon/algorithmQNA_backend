@@ -60,6 +60,7 @@ jobs:
           script: |
             pwd
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            sudo docker-compose down -v
             sudo docker rm -f $(docker ps -qa)
             sudo docker-compose pull
             sudo docker-compose up -d
