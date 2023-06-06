@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class ReportedPostsRes {
-    private List<ReportedPostDto> reportedPosts;
+public class PostPageRes {
+    private List<PostWithContentDto> posts;
     private int page;
     private boolean next;
     private boolean prev;
@@ -33,12 +33,12 @@ public class ReportedPostsRes {
     private int totalPageSize;
 
     @Builder
-    public ReportedPostsRes(Page<Post> postPage){
+    public PostPageRes(Page<Post> postPage){
         this.page = postPage.getPageable().getPageNumber();
         this.next = postPage.hasNext();
         this.prev = postPage.hasPrevious();
-        this.reportedPosts = postPage.stream().map(ReportedPostDto::new).collect(Collectors.toList());
-        this.size = reportedPosts.size();
+        this.posts = postPage.stream().map(PostWithContentDto::new).collect(Collectors.toList());
+        this.size = posts.size();
         this.totalPageSize = postPage.getTotalPages();
     }
 }

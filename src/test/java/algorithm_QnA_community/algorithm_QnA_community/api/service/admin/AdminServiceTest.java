@@ -1,6 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.service.admin;
 
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.ReportedPostsRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.PostPageRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
@@ -98,9 +98,9 @@ class AdminServiceTest {
         }
         clear();
         // 4. adminService 메소드 사용
-        ReportedPostsRes reportedPosts = adminService.getReportedPosts(0);
+        PostPageRes reportedPosts = adminService.getReportedPosts(0);
 
-        assertThat(reportedPosts.getReportedPosts().size()).isEqualTo(10);
+        assertThat(reportedPosts.getPosts().size()).isEqualTo(10);
 //        log.info("==============================: {}",reportedPosts.toString());
     }
 

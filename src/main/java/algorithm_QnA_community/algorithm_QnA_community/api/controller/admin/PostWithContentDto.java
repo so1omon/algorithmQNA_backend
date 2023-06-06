@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.admin
- * fileName       : PostRes
+ * fileName       : PostWithContentDto
  * author         : solmin
  * date           : 2023/05/18
  * description    :
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @AllArgsConstructor
-public class ReportedPostDto {
+public class PostWithContentDto {
     private Long postId;
     private String postTitle;
     private String postContent;
@@ -37,7 +37,7 @@ public class ReportedPostDto {
     private int views;
     private MemberBriefDto member;
 
-    public ReportedPostDto(Post post){
+    public PostWithContentDto(Post post){
         this.postId = post.getId();
         this.member = new MemberBriefDto(post.getMember());
         this.postTitle = post.getTitle();

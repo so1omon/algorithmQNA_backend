@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.comment
@@ -19,6 +21,7 @@ import javax.validation.constraints.NotBlank;
  * -----------------------------------------------------------
  * 2023/05/04        solmin       최초 생성
  * 2023/05/10        solmin       DTO Validation 추가
+ * 2023/06/01        solmin       글 작성 시 imageIds 필드 추가
  */
 @Data
 @AllArgsConstructor
@@ -28,4 +31,6 @@ public class CommentCreateReq {
     private String content;
 
     private Long parentCommentId;
+
+    List<Long> imageIds = new ArrayList<>();
 }

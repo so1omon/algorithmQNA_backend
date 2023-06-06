@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -43,6 +44,7 @@ import javax.validation.constraints.Min;
 @RequiredArgsConstructor
 @RequestMapping("/api/comment")
 @Slf4j
+@Validated
 public class CommentApiController {
     private final CommentService commentService;
 

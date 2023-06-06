@@ -1,6 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,7 @@ import java.util.Optional;
  * 2023/05/04        solmin       최초 생성
  * 2023/05/16        solmin       댓글 삭제 메소드 삭제 (JPA 기본구현)
  * 2023/05/16        solmin       서비스단에 필요한 인터페이스 메소드 구현
- *
+ * 2023/06/01        solmin       findByMemberOrderByCreatedDateDesc 추가
  */
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
@@ -69,7 +70,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findTop10ByParentIdAndDepthEqualsOrderByCreatedDateDesc(Long parentId, int depth);
 
-
+    Long countByParentIdAndDepth(Long parentId, int depth);
 
 //    @Query("select c from Comment c " +
 //        " left join c.post p" +
@@ -109,4 +110,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query(value = "select c from Comment c where c.id in :commentIds")
     Page<Comment> findByCommentIds(@Param("commentIds") List<Long> commentIds, Pageable pageable);
+    Page<Comment> findByMemberOrderByCreatedDateDesc(Member member, Pageable pageable);
 }

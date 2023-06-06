@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
@@ -26,6 +27,7 @@ import java.util.List;
  * 2023/05/22        solmin       findByPostIds <- AdminService에서 사용중
  * 2023/06/01        janguni      PostRepositoryCutom 상속 추가
  */
+
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
 //    // 최신순으로 정렬
 //    Page<Post> findByPostCategoryAndTypeOrderByCreatedDateDesc(PostCategory category, PostType postType, Pageable pageable);
@@ -79,9 +81,12 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
 //    // 조회수 내림차순
 //    Page<Post> findByPostCategoryAndTypeOrderByViewsDesc(PostCategory category, PostType postType, Pageable pageable);
 
-
     // postId 리스트에 해당하는 post를 Pageable하게 가져오기
     // AdminService에서 사용중입니다!
     @Query(value = "select p from Post p where p.id in :postIds")
     Page<Post> findByPostIds(@Param("postIds") List<Long> postIds, Pageable pageable);
+
+    Page<Post> findByTypeOrderByCreatedDateDesc(PostType postType, Pageable pageable);
+
+    Page<Post> findByMemberOrderByCreatedDateDesc(Member member, Pageable pageable);
 }

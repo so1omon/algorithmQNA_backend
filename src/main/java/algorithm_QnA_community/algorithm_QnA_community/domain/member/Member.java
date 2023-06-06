@@ -12,6 +12,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +50,8 @@ public class Member extends BaseTimeEntity {
     private String email;
 
     @Column(nullable = false)
+    @NotBlank(message = "멤버 이름을 공백을 제외하고 2글자 이상 20글자 이하로 작성하세요.")
+    @Size(min=2, max=20, message = "멤버 이름을 공백을 제외하고 2글자 이상 20글자 이하로 작성하세요.")
     private String name;
 
     @Column(nullable = false)
@@ -119,5 +123,12 @@ public class Member extends BaseTimeEntity {
         this.preLikeBadgeCnt = likeBadgeCnt;
     }
 
+    public void updateProfile(String profileImgUrl){
+        this.profileImgUrl = profileImgUrl;
+    }
+
+    public void updateName(String memberName){
+        this.name = memberName;
+    }
 
 }
