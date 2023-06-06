@@ -22,10 +22,11 @@ jobs:
       ## create application-dev.properties
 
       - uses: actions/checkout@v3
-      - run: ls -al
-      - run: touch ./src/main/resources/application.yml
-      - run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.yml
-      - run: cat ./src/main/resources/application.yml
+      - run: ls -al src/main/
+      - run: ls -al src/main/resources
+      - run: touch src/main/resources/application.yml
+      - run: echo "${{ secrets.PROPERTIES }}" > src/main/resources/application.yml
+      - run: cat src/main/resources/application.yml
         
       ## gradle build
       - name: Build with Gradle
