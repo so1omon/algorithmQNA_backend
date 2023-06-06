@@ -20,13 +20,11 @@ jobs:
           script: |
             pwd
       ## create application.yml
-      - name: make application.yml
-        if: contains(github.ref, 'main')
-        run: |
-            pwd
-            cd ./src/main/resources
-            touch ./application.yml
-            echo "${{ secrets.PROPERTIES }}" > ./application.yml
+      - uses: actions/checkout@v3
+      - run: mkdir ./src/main/resources/
+      - run: touch ./src/main/resources/application.yml
+      - run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.yml
+      - run: cat ./src/main/resources/application.yml
         
       ## gradle build
       - name: Build with Gradle
