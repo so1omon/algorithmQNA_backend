@@ -21,7 +21,7 @@ jobs:
             pwd
       ## create application-dev.properties
       - name: make application.yml
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - run: touch ./src/main/resources/application.yml
       - run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.yml
       - run: cat ./src/main/resources/application.yml
