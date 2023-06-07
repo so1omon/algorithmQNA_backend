@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.TokenAuthenticationException;
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -7,6 +9,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,56 +18,98 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+/**
+ * packageName      : algorithm_QnA_community.algorithm_QnA_community.config.auth
+ * fileNmae         : JwtTokenProvider
+ * author           : janguni
+ * date             : 2023-06-05
+ * description      : jwt토큰 생성 및 검증
+ *
+ * ========================================================
+ * DATE             AUTHOR          NOTE
+ * 2023-06-05       janguni         최초 생성
+ */
 
 @RequiredArgsConstructor
 @Component
 @Slf4j
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    @Value("${jwt.accessSecret}")
+    private String accessSecret;
 
-//    @Value("{jwt.token-validity-in-seconds}")
-//    private String tokenValidTime;
-    private long tokenValidTime = 30 * 60 * 1000L;
+    @Value("${jwt.refreshSecret}")
+    private String refreshSecret;
+
+    private long accessTokenValidTime = 30 * 60 * 1000L;
+
+    private long refreshTokenValidTime = 30 * 24 * 60 * 60 * 1000L;
 
     private final UserDetailsService userDetailsService;
 
 
-    // 토큰 생성
-    public String createToken(String email, String roles) {
+    // accessToken 생성
+    public String createAccessToken(String email, String roles) {
         Claims claims = Jwts.claims().setSubject(email); // JWT payload 에 저장되는 정보단위
-        claims.put("roles", roles); // 정보는 key / value 쌍으로 저장
+        claims.put("roles", roles);
         Date now = new Date();
-        log.info("email={}", email);
-        log.info("role={}", roles);
         return Jwts.builder()
-                .setClaims(claims) // 정보 저장
-                .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + tokenValidTime)) // 토큰 유효시각 설정
-                .signWith(SignatureAlgorithm.HS256, secretKey)  // 암호화 알고리즘과, secret 값
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + accessTokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, accessSecret)
                 .compact();
     }
 
+    // refreshToken 생성
+    public String createRefreshToken(String email, String roles) {
+        Claims claims = Jwts.claims().setSubject(email);
+        claims.put("roles", roles);
+        Date now = new Date();
+
+        // refresh Token 생성
+        String refreshToken = Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, refreshSecret)
+                .compact();
+        return refreshToken;
+    }
+
+
     // 인증 정보 조회
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByEmail(this.getEmail(token));
+        UserDetails userDetails = userDetailsService.loadUserByEmail(this.getEmailWithAccessToken(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    // 토큰에서 회원 정보 추출
-    public String getEmail(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+    // accessToken 에서 회원 정보 추출
+    public String getEmailWithAccessToken(String token) {
+        return Jwts.parser().setSigningKey(accessSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // 토큰 유효성, 만료일자 확인
-    public boolean validateToken(String jwtToken) {
+    // refreshToken 에서 회원 정보 추출
+    public String getEmailWithRefreshToken(String token) {
+        return Jwts.parser().setSigningKey(refreshSecret).parseClaimsJws(token).getBody().getSubject();
+    }
+
+    // accessToken 유효성, 만료일자 확인
+    public boolean validateAccessToken(String jwtToken) {
         try {
-            log.info(" 토큰 유효한지 확인");
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(accessSecret).parseClaimsJws(jwtToken);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // refreshToken 유효성, 만료일자 확인
+    public boolean validateRefreshToken(String jwtToken) {
+        try {
+            Jws<Claims> claims = Jwts.parser().setSigningKey(refreshSecret).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
             return false;

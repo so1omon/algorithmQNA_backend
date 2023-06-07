@@ -33,7 +33,6 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
             log.info("토큰 인증 실패");
             response.sendRedirect("/oauth/not-secured");
         }
-
     }
 
 }
