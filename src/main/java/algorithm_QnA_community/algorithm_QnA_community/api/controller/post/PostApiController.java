@@ -42,7 +42,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@RequestMapping("/api/post")
 @Slf4j
 public class PostApiController {
 
