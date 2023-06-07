@@ -58,6 +58,7 @@ import javax.servlet.Filter;
  *                                  OpenEntityManagerInView가 DelegatingFilterProxy보다 먼저 작동
  * 2023/05/22       janguni         세션 false 하는 코드 추가
  * 2023/05/23       solmin          accessDeniedHandler 주입 및 configure 추가
+ * 2023/06/07       janguni         AuthTokenFiler 사용으로 변경
  */
 
 @Slf4j
@@ -66,61 +67,10 @@ import javax.servlet.Filter;
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private final OAuthService oAuthService;
     private final MemberRepository memberRepository;
     private final AccessDeniedHandler accessDeniedHandler;
 
-    private final UserDetailServiceImpl userDetailsService;
-
     private final AuthEntryPointJwt unauthorizedHandler;
-
-    // == code 필요할 때 (시작)== //
-    /**
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(
-                "/",
-                "/login/**",
-                "/auth/not-secured",
-                "/google/callback/**",
-                "/oauth/**"
-        );
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-
-        http.csrf().disable()
-                .cors().disable()
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .oauth2Login()
-                .authorizationEndpoint()
-                .baseUri("/oauth2/authorize")
-                .authorizationRequestRepository(authorizationRequestRepository())
-                .and()
-                .redirectionEndpoint()
-                .baseUri("/oauth2")
-                .and()
-                 .userInfoEndpoint()
-                .userService(oAuth2UserService());
-    }
-    **/
-    // == code 필요할 때 (끝)== //
-
-
-
-    // == 실제 운영 (시작)== //
-    ///**
-    @Override
-    public void configure(WebSecurity web) {
-        web.ignoring().antMatchers(
-                "/",
-                "/oauth/**"
-        );
-    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -130,7 +80,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 /** 권한 인증 관련 문제 핸들러**/
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
             .authorizeRequests()
-//            .antMatchers().permitAll()
             .antMatchers("/oauth/**").permitAll()
             .antMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
@@ -141,17 +90,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        /** 토큰 검증 필터 **/
         http
-                .addFilterBefore(new ExceptionHandlerFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
-        //http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
-
-//        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-//        .addFilterBefore(new ExceptionHandlerFilter(), tokenAuthenticationFilter().getClass());
     }
-//**/
 
-    // == 실제 운영 (끝) == //
 
     @Bean
     public AuthTokenFilter authenticationJwtFilter() {
@@ -163,23 +107,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-
-//    @Override
-//    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception{
-//        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-//    }
-
-//    @Bean
-//    @Override
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
-
-//    public TokenAuthenticationFilter tokenAuthenticationFilter(){
-//        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter(oAuthService, memberRepository);
-//        //return new TokenAuthenticationFilter(new OAuthService(memberRepository, restTemplate, redisTemplate));
-//        return tokenAuthenticationFilter;
-//    }
 
     @Bean
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {

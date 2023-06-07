@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.config.auth;
 
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.TokenAuthenticationException;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.MemberInfoRes;
@@ -86,16 +87,15 @@ public class OAuthService {
     }
 
 
-
     public ResponseTokenAndMember login(String code, String state){
-        log.info("      code={}", code);
-        log.info("      state={}", state);
 
-        AccessTokenAndRefreshUUID tokenInfo = getToken(code); // 액세스 토큰과 refreshUUID 얻어옴
+        // 인증코드로 구글 accessToken 받기 (추후 구글에 있는 사용자 정보를 얻기 위함)
+        String googleAccessToken = getGoogleAccessTokenWithCode(code);
 
-        if (tokenInfo==null) return null; // 잘못된 인증코드로 인해 토큰을 받아오지 못함
+        if (googleAccessToken==null) return null; // 잘못된 인증코드로 인해 토큰을 받아오지 못함
 
-        MemberInfoRes memberInfo = getMemberInfo(tokenInfo.getAccessToken(), state); // 사용자 정보 받기
+        // 사용자 정보
+        MemberInfoRes memberInfo = getMemberInfo(googleAccessToken, state);
 
 
         // 처음 로그인을 시도한 사용자라면 회원가입 처리
@@ -112,51 +112,18 @@ public class OAuthService {
         }
 
         // jwt 토큰 발급
-        log.info("jwt 토큰 발급 직전");
-        String token = tokenProvider.createToken(memberInfo.getEmail(), Role.ROLE_USER.value());
-        log.info("token={}", token);
-        log.info("jwt 토큰 발급 직후");
+        String accessToken = tokenProvider.createAccessToken(memberInfo.getEmail(), Role.ROLE_USER.value());
+        String refreshToken = tokenProvider.createRefreshToken(memberInfo.getEmail(), Role.ROLE_USER.value());
 
-        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(token, token, memberInfo);
+        // refreshToken을 redis에 저장(uuid가 key)
+        ValueOperations<String, String> vop = redisTemplate.opsForValue();
+        String uuid = UUID.randomUUID().toString();
+        vop.set(uuid, refreshToken);
+
+        ResponseTokenAndMember tokenAndMember = new ResponseTokenAndMember(accessToken, uuid, memberInfo);
         return tokenAndMember;
     }
 
-    // refresh token으로 accessToken 재발급
-    public String sendTokens(String refreshUUID){
-
-        ValueOperations<String, String> vop = redisTemplate.opsForValue();
-        String refreshToken = vop.get(refreshUUID);
-        log.info("refreshToken={}", refreshToken);
-        if (refreshToken==null) {
-            return null;
-        }
-
-        URI uri = URI.create("https://oauth2.googleapis.com/token");
-
-        HttpHeaders headers = new HttpHeaders();
-
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-
-        parameters.add("client_id", clientId);
-        parameters.add("client_secret", clientSecret);
-        parameters.add("refresh_token", refreshToken);
-        parameters.add("grant_type", "refresh_token");
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
-
-
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(uri, entity, String.class);
-
-            JsonParser jsonParser = new JsonParser();
-            JsonElement jsonElement = jsonParser.parse(response.getBody());
-            String newAccessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
-            return newAccessToken;
-        } catch (Exception e) {
-            log.info("google에서 재발급을 안함");
-            return null;
-        }
-    }
 
     public MemberInfoRes getMemberInfo(String accessToken, String state) {
         try {
@@ -194,7 +161,7 @@ public class OAuthService {
      * @param code
      * @return accessToken refreshUUID
      */
-    private AccessTokenAndRefreshUUID getToken(String code) {
+    private String getGoogleAccessTokenWithCode(String code) {
 
         // HTTP 요청에 필요한 파라미터를 설정
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
@@ -226,19 +193,7 @@ public class OAuthService {
         JsonParser jsonParser = new JsonParser();
         JsonElement jsonElement = jsonParser.parse(response.getBody());
         String accessToken = jsonElement.getAsJsonObject().get("access_token").getAsString();
-        String refreshToken = jsonElement.getAsJsonObject().get("refresh_token").getAsString();
 
-        log.info("google로 부터 받아옴");
-        log.info("  access_token= {}", accessToken);
-        log.info("  refresh_token={}", refreshToken);
-
-        // refreshToken redis에 저장(uuid가 key)
-        ValueOperations<String, String> vop = redisTemplate.opsForValue();
-        String uuid = UUID.randomUUID().toString();
-
-        vop.set(uuid, refreshToken); // redis에 저장
-
-        AccessTokenAndRefreshUUID accessAndRefreshToken = new AccessTokenAndRefreshUUID(accessToken, uuid);
-        return accessAndRefreshToken;
+        return accessToken;
     }
 }
