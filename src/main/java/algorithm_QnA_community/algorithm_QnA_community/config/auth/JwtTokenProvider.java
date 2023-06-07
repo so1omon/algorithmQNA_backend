@@ -47,8 +47,6 @@ public class JwtTokenProvider {
 
     private long refreshTokenValidTime = 30 * 24 * 60 * 60 * 1000L;
 
-    private final UserDetailsService userDetailsService;
-
 
     // accessToken 생성
     public String createAccessToken(String email, String roles) {
@@ -77,13 +75,6 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, refreshSecret)
                 .compact();
         return refreshToken;
-    }
-
-
-    // 인증 정보 조회
-    public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByEmail(this.getEmailWithAccessToken(token));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
     // accessToken 에서 회원 정보 추출
@@ -116,8 +107,4 @@ public class JwtTokenProvider {
         }
     }
 
-    // Request의 Header에서 token 값 가져오기
-    public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("X-AUTH-TOKEN");
-    }
 }

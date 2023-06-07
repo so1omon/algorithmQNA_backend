@@ -114,7 +114,7 @@ public class OAuthController {
             Cookie accessCookie = new Cookie("access_token", "");
             accessCookie.setMaxAge(0);
 
-            Cookie refreshCookie = new Cookie("refresh_token", "");
+            Cookie refreshCookie = new Cookie("refresh_uuid", "");
             refreshCookie.setMaxAge(0);
 
             response.addCookie(accessCookie);
