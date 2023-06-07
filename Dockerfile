@@ -4,4 +4,4 @@ COPY build/libs/algorithm_QnA_community-0.0.1-SNAPSHOT.jar algorithm_qna_backend
 
 ENTRYPOINT ["java", "-jar", "algorithm_qna_backend_project.jar"]
 
-ENV	USE_PROFILE local
+ENV	USE_PROFILE prod
