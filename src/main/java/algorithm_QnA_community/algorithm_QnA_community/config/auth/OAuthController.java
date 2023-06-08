@@ -10,6 +10,7 @@ import algorithm_QnA_community.algorithm_QnA_community.config.auth.dto.ResponseT
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -47,6 +48,9 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
+    @Value("${cookie.domain}")
+    private String domain;
+
     /**
      * 구글 로그인 페이지로 리다이렉트
      */
@@ -79,14 +83,14 @@ public class OAuthController {
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
                     .path("/")
-                    .domain("13.54.50.218")
+                    .domain(domain)
                     //.secure(true)
                     .build();
 
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
                     //.secure(true)
-                    .domain("13.54.50.218")
+                    .domain(domain)
                     .path("/")
                     .build();
 
