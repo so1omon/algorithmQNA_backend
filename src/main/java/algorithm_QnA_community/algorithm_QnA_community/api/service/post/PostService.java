@@ -183,11 +183,6 @@ public class PostService {
         // 본인 게시물을 신고하려는 경우
         checkPostAccessPermission(member == findPost.getMember(), ErrorCode.REPORT_MY_RESOURCE, "자신이 작성한 게시물은 신고할 수 없습니다.");
 
-
-        if (postReportReq.getCategory().equals(ReportCategory.ETC.toString()) & postReportReq.getDetail()==null){
-
-        }
-
         Optional<ReportPost> findReportPost = reportPostRepository.findByPostIdAndMemberId(postId, member.getId());
 
         if (!findReportPost.isPresent()){ // 해당 게시물을 신고한 적이 없다면
