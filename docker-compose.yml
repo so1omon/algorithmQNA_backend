@@ -2,14 +2,15 @@ version: "3"
 
 services:
   myapp:
-    image: openjdk:11-jdk
-    ports:
-      - 8080:8080
-    volumes:
-      - ./algorithmQNA_backend/build/libs:/build/libs
-    command: ["java", "-jar", "algorithm_QnA_community-0.0.1-SNAPSHOT.jar"]
-    depends_on:
-      - redis
+   image: janguni/algorithm-project-docker-repo:1.0
+   ports:
+     - 8080:8080
+   volumes:
+     - ./algorithmQNA_backend/build/libs:/build/libs
+   depends_on:
+     - redis
+   environment:	
+    SPRING_PROFILES_ACTIVE: prod		#사용할 profile 지정
   redis:
     image: redis:latest
     container_name: redis_boot
