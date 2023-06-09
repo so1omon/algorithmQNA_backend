@@ -74,7 +74,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         boolean authenticateFlag=false;
-
+        log.info("doFilterInternal에 들어옴");
         // admin 계정
         String isAdmin = request.getHeader("isAdmin");
         if (isAdmin!=null && isAdmin.equals("true")){
@@ -87,6 +87,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         // 액세스 토큰과 refreshUUID 값 추출
         AccessTokenAndRefreshUUID accessTokenAndRefreshUUID = extractAccessTokenAndRefreshUUID(request);
         if (accessTokenAndRefreshUUID==null) { // 쿠키가 없을 경우
+            log.info("쿠키가 없음");
             filterChain.doFilter(request, response);
             return;
         }
@@ -95,33 +96,50 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         String refreshUUID = accessTokenAndRefreshUUID.getRefreshUUID();
         String refreshToken;
 
+        log.info("accessToken={}", accessToken);
+        log.info("refreshUUID={}", refreshUUID);
+
         // accessToken 인증
         if (accessToken!=null) {
             if (tokenProvider.validateAccessToken(accessToken)){
+                log.info("access 인증 완료");
                 String email = tokenProvider.getEmailWithAccessToken(accessToken);
                 Optional<Member> findMember = memberRepository.findByEmail(email);
                 if (findMember.isPresent()) {
+                    log.info("사용자 존재!");
                     createAuthentication(findMember.get());
                     authenticateFlag=true;
                 }
+                else {
+                    log.info("사용자 존재x");
+                }
+            }
+            else {
+                log.info("access 인증 실패");
             }
         }
 
         // refreshToken 인증
-        else if (refreshUUID!=null) {
+        if (refreshUUID!=null && authenticateFlag==false) {
             try {
                 ValueOperations<String, String> vop = redisTemplate.opsForValue();
                 refreshToken = vop.get(refreshUUID);
             } catch (Exception e) {
+                log.info("refreshUUID redis에 없음");
                 throw new TokenAuthenticationException("토큰예외");
             }
 
             if (tokenProvider.validateRefreshToken(refreshToken)) {
+                log.info("refreshToken 인증 완료");
                 String memberEmail = tokenProvider.getEmailWithRefreshToken(refreshToken);
                 Optional<Member> findMember = memberRepository.findByEmail(memberEmail);
-                if (findMember.isPresent()) createAuthentication(findMember.get());
-                accessToken = tokenProvider.createAccessToken(findMember.get().getEmail(), findMember.get().getRole().value());
-                authenticateFlag = true;
+                if (findMember.isPresent()) {
+                    createAuthentication(findMember.get());
+                    accessToken = tokenProvider.createAccessToken(findMember.get().getEmail(), findMember.get().getRole().value());
+                    authenticateFlag = true;
+                }
+            } else {
+                log.info("refresh 인증 실패");
             }
         }
 

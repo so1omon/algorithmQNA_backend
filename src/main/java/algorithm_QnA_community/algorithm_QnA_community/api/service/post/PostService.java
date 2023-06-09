@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -79,13 +80,21 @@ public class PostService {
         // 일반 사용자가 공지사항 타입을 선택한 경우
         checkNoticePermission(member.getRole(), postCreateReq.getPostType());
 
+        List<String> keyWords = postCreateReq.getKeyWords();
+        log.info("keyWords={}", keyWords);
+
+        if (keyWords == null || keyWords.isEmpty()) {
+            keyWords = new ArrayList<>();
+            keyWords.add("Unknown");
+        }
+
         Post post = Post.createPost()
                 .member(member)
                 .title(postCreateReq.getTitle())
                 .content(postCreateReq.getContent())
                 .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
                 .type(PostType.valueOf(postCreateReq.getPostType()))
-                .keyWords(postCreateReq.getKeyWords())
+                .keyWords(keyWords)
                 .build();
 
         Post savedPost = postRepository.save(post);
