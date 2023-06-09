@@ -58,8 +58,8 @@ public class OAuthService {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String clientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
-    private String redirectUri;
+//    @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
+//    private String redirectUri;
 
     @Value("${google.uri}")
     private String googleLoginUri;
@@ -68,7 +68,7 @@ public class OAuthService {
     /**
      * 구글 로그인 창으로 이동하는 uri 구성
      */
-    public String getOauthRedirectURL() {
+    public String getOauthRedirectURL(String redirectUri) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile");
@@ -87,10 +87,10 @@ public class OAuthService {
     }
 
 
-    public ResponseTokenAndMember login(String code, String state){
+    public ResponseTokenAndMember login(String code, String state, String redirectUri){
 
         // 인증코드로 구글 accessToken 받기 (추후 구글에 있는 사용자 정보를 얻기 위함)
-        String googleAccessToken = getGoogleAccessTokenWithCode(code);
+        String googleAccessToken = getGoogleAccessTokenWithCode(code, redirectUri);
 
         if (googleAccessToken==null) return null; // 잘못된 인증코드로 인해 토큰을 받아오지 못함
 
@@ -161,7 +161,7 @@ public class OAuthService {
      * @param code
      * @return accessToken refreshUUID
      */
-    private String getGoogleAccessTokenWithCode(String code) {
+    private String getGoogleAccessTokenWithCode(String code, String redirectUri) {
 
         // HTTP 요청에 필요한 파라미터를 설정
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
