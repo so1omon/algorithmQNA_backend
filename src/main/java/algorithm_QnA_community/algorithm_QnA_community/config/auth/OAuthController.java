@@ -56,8 +56,10 @@ public class OAuthController {
      * 구글 로그인 페이지로 리다이렉트
      */
     @GetMapping("/oauth/google")
-    public String redirectToGoogle(){
-        return "redirect:" + oAuthService.getOauthRedirectURL();
+    public String redirectToGoogle(@RequestParam String redirectUri){
+        log.info("======= 구글 로그인 창으로 이동 전 =======");
+        log.info("redirectUri={}", redirectUri);
+        return "redirect:" + oAuthService.getOauthRedirectURL(redirectUri);
     }
 
     /**
@@ -66,10 +68,11 @@ public class OAuthController {
      *         state (상태값)
      */
     @GetMapping("/oauth/login")
-    public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
-        log.info("======= 로그인 시도=======");
+    public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state, @RequestParam String redirectUri) {
+        log.info("======= 로그인 시도 =======");
+        log.info("redirectUri={}", redirectUri);
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
-        ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code, state);
+        ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code, state, redirectUri);
 
 
         if (responseTokenAndMember == null) {
