@@ -38,6 +38,7 @@ import javax.validation.Valid;
  * 2023/05/28        janguni            게시물 목록 조회 필터링 조건 추가
  * 2023/05/31        janguni            게시물 목록 조회 @RequestBody로 변경
  * 2023/06/01        janguni            게시물 목록 조회 @RequestParam으로 재변경
+ * 2023/06/11        janguni            댓글 하이라이팅 api 추가
  */
 
 @RestController
@@ -137,6 +138,20 @@ public class PostApiController {
         PostsResultRes postsResultRes = postService.readPosts(postSearchDto);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."), postsResultRes);
     }
+
+    /**
+     * 댓글 하이라이팅
+     */
+
+    @GetMapping("/{post_id}/highlight/{comment_id}")
+    public Res<PostDetailRes> readPostWithHighlightComment(@PathVariable("post_id") Long postId,
+                                                           @PathVariable("comment_id") Long commentId,
+                                                           Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        PostDetailRes postDetailRes = postService.readPostWithHighlightComment(postId, commentId, findMember);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), postDetailRes);
+    }
+
 
 
     private static Member getLoginMember(Authentication authentication) {

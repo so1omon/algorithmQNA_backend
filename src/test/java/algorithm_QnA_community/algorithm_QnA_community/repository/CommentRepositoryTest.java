@@ -1,6 +1,8 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentWithIsLikeDto;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
+import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikeComment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
@@ -12,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -42,6 +46,9 @@ class CommentRepositoryTest {
     PostRepository postRepository;
     @Autowired
     CommentRepository commentRepository;
+
+    @Autowired
+    LikeCommentRepository likeCommentRepository;
 
 
 
@@ -195,6 +202,74 @@ class CommentRepositoryTest {
         Assertions.assertThat(totalCommentCount).isEqualTo(7);
 
     }
+
+    @Test
+    @Transactional
+    public void testest() {
+
+        // given
+        // 멤버 생성
+        Member member = Member.createMember()
+                .name("uni3")
+                .email("uni123456@gmail.com")
+                .role(Role.ROLE_USER)
+                .profileImgUrl("profile")
+                .build();
+        memberRepository.save(member);
+
+
+        // 게시물 생성
+        Post post = Post.createPost()
+                .member(member)
+                .title("title")
+                .content("content")
+                .postCategory(PostCategory.DP)
+                .type(PostType.QNA)
+                .build();
+
+        postRepository.save(post);
+
+        Long parentId=1L;
+
+        // 댓글 생성
+        for (int i = 0; i < 8; i++) {
+            Comment parentComment = Comment.createComment()
+                    .member(member)
+                    .post(post)
+                    .content("댓글"+i)
+                    .parent(null)
+                    .build();
+            commentRepository.save(parentComment);
+
+            if (i%3==0) {
+                for (int j=0; j<10; j++) {
+                    Comment childComment = Comment.createComment()
+                            .member(member)
+                            .post(post)
+                            .content("대댓글"+j)
+                            .parent(parentComment)
+                            .build();
+                    commentRepository.save(childComment);
+                    if (j%3==0) {
+                        LikeComment likeComment2 = new LikeComment(childComment, member, true);
+                        likeCommentRepository.save(likeComment2);
+                    }
+                }
+                parentId = parentComment.getId();
+            }
+        }
+
+        em.flush();
+        em.clear();
+        // when
+        Page<CommentWithIsLikeDto> results = commentRepository.findChildCommentWithIsLikeDto(member.getId(), post.getId(), parentId, PageRequest.of(1, 5));
+
+        for (CommentWithIsLikeDto c: results) {
+            log.info("c={}", c);
+        }
+
+    }
+
 
 //    @BeforeTestExecution
 //    void getMember() {

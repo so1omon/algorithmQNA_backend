@@ -1,5 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.repository;
 
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentWithIsLikeDto;
 import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,7 @@ import java.util.Optional;
  * 2023/05/16        solmin       댓글 삭제 메소드 삭제 (JPA 기본구현)
  * 2023/05/16        solmin       서비스단에 필요한 인터페이스 메소드 구현
  * 2023/06/01        solmin       findByMemberOrderByCreatedDateDesc 추가
+ * 2023/06/11       janguni      findChildCommentPageNumberByParentCommentId, findCommentWithLikedByParentId 추가
  */
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
@@ -111,4 +114,38 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query(value = "select c from Comment c where c.id in :commentIds")
     Page<Comment> findByCommentIds(@Param("commentIds") List<Long> commentIds, Pageable pageable);
     Page<Comment> findByMemberOrderByCreatedDateDesc(Member member, Pageable pageable);
+
+
+    // 자식 댓글 id의 row number 구하기
+    @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.parent.id = :parentCommentId")
+    int findChildCommentPageNumberByParentCommentId(@Param("commentId") Long commentId, @Param("parentCommentId") Long parentId);
+
+    @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.depth=0")
+    int findCommentPageNumberByCommentId(@Param("commentId") Long commentId);
+
+
+    // 해당 페이지의 최상위 댓글 정보 가져오기 (사용자의 추천정보도 함께)
+    @Query(value = "select new algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentWithIsLikeDto(c, lc.isLike)"+
+                    " from Comment c" +
+                    " left join LikeComment lc on lc.comment.id = c.id and lc.member.id = :memberId" +
+                    " where c.depth = 0 and c.post.id = :postId" +
+                    " order by c.id desc")
+    Page<CommentWithIsLikeDto> findTopCommentWithIsLikeDto(@Param("memberId") Long memberId,
+                                                           @Param("postId") Long postId,
+                                                           Pageable pageable);
+
+    // 해당 페이지의 대댓글 정보 가져오기 (사용자의 추천정보도 함께)
+    @Query(value = "select new algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentWithIsLikeDto(c, lc.isLike)"+
+            " from Comment c" +
+            " left join LikeComment lc on lc.comment.id = c.id and lc.member.id = :memberId" +
+            " where c.parent.id = :parentId and c.post.id = :postId" +
+            " order by c.id desc")
+    Page<CommentWithIsLikeDto> findChildCommentWithIsLikeDto(@Param("memberId") Long memberId,
+                                                           @Param("postId") Long postId,
+                                                           @Param("parentId") Long parentId,
+                                                           Pageable pageable);
+
+
+
+
 }
