@@ -125,8 +125,8 @@ public class PostApiController {
      * 게시물 목록 조회
      */
     @GetMapping
-    public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory postCategory,
-                                         @RequestParam("type") @Valid PostType postType,
+    public Res<PostsResultRes> readPosts(@RequestParam("postCategory") @Valid PostCategory postCategory,
+                                         @RequestParam("postType") @Valid PostType postType,
                                          @RequestParam("sort") @Valid PostSortType postSortType,
                                          @RequestParam("page") int pageNumber,
                                          @RequestParam(required = false, name = "hasCommentCond") boolean hasCommentCond,
