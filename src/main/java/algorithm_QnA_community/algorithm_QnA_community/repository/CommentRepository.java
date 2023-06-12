@@ -118,10 +118,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     // 자식 댓글 id의 row number 구하기
     @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.parent.id = :parentCommentId")
-    int findChildCommentPageNumberByParentCommentId(@Param("commentId") Long commentId, @Param("parentCommentId") Long parentId);
+    int findChildCommentRowNumberByParentCommentId(@Param("commentId") Long commentId, @Param("parentCommentId") Long parentId);
 
     @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.depth=0")
-    int findCommentPageNumberByCommentId(@Param("commentId") Long commentId);
+    int findCommentRowNumberByCommentId(@Param("commentId") Long commentId);
 
 
     // 해당 페이지의 최상위 댓글 정보 가져오기 (사용자의 추천정보도 함께)

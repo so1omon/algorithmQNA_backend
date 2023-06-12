@@ -128,7 +128,7 @@ public class PostApiController {
     public Res<PostsResultRes> readPosts(@RequestParam("postCategory") @Valid PostCategory postCategory,
                                          @RequestParam("postType") @Valid PostType postType,
                                          @RequestParam("sort") @Valid PostSortType postSortType,
-                                         @RequestParam("page") int pageNumber,
+                                         @RequestParam(required = false, name = "page", defaultValue = "0") int pageNumber,
                                          @RequestParam(required = false, name = "hasCommentCond") boolean hasCommentCond,
                                          @RequestParam(required = false, name = "keyWordCond") String keyWordCond,
                                          @RequestParam(required = false, name = "titleCond") String titleCond,
@@ -142,7 +142,6 @@ public class PostApiController {
     /**
      * 댓글 하이라이팅
      */
-
     @GetMapping("/{post_id}/highlight/{comment_id}")
     public Res<PostDetailRes> readPostWithHighlightComment(@PathVariable("post_id") Long postId,
                                                            @PathVariable("comment_id") Long commentId,
