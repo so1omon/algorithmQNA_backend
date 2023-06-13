@@ -61,7 +61,7 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/30        janguni            게시물 등록, 수정, 조회 시 keyWords 관련 코드 추가
  * 2023/06/01        janguni            게시물 목록 조회 코드 수정 (필터 적용)
  * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
- * 2023/06/11        janguni            댓글 하이라이팅 기능 추가
+ * 2023/06/11        janguni            댓글 하이라이팅 기능 추가 (리펙토링 예정)
 */
 
 @Service
@@ -374,20 +374,21 @@ public class PostService {
 
         // 최상위 댓글
         if (depth==0) {
+            /**
             // 상위 댓글의 페이지 정보를 찾고 해당 페이지의 최상위 댓글 10개를 가져온다.
             topCommentsPage = getTopCommentsPage(member, findPost, highlightComment);
             List<CommentWithIsLikeDto> topCommentsDto = topCommentsPage.getContent();
 
             // TopCommentRes 생성
             for (CommentWithIsLikeDto tc:topCommentsDto) {
-                TopCommentRes topCommentRes = getTopCommentResWithTargetComment(tc, highlightComment, member, findPost);
+                TopCommentRes topCommentRes = getTopCommentResWithTargetComment2(tc, highlightComment, member, findPost);
                 comments.add(topCommentRes);
             }
+             **/
         }
 
         // 깊이 1인 댓글
-        else if (depth>=1) {
-
+        else if (depth==1) {
             // 상위 댓글을 찾는다.
             Comment topComment = highlightComment.getParent();
 
@@ -397,7 +398,7 @@ public class PostService {
 
             // TopCommentRes 생성
             for (CommentWithIsLikeDto tc:topCommentsDto) {
-                TopCommentRes topCommentRes = getTopCommentResWithTargetComment(tc, highlightComment, member, findPost);
+                TopCommentRes topCommentRes = getTopCommentResWithTargetComment2(tc, highlightComment, member, findPost, 1,null );
                 comments.add(topCommentRes);
             }
         }
@@ -406,6 +407,7 @@ public class PostService {
         else {
             // 상위 댓글을 찾는다.
             Comment topComment = highlightComment.getParent().getParent();
+            Comment d1Comment = highlightComment.getParent();
 
             // 상위 댓글의 페이지 정보를 찾고 해당 페이지의 최상위 댓글 10개를 가져온다.
             topCommentsPage = getTopCommentsPage(member, findPost, topComment);
@@ -413,7 +415,7 @@ public class PostService {
 
             // 상위 댓글 별로 하위 댓글 10개씩 조회
             for (CommentWithIsLikeDto tc:topCommentsDto) {
-                TopCommentRes topCommentRes = getTopCommentResWithTargetComment(tc, highlightComment, member, findPost);
+                TopCommentRes topCommentRes = getTopCommentResWithTargetComment2(tc, d1Comment, member, findPost, 2, highlightComment);
                 comments.add(topCommentRes);
             }
             
@@ -424,25 +426,17 @@ public class PostService {
         return postDetailWithHighlightCommentRes;
     }
 
-    private TopCommentRes getTopCommentResWithTargetComment(CommentWithIsLikeDto topCommentDto, Comment highlightComment, Member member, Post post){
-        Comment d1Comment=null;
-        Comment d2Comment=null;
+    private TopCommentRes getTopCommentResWithTargetComment2(CommentWithIsLikeDto parentCommentWithIsLikeDto, Comment childComment, Member member, Post post, int depth, Comment d2Comment){
 
-        if (highlightComment.getDepth()==1){
-            d1Comment = highlightComment;
-        } else if ( highlightComment.getDepth()==2){
-            d1Comment = highlightComment.getParent();
-            d2Comment = highlightComment;
-        }
+        Comment parentComment = parentCommentWithIsLikeDto.getComment();
+        Boolean parentCommentIsLiked = parentCommentWithIsLikeDto.getIsLiked();
 
-        Comment topComment = topCommentDto.getComment();
-        Boolean topCommentIsLiked = topCommentDto.getIsLiked();
         int childCommentPage = 0;
-        Long topCommentId = topComment.getId();
-        if (d1Comment!=null) {
-            if (topCommentId == d1Comment.getId()) {
+        Long topCommentId = parentComment.getId();
+        if (childComment!=null) {
+            if (topCommentId == childComment.getParent().getId()) {
                 // 해당 댓글의 댓글 페이지를 찾는다. (상위 댓글 기준)
-                int childRowNumber = commentRepository.findChildCommentRowNumberByParentCommentId(d1Comment.getId(), topCommentId);
+                int childRowNumber = commentRepository.findChildCommentRowNumberByParentCommentId(childComment.getId(), topCommentId);
                 childCommentPage = (childRowNumber - 1) / 10;
             }
         }
@@ -452,28 +446,28 @@ public class PostService {
         List<CommentWithIsLikeDto> childCommentsDto = childCommentsPage.getContent();
 
         // CommentRes로 변형
-        List<CommentRes> childComments = new ArrayList<>();
+        TopCommentRes topCommentRes = new TopCommentRes(parentComment, parentCommentIsLiked, childCommentsPage.getNumber(), childCommentsPage.hasNext(), childCommentsPage.hasPrevious(), childCommentsPage.getTotalPages());
         for (CommentWithIsLikeDto c: childCommentsDto) {
-            CommentRes commentRes = new CommentRes(c.getComment(), c.getIsLiked());
-            if (d2Comment!=null){
-                if (c.getComment().getId() == d1Comment.getId()){
-                    TopCommentRes topCommentRes = getTopCommentResWithTargetComment(c, d2Comment, member, post);
-                    childComments.add(topCommentRes);
-                }
-            } else {
-                childComments.add(commentRes);
+
+            // 만약 depth가 2라면 해당 댓글의 하위댓글 재귀
+            if (depth==2) {
+                TopCommentRes tc = getTopCommentResWithTargetComment2(c, d2Comment, member, post, 3, null);
+                topCommentRes.addChild(tc);
+            }
+            else {
+                CommentRes cr = new CommentRes(c.getComment(), c.getIsLiked());
+                int crChildSize = c.getComment().getChild().size();
+                if (crChildSize>0) cr.setHasChild(true);
+                topCommentRes.addChild(cr);
             }
         }
-
-        TopCommentRes topCommentRes = new TopCommentRes(topComment, topCommentIsLiked, childCommentsPage.getTotalPages(), childCommentsPage.getNumber(), childCommentsPage.hasNext(), childCommentsPage.hasPrevious(), childCommentsPage.getTotalPages());
-        topCommentRes.setChildCommentList(childComments);
         return topCommentRes;
     }
 
     private Page<CommentWithIsLikeDto> getTopCommentsPage(Member member, Post findPost, Comment topComment) {
         int topCommentRowNumber = commentRepository.findCommentRowNumberByCommentId(topComment.getId());
         int topCommentPage = (topCommentRowNumber-1) / 10;
-        log.info("topCOmment page number = {}", topCommentPage);
+        log.info("topComment page number = {}", topCommentPage);
         Page<CommentWithIsLikeDto> topCommentsPage = commentRepository.findTopCommentWithIsLikeDto(member.getId(), findPost.getId(), PageRequest.of(topCommentPage, 10));
         return topCommentsPage;
     }
