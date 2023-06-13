@@ -147,8 +147,8 @@ public class PostApiController {
                                                            @PathVariable("comment_id") Long commentId,
                                                            Authentication authentication){
         Member findMember = getLoginMember(authentication);
-        PostDetailRes postDetailRes = postService.readPostWithHighlightComment(postId, commentId, findMember);
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), postDetailRes);
+        PostDetailWithHighlightCommentRes res = postService.readPostWithHighlightComment(postId, commentId, findMember);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), res);
     }
 
 
