@@ -154,11 +154,6 @@ public class PostApiController {
 
 
     private static Member getLoginMember(Authentication authentication) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-//        String email = userDetails.getEmail();
-//
-//        log.info(username);
-//        return null;
         Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();
         return loginMember;
     }

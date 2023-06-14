@@ -99,7 +99,6 @@ public class Comment extends BaseTimeEntity {
         this.member = member;
         this.content = content;
         member.getComments().add(this);
-        post.getComments().add(this);
         if(parent!=null){
             if(parent.getDepth()>=2){ // parent의 depth>=2인 상황
                 this.mentioner = parent.getMember();

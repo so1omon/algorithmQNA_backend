@@ -27,7 +27,8 @@ import java.util.Optional;
  * 2023/05/16        solmin       댓글 삭제 메소드 삭제 (JPA 기본구현)
  * 2023/05/16        solmin       서비스단에 필요한 인터페이스 메소드 구현
  * 2023/06/01        solmin       findByMemberOrderByCreatedDateDesc 추가
- * 2023/06/11       janguni      findChildCommentPageNumberByParentCommentId, findCommentWithLikedByParentId 추가
+ * 2023/06/11       janguni       findChildCommentPageNumberByParentCommentId, findCommentWithLikedByParentId,
+ *                                findTopCommentWithIsLikeDto, findChildCommentWithIsLikeDto 추가
  */
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {

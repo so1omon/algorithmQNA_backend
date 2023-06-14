@@ -33,6 +33,7 @@ import java.util.List;
  * -----------------------------------------------------------
  * 2023/05/04        solmin       최초 생성
  * 2023/05/15        janguni      댓글 조회 테스트 추가
+ * 2023/06/12        janguni      댓글_조회_추천정보포함 추가
  */
 
 @SpringBootTest
@@ -205,7 +206,7 @@ class CommentRepositoryTest {
 
     @Test
     @Transactional
-    public void testest() {
+    public void 댓글_조회_추천정보포함() {
 
         // given
         // 멤버 생성
