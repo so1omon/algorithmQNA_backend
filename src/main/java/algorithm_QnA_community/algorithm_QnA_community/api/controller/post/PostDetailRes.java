@@ -82,7 +82,7 @@ public class PostDetailRes {
 
     private List<String> convertToListKeyWords(String keyWords){
         List<String> keyWordsList = new ArrayList<>();
-        String[] keyWordsArray = keyWords.split("#");
+        String[] keyWordsArray = keyWords.split(",");
         keyWordsList = Arrays.asList(keyWordsArray);
         if (keyWordsList.get(0).equals("Unknown")) return null;
         return keyWordsList;
