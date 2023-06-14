@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,6 +52,7 @@ import java.util.Optional;
  * DATE             AUTHOR          NOTE
  * 2023/06/05       janguni         최초 생성
  * 2023/06/14       solmin          admin test 삭제
+
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -64,6 +66,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    @Value("${cookie.domain}")
+    private String domain;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -120,13 +124,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
             Cookie accessCookie = new Cookie("access_token", accessToken);
             accessCookie.setPath("/");
-            accessCookie.setDomain("13.54.50.218");
+            accessCookie.setDomain(domain);
             //accessCookie.setSecure(true);
             accessCookie.setHttpOnly(true);
             Cookie refreshCookie = new Cookie("refresh_uuid", refreshUUID);
             //refreshCookie.setSecure(true);
             refreshCookie.setPath("/");
-            refreshCookie.setDomain("13.54.50.218");
+            refreshCookie.setDomain(domain);
             refreshCookie.setHttpOnly(true);
 
             httpResponse.addCookie(accessCookie);

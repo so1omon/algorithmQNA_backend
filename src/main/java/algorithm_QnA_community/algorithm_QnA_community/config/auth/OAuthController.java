@@ -10,6 +10,7 @@ import algorithm_QnA_community.algorithm_QnA_community.config.auth.dto.ResponseT
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -47,12 +48,18 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
+    @Value("${cookie.domain}")
+    private String domain;
+
+
     /**
      * 구글 로그인 페이지로 리다이렉트
      */
     @GetMapping("/oauth/google")
-    public String redirectToGoogle(){
-        return "redirect:" + oAuthService.getOauthRedirectURL();
+    public String redirectToGoogle(@RequestParam String redirectUri){
+        log.info("======= 구글 로그인 창으로 이동 전 =======");
+        log.info("redirectUri={}", redirectUri);
+        return "redirect:" + oAuthService.getOauthRedirectURL(redirectUri);
     }
 
     /**
@@ -61,10 +68,11 @@ public class OAuthController {
      *         state (상태값)
      */
     @GetMapping("/oauth/login")
-    public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state) {
-        log.info("======= 로그인 시도=======");
+    public ResponseEntity<Res> login(@RequestParam String code, @RequestParam String state, @RequestParam String redirectUri) {
+        log.info("======= 로그인 시도 =======");
+        log.info("redirectUri={}", redirectUri);
         // 인증코드로 액세스 토큰, refreshUUID, 멤버정보 불러옴
-        ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code, state);
+        ResponseTokenAndMember responseTokenAndMember = oAuthService.login(code, state, redirectUri);
 
 
         if (responseTokenAndMember == null) {
@@ -79,14 +87,14 @@ public class OAuthController {
             ResponseCookie accessCookie = ResponseCookie.from("access_token", responseTokenAndMember.getAccessToken())
                     .httpOnly(true)
                     .path("/")
-                    .domain("13.54.50.218")
+                    .domain(domain)
                     //.secure(true)
                     .build();
 
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_uuid", responseTokenAndMember.getRefreshUUID())
                     .httpOnly(true)
                     //.secure(true)
-                    .domain("13.54.50.218")
+                    .domain(domain)
                     .path("/")
                     .build();
 
