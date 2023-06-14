@@ -10,6 +10,7 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -81,10 +82,9 @@ public class PostDetailRes {
 
     private List<String> convertToListKeyWords(String keyWords){
         List<String> keyWordsList = new ArrayList<>();
-        if (keyWords != null && !keyWords.isEmpty()) {
-            String[] keyWordsArray = keyWords.split(",");
-            keyWordsList = Arrays.asList(keyWordsArray);
-        }
+        String[] keyWordsArray = keyWords.split("#");
+        keyWordsList = Arrays.asList(keyWordsArray);
+        if (keyWordsList.get(0).equals("Unknown")) return null;
         return keyWordsList;
     }
 }
