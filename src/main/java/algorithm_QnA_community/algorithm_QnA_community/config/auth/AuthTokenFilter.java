@@ -50,6 +50,7 @@ import java.util.Optional;
  * ========================================================
  * DATE             AUTHOR          NOTE
  * 2023/06/05       janguni         최초 생성
+ * 2023/06/14       solmin          admin test 삭제
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -70,15 +71,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         boolean authenticateFlag=false;
-
-        // admin 계정
-        String isAdmin = request.getHeader("isAdmin");
-        if (isAdmin!=null && isAdmin.equals("true")){
-            Optional<Member> findAdminMember = memberRepository.findById(1L);
-            if (!findAdminMember.isPresent()) throw new TokenAuthenticationException("admin계정 없음");
-            createAuthentication(findAdminMember.get());
-            filterChain.doFilter(request, response);
-        }
 
         // 액세스 토큰과 refreshUUID 값 추출
         AccessTokenAndRefreshUUID accessTokenAndRefreshUUID = extractAccessTokenAndRefreshUUID(request);
