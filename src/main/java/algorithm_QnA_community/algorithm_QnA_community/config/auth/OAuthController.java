@@ -50,9 +50,6 @@ public class OAuthController {
     @Value("${cookie.domain}")
     private String domain;
 
-    @Value("${cookie.domain}")
-    private String domain;
-
 
     /**
      * 구글 로그인 페이지로 리다이렉트
