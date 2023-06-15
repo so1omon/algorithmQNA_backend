@@ -19,10 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2023/06/01        solmin       최초 생성
+ * 2023/06/15        solmin       entrypoint 수정
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/upload")
+@RequestMapping("/api/upload")
 @Slf4j
 public class S3ApiController {
     private final S3Service s3Service;
