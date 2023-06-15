@@ -63,11 +63,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtTokenProvider tokenProvider;
-
     @Value("${cookie.domain}")
     private String domain;
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
