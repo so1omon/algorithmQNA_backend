@@ -47,7 +47,6 @@ import javax.servlet.http.HttpServletResponse;
 public class OAuthController {
 
     private final OAuthService oAuthService;
-
     @Value("${cookie.domain}")
     private String domain;
 
