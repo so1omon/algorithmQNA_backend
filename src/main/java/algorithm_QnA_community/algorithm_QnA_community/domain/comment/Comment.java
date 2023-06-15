@@ -111,7 +111,6 @@ public class Comment extends BaseTimeEntity {
                 parent.getChild().add(this);
             }
         }
-
     }
 
     public void updateLikeCnt(boolean isLike, boolean isIncrement){

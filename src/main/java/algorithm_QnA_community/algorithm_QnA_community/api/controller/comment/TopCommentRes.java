@@ -55,4 +55,12 @@ public class TopCommentRes extends CommentRes{
         super(comment, isLiked);
     }
 
+    public TopCommentRes(Comment comment, Boolean isLiked, int page, boolean next, boolean prev, int totalPageSize){
+        super(comment, isLiked);
+        this.page = page;
+        this.next = next;
+        this.prev = prev;
+        this.totalPageSize = totalPageSize;
+    }
+
 }

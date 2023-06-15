@@ -49,5 +49,4 @@ public class PostCreateReq {
   
     @Nullable
     private List<String> keyWords;
-
 }

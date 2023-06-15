@@ -2,12 +2,16 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentWithIsLikeDto;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.TopCommentRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.s3.S3Service;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
+import algorithm_QnA_community.algorithm_QnA_community.domain.comment.Comment;
 import algorithm_QnA_community.algorithm_QnA_community.domain.like.LikePost;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
@@ -22,8 +26,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -31,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode.WRONG_POST_ID;
 import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role.ROLE_USER;
 
 /**
@@ -54,6 +62,8 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/05/30        janguni            게시물 등록, 수정, 조회 시 keyWords 관련 코드 추가
  * 2023/06/01        janguni            게시물 목록 조회 코드 수정 (필터 적용)
  * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
+ * 2023/06/11        janguni            댓글 하이라이팅 기능 추가 (리펙토링 예정)
+ * 2023/06/15        janguni            게시물 조회 response에 채택된 댓글 추가
 */
 
 @Service
@@ -79,13 +89,21 @@ public class PostService {
         // 일반 사용자가 공지사항 타입을 선택한 경우
         checkNoticePermission(member.getRole(), postCreateReq.getPostType());
 
+        List<String> keyWords = postCreateReq.getKeyWords();
+        log.info("keyWords={}", keyWords);
+
+        if (keyWords == null || keyWords.isEmpty()) {
+            keyWords = new ArrayList<>();
+            keyWords.add("Unknown");
+        }
+
         Post post = Post.createPost()
                 .member(member)
                 .title(postCreateReq.getTitle())
                 .content(postCreateReq.getContent())
                 .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
                 .type(PostType.valueOf(postCreateReq.getPostType()))
-                .keyWords(postCreateReq.getKeyWords())
+                .keyWords(keyWords)
                 .build();
 
         Post savedPost = postRepository.save(post);
@@ -104,7 +122,7 @@ public class PostService {
         // 일반 사용자가 공지사항 타입을 선택한 경우
         checkNoticePermission(member.getRole(), postUpdateReq.getPostType());
 
-        Post findPost = getPostById(postId);
+        Post findPost = getPost(postId);
 
         // 본인이 쓴 게시물이 맞는지 확인
         checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
@@ -121,7 +139,7 @@ public class PostService {
      */
     @Transactional
     public void deletePost(Long postId, Member member) {
-        Post findPost = getPostById(postId);
+        Post findPost = getPost(postId);
 
         // 본인이 쓴 게시물이 맞는지 확인
         checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
@@ -141,7 +159,7 @@ public class PostService {
     @Transactional
     public void likePost(Long postId, LikeReq postLikeReq, Member member) {
 
-        Post findPost = getPostById(postId);
+        Post findPost = getPost(postId);
 
         Optional<LikePost> findLikePost = likePostRepository.findByPostIdAndMemberId(postId, member.getId());
 
@@ -178,7 +196,7 @@ public class PostService {
     @Transactional
     public void reportPost(Long postId, ReportReq postReportReq, Member member) {
 
-        Post findPost = getPostById(postId);
+        Post findPost = getPost(postId);
 
         // 본인 게시물을 신고하려는 경우
         checkPostAccessPermission(member == findPost.getMember(), ErrorCode.REPORT_MY_RESOURCE, "자신이 작성한 게시물은 신고할 수 없습니다.");
@@ -207,7 +225,7 @@ public class PostService {
     public PostDetailRes readPostDetail(Long postId, Member member){
 
         //**** 게시물 정보 ****//
-        Post findPost = getPostById(postId); // 게시물
+        Post findPost = getPost(postId); // 게시물
         Boolean isLikedPost = checkPostLike(postId, member); // 게시물 추천 정보
 
         // 게시물 조회수 + 1
@@ -219,14 +237,25 @@ public class PostService {
 
         //**** 댓글 정보 ****//
         CommentsRes commentsRes = commentService.getComments(postId, 0, member.getId());
+        CommentRes pinnedCommentRes = getPinnedCommentRes(member, findPost);
 
         // 총 댓글 갯수
         int totalCommentSize = commentRepository.countCommentByPostId(findPost.getId());
 
         //**** Response 객체 생성 ****//
         PostDetailRes postDetailRes =
-            new PostDetailRes(findPost, postingMember, isLikedPost, commentsRes, totalCommentSize);
+            new PostDetailRes(findPost, postingMember, isLikedPost, commentsRes, totalCommentSize, pinnedCommentRes);
         return postDetailRes;
+    }
+
+
+    private CommentRes getPinnedCommentRes(Member member, Post findPost) {
+        log.info("잘됨");
+        Optional<Comment> pinnedComment = commentRepository.findPinnedCommentByPost(findPost.getId());
+        if (pinnedComment.isEmpty()) return null;
+        Boolean isLikedPinnedComment = commentRepository.getLikeStatusByMemberAndComment(member, pinnedComment.get());
+        CommentRes pinnedCommentRes = new CommentRes(pinnedComment.get(), isLikedPinnedComment);
+        return pinnedCommentRes;
     }
 
     // 해당 게시물의 사용자가 추천을 했는지
@@ -240,42 +269,6 @@ public class PostService {
         }
         return isLikedPost;
     }
-
-
-    /**
-    public PostsResultRes readPosts(PostSearchDto postSearchDto){
-        Page<Post> pagePosts=null;
-
-        switch (PostSortType.valueOf(postSearchDto.getPostSort())) {
-            case LATESTDESC: // 최신순
-                pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case LATESTASC: // 오래된 순
-                pagePosts = postRepository.findByPostCategoryAndTypeOrderByCreatedDateAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case COMMENTCNTASC: // 댓글 오름차순
-                pagePosts = postRepository.findPostOrderByCommentCntAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case COMMENTCNTDESC: // 댓글 내림차순
-                pagePosts = postRepository.findPostOrderByCommentCntDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case LIKEASC:   // 추천 오름차순
-                pagePosts = postRepository.findByPostCategoryOrderByLike_DislikeASC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case LIKEDESC:  // 추천 내림차순
-                pagePosts = postRepository.findByPostCategoryOrderByLike_DislikeDESC(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case VIEWCNTASC:    // 조회수 오름차순
-                pagePosts = postRepository.findByPostCategoryAndTypeOrderByViewsAsc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case VIEWCNTDESC:   // 조회수 내림차순
-                pagePosts = postRepository.findByPostCategoryAndTypeOrderByViewsDesc(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-            case POPULAR:   // 인기순
-                pagePosts = postRepository.findByPopular(categoryName, postType, PageRequest.of(pageNumber, MAX_POST_SIZE));
-                break;
-    }
-     **/
 
     /**
      * 게시물 목록 조회
@@ -333,18 +326,128 @@ public class PostService {
         return postsResultRes;
     }
 
+    /**
+     * 댓글 하이라이팅
+     */
+    @Transactional
+    public PostDetailWithHighlightCommentRes readPostWithHighlightComment(Long postId, Long commentId, Member member) {
 
-//    private List<PostSimpleDto> convertToPostSimpleDetails(List<Post> totalPosts) {
-//        List<PostSimpleDto> posts = new ArrayList<>();
-//        for (Post post : totalPosts) {
-//            Member member = post.getMember();
-//            PostSimpleDto postSimpleDetail = new PostSimpleDto(post.getId(), post.getTitle(), member.getId(), member.getName(), member.getProfileImgUrl(), post.getCreatedDate(), post.getViews(), post.getViews());
-//            posts.add(postSimpleDetail);
-//        }
-//        return posts;
-//    }
+        // 게시물 정보
+        Post findPost = getPost(postId);
+        Boolean isLikedPost = checkPostLike(findPost.getId(), member);
 
-    private Post getPostById(Long postId) {
+        // 댓글 정보
+        CommentRes pinnedCommentRes = getPinnedCommentRes(member, findPost);
+        Comment highlightComment = getComment(commentId);
+        Comment topComment = null;
+        Comment d1Comment = null;
+        Comment d2Comment = null;
+
+
+        if (highlightComment.getPost().getId()!= findPost.getId()) {
+            throw new CustomException(WRONG_POST_ID, "하이라이팅 댓글의 게시물 id와 post_id가 불일치 합니다.");
+        }
+
+        int depth = highlightComment.getDepth();
+        if (depth == 0) topComment = highlightComment;
+        else if (depth==1) {
+            topComment = highlightComment.getParent();
+            d1Comment = highlightComment;
+        }
+        else {
+            topComment = highlightComment.getParent().getParent();
+            d1Comment = highlightComment.getParent();
+            d2Comment = highlightComment;
+        }
+
+        // 최상위 댓글 10개 조회
+        Page<CommentWithIsLikeDto> topCommentsPage = getTopCommentsPage(member, findPost, topComment);
+        List<CommentWithIsLikeDto> topCommentsDto = topCommentsPage.getContent();
+
+
+        List<TopCommentRes> comments = new ArrayList<>();
+
+        // 자식 댓글 정보를 포함한 TopCommentRes 생성
+        for (CommentWithIsLikeDto tc:topCommentsDto) {
+            TopCommentRes topCommentRes = getTopCommentResWithTargetComment(tc, d1Comment, d2Comment,member, findPost);
+            comments.add(topCommentRes);
+        }
+
+        CommentsRes commentsRes = new CommentsRes(findPost.getId(), comments, topCommentsPage.getNumber(), topCommentsPage.getTotalPages(), topCommentsPage.hasNext(), topCommentsPage.hasPrevious(), topCommentsPage.getSize());
+
+        PostDetailWithHighlightCommentRes postDetailWithHighlightCommentRes = new PostDetailWithHighlightCommentRes(findPost, member, isLikedPost, pinnedCommentRes,commentsRes, comments.size(), highlightComment.getId());
+        return postDetailWithHighlightCommentRes;
+    }
+
+    /** topCommentRes를 리턴하는 함수 **/
+    // parentCommentWithIsLikeDto -> 상위 댓글
+    // child1 -> 하위 댓글
+    // child2 -> 하위 댓글의 댓글
+
+    // (상위 댓글이 depth=0인 댓글이라는 의미는 x)
+    //  Ex1)  상위 댓글 (depth=0), 하위 댓글(depth=1), 하위 댓글의 댓글(depth=2)
+    //  Ex2)  상위 댓글 (depth=1), 하위 댓글(depth=2), 하위 댓글의 댓글(null)
+    private TopCommentRes getTopCommentResWithTargetComment(CommentWithIsLikeDto parentCommentWithIsLikeDto, Comment child1, Comment child2, Member member, Post post){
+
+        // parent 댓글 정보
+        Comment parent = parentCommentWithIsLikeDto.getComment();
+        Boolean parentCommentIsLiked = parentCommentWithIsLikeDto.getIsLiked();
+
+        // child1의 댓글의 페이지 정보 구하기
+        int childCommentPage = 0;
+        Long topCommentId = parent.getId();
+        if (child1!=null) {
+            if (topCommentId == child1.getParent().getId()) {
+                int childRowNumber = commentRepository.findChildCommentRowNumberByParentCommentId(child1.getId(), topCommentId);
+                childCommentPage = (childRowNumber - 1) / 10;
+            }
+        }
+
+        // child1의 댓글 정보
+        Page<CommentWithIsLikeDto> childCommentsPage = commentRepository.findChildCommentWithIsLikeDto(member.getId(), post.getId(), topCommentId, PageRequest.of(childCommentPage, 10));
+        List<CommentWithIsLikeDto> childCommentsDto = childCommentsPage.getContent();
+
+        TopCommentRes topCommentRes = new TopCommentRes(parent, parentCommentIsLiked, childCommentsPage.getNumber(), childCommentsPage.hasNext(), childCommentsPage.hasPrevious(), childCommentsPage.getTotalPages());
+
+        // 자식댓글 (child1, child2)을 CommentRes로 변형하여 topCommentRes의 childCommentList에 추가
+        for (CommentWithIsLikeDto c: childCommentsDto) {
+            if (child2!=null) {
+                // child2의 부모댓글이 c 경우 c의 topCommentRes 생성
+                if (c.getComment().getId()==child2.getParent().getId()) {
+                    TopCommentRes tc = getTopCommentResWithTargetComment(c, child2, null, member, post);
+                    topCommentRes.addChild(tc);
+                }
+                else {
+                    CommentRes cr = new CommentRes(c.getComment(), c.getIsLiked());
+                    int crChildSize = c.getComment().getChild().size();
+                    if (crChildSize>0) cr.setHasChild(true);
+                    topCommentRes.addChild(cr);
+                }
+            }
+            else {
+                CommentRes cr = new CommentRes(c.getComment(), c.getIsLiked());
+                int crChildSize = c.getComment().getChild().size();
+                if (crChildSize>0) cr.setHasChild(true);
+                topCommentRes.addChild(cr);
+            }
+        }
+        return topCommentRes;
+    }
+
+    private Page<CommentWithIsLikeDto> getTopCommentsPage(Member member, Post findPost, Comment topComment) {
+        int topCommentRowNumber = commentRepository.findCommentRowNumberByCommentId(topComment.getId());
+        int topCommentPage = (topCommentRowNumber-1) / 10;
+        Page<CommentWithIsLikeDto> topCommentsPage = commentRepository.findTopCommentWithIsLikeDto(member.getId(), findPost.getId(), PageRequest.of(topCommentPage, 10));
+        return topCommentsPage;
+    }
+
+    private Comment getComment(Long commentId) {
+        Comment findComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
+        return findComment;
+    }
+
+    private Post getPost(Long postId) {
         Post findPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
         return findPost;
@@ -359,6 +462,7 @@ public class PostService {
             setter.accept(value);
         }
     }
+
 
 
 }
