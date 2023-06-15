@@ -3,6 +3,8 @@ package algorithm_QnA_community.algorithm_QnA_community.api.service.post;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.LikeReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.ReportReq;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentCreateReq;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
+import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.TopCommentRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.*;
 import algorithm_QnA_community.algorithm_QnA_community.api.service.comment.CommentService;
 import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -77,7 +80,7 @@ class PostServiceTest {
     public void memberSave(){
         Member member = Member.createMember()
                 .name("uni2")
-                .email("uni12345@gmail.com")
+                .email("bluhour553@gmail.com")
                 .role(Role.ROLE_USER)
                 .profileImgUrl("profile")
                 .build();
@@ -95,8 +98,7 @@ class PostServiceTest {
         keyWords.add("어려움");
         keyWords.add("반복문");
 
-        PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA", keyWords);
-
+        PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA", null,keyWords);
         // when
         postService.writePost(postCreateReq, findMember.get());
         em.flush();
@@ -119,7 +121,7 @@ class PostServiceTest {
         // given
         Optional<Member> findMember = memberRepository.findByEmail("uni12345@gmail.com");
 
-        PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA", null);
+        PostCreateReq postCreateReq = new PostCreateReq("title", "content", "DP", "QNA", null,null);
 
         postService.writePost(postCreateReq, findMember.get());
 
@@ -424,7 +426,7 @@ class PostServiceTest {
         postService.likePost(post.getId(), postLikeReq, findMember);
 
         for (int i=1;i<=12;i++) {
-            CommentCreateReq commentCreateReq = new CommentCreateReq("최상위 댓글 내용"+i, null);
+            CommentCreateReq commentCreateReq = new CommentCreateReq("최상위 댓글 내용"+i, null, null);
             commentService.writeComment(post.getId(), commentCreateReq, findMember);
         }
 
@@ -435,21 +437,21 @@ class PostServiceTest {
             Long commentId = c.getId();
             if (count==0){
                 for(int i=1; i<=11; i++){
-                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId);
+                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId, null);
                     commentService.writeComment(post.getId(), commentCreateReq, findMember);
                 }
             }
 
             else if (count==1){
                 for(int i=1; i<=10; i++){
-                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId);
+                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId, null);
                     commentService.writeComment(post.getId(), commentCreateReq, findMember);
                 }
             }
 
             else if (count==2){
                 for(int i=1; i<=9; i++){
-                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId);
+                    CommentCreateReq commentCreateReq = new CommentCreateReq(count+"대댓글 내용"+i, commentId, null);
                     commentService.writeComment(post.getId(), commentCreateReq, findMember);
                 }
             }
@@ -501,6 +503,99 @@ class PostServiceTest {
         //Assertions.assertThat(resultRes1.getCurrentPage()).isEqualTo(0);
         //Assertions.assertThat(resultRes1.getTotalPageCount()).isEqualTo(1);
         //Assertions.assertThat(resultRes1.getSize()).isEqualTo(20);
+    }
+
+    // 댓글 하이라이팅
+    @Test
+    @Transactional
+    void depth1인_댓글_Test() {
+
+        // given
+        Member member = memberRepository.findByEmail("bluhour553@gmail.com").get();
+
+        Post post = Post.createPost()
+                .member(member)
+                .title("title")
+                .content("content")
+                .postCategory(PostCategory.DP)
+                .type(PostType.QNA)
+                .build();
+        postRepository.save(post);
+
+        for (int i = 0; i < 16; i++) {
+            Comment comment = Comment.createComment()
+                    .member(member)
+                    .post(post)
+                    .content("댓글" + i)
+                    .parent(null)
+                    .build();
+
+            commentRepository.save(comment);
+        }
+
+        em.flush();
+        em.clear();
+
+        // when
+        Comment hc = post.getComments().get(5);
+        Long hcId = hc.getId();
+        PostDetailWithHighlightCommentRes res = postService.readPostWithHighlightComment(post.getId(), hcId, member);
+        Long highlightCommentId = res.getHighlightCommentId();
+        List<TopCommentRes> commentList = res.getCommentList();
+        for (TopCommentRes tc: commentList) {
+            log.info("Tc={}", tc.getContent());
+        }
+    }
+
+    @Test
+    @Transactional
+    void depth2인_댓글_Test() {
+
+        // given
+        Member member = memberRepository.findByEmail("bluhour553@gmail.com").get();
+
+        Post post = Post.createPost()
+                .member(member)
+                .title("title")
+                .content("content")
+                .postCategory(PostCategory.DP)
+                .type(PostType.QNA)
+                .build();
+        postRepository.save(post);
+
+        Comment childComment=null;
+        for (int i = 0; i < 16; i++) {
+            Comment comment = Comment.createComment()
+                    .member(member)
+                    .post(post)
+                    .content("댓글" + i)
+                    .parent(null)
+                    .build();
+
+            if (i==12) {
+                childComment = Comment.createComment()
+                        .member(member)
+                        .post(post)
+                        .content("댓글" + i)
+                        .parent(comment)
+                        .build();
+                commentRepository.save(childComment);
+            }
+
+            commentRepository.save(comment);
+        }
+
+        em.flush();
+        em.clear();
+
+        // when
+        Long hcId = childComment.getId();
+        PostDetailWithHighlightCommentRes res = postService.readPostWithHighlightComment(post.getId(), hcId, member);
+        Long highlightCommentId = res.getHighlightCommentId();
+        List<TopCommentRes> commentList = res.getCommentList();
+        for (TopCommentRes tc: commentList) {
+            log.info("tc={}", tc);
+        }
     }
 
 }

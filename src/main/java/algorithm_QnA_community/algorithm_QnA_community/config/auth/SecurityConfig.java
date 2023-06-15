@@ -59,6 +59,8 @@ import javax.servlet.Filter;
  * 2023/05/22       janguni         세션 false 하는 코드 추가
  * 2023/05/23       solmin          accessDeniedHandler 주입 및 configure 추가
  * 2023/06/07       janguni         AuthTokenFiler 사용으로 변경
+ * 2023/06/14       solmin          Admin antmatchers 수정
+
  */
 
 @Slf4j
@@ -81,7 +83,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
             .authorizeRequests()
             .antMatchers("/oauth/**").permitAll()
-            .antMatchers("/admin/**").hasRole("ADMIN")
+            .antMatchers("/api/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
             .and()
             .exceptionHandling()
