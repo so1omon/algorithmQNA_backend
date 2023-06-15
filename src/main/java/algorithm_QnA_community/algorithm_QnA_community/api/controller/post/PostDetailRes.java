@@ -58,7 +58,7 @@ public class PostDetailRes {
     private boolean prev;
     private int size; // 현재 페이지의 comments의 최상위 댓글 수
 
-    private CommentRes pinnedCommentRes;
+    private CommentRes pinnedComment;
 
     private List<TopCommentRes> commentList;
 
@@ -81,7 +81,7 @@ public class PostDetailRes {
         this.prev = commentsRes.isPrev();
         this.size = commentsRes.getSize();
         /* TODO 추후 페이징 구현 끝*/
-        this.pinnedCommentRes = pinnedCommentRes;
+        this.pinnedComment = pinnedCommentRes;
     }
 
     private List<String> convertToListKeyWords(String keyWords){
