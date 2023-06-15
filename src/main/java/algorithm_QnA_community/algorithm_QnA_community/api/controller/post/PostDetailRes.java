@@ -29,6 +29,7 @@ import java.util.List;
  * 2023/05/14        janguni       최초 생성
  * 2023/05/19        solmin        필드명 및 생성자 구조 변경
  * 2023/05/30        janguni       keyWords 추가
+ * 2023/06/15        janguni       채택된 댓글 정보 추가
  */
 
 @Data
@@ -57,9 +58,11 @@ public class PostDetailRes {
     private boolean prev;
     private int size; // 현재 페이지의 comments의 최상위 댓글 수
 
+    private CommentRes pinnedCommentRes;
+
     private List<TopCommentRes> commentList;
 
-    public PostDetailRes(Post post, Member member, Boolean isLiked, CommentsRes commentsRes, int totalCommentCnt){
+    public PostDetailRes(Post post, Member member, Boolean isLiked, CommentsRes commentsRes, int totalCommentCnt, CommentRes pinnedCommentRes){
         this.postId = post.getId();
         this.postTitle = post.getTitle();
         this.postContent = post.getContent();
@@ -78,6 +81,7 @@ public class PostDetailRes {
         this.prev = commentsRes.isPrev();
         this.size = commentsRes.getSize();
         /* TODO 추후 페이징 구현 끝*/
+        this.pinnedCommentRes = pinnedCommentRes;
     }
 
     private List<String> convertToListKeyWords(String keyWords){

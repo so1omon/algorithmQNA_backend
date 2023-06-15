@@ -63,6 +63,7 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/06/01        janguni            게시물 목록 조회 코드 수정 (필터 적용)
  * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
  * 2023/06/11        janguni            댓글 하이라이팅 기능 추가 (리펙토링 예정)
+ * 2023/06/15        janguni            게시물 조회 response에 채택된 댓글 추가
 */
 
 @Service
@@ -236,14 +237,25 @@ public class PostService {
 
         //**** 댓글 정보 ****//
         CommentsRes commentsRes = commentService.getComments(postId, 0, member.getId());
+        CommentRes pinnedCommentRes = getPinnedCommentRes(member, findPost);
 
         // 총 댓글 갯수
         int totalCommentSize = commentRepository.countCommentByPostId(findPost.getId());
 
         //**** Response 객체 생성 ****//
         PostDetailRes postDetailRes =
-            new PostDetailRes(findPost, postingMember, isLikedPost, commentsRes, totalCommentSize);
+            new PostDetailRes(findPost, postingMember, isLikedPost, commentsRes, totalCommentSize, pinnedCommentRes);
         return postDetailRes;
+    }
+
+
+    private CommentRes getPinnedCommentRes(Member member, Post findPost) {
+        log.info("잘됨");
+        Optional<Comment> pinnedComment = commentRepository.findPinnedCommentByPost(findPost.getId());
+        if (pinnedComment.isEmpty()) return null;
+        Boolean isLikedPinnedComment = commentRepository.getLikeStatusByMemberAndComment(member, pinnedComment.get());
+        CommentRes pinnedCommentRes = new CommentRes(pinnedComment.get(), isLikedPinnedComment);
+        return pinnedCommentRes;
     }
 
     // 해당 게시물의 사용자가 추천을 했는지
@@ -320,15 +332,17 @@ public class PostService {
     @Transactional
     public PostDetailWithHighlightCommentRes readPostWithHighlightComment(Long postId, Long commentId, Member member) {
 
-        /** 게시물 정보**/
+        // 게시물 정보
         Post findPost = getPost(postId);
         Boolean isLikedPost = checkPostLike(findPost.getId(), member);
 
-        /** 댓글 정보 **/
+        // 댓글 정보
+        CommentRes pinnedCommentRes = getPinnedCommentRes(member, findPost);
         Comment highlightComment = getComment(commentId);
         Comment topComment = null;
         Comment d1Comment = null;
         Comment d2Comment = null;
+
 
         if (highlightComment.getPost().getId()!= findPost.getId()) {
             throw new CustomException(WRONG_POST_ID, "하이라이팅 댓글의 게시물 id와 post_id가 불일치 합니다.");
@@ -361,11 +375,11 @@ public class PostService {
 
         CommentsRes commentsRes = new CommentsRes(findPost.getId(), comments, topCommentsPage.getNumber(), topCommentsPage.getTotalPages(), topCommentsPage.hasNext(), topCommentsPage.hasPrevious(), topCommentsPage.getSize());
 
-        PostDetailWithHighlightCommentRes postDetailWithHighlightCommentRes = new PostDetailWithHighlightCommentRes(findPost, member, isLikedPost, commentsRes, comments.size(), highlightComment.getId());
+        PostDetailWithHighlightCommentRes postDetailWithHighlightCommentRes = new PostDetailWithHighlightCommentRes(findPost, member, isLikedPost, pinnedCommentRes,commentsRes, comments.size(), highlightComment.getId());
         return postDetailWithHighlightCommentRes;
     }
 
-    // topCommentRes를 리턴하는 함수
+    /** topCommentRes를 리턴하는 함수 **/
     // parentCommentWithIsLikeDto -> 상위 댓글
     // child1 -> 하위 댓글
     // child2 -> 하위 댓글의 댓글

@@ -146,7 +146,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                                                            @Param("parentId") Long parentId,
                                                            Pageable pageable);
 
+    @Query(value = "select c from Comment c where c.post.id = :postId and c.isPinned = true")
+    Optional<Comment> findPinnedCommentByPost(@Param("postId") Long postId);
 
-
+    @Query(value = "select lc.isLike" +
+                    " from LikeComment lc" +
+                    " where lc.comment = :comment and lc.member = :member")
+    Boolean getLikeStatusByMemberAndComment(@Param("member") Member member, @Param("comment") Comment comment);
 
 }
