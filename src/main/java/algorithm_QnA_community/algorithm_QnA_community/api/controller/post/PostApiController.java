@@ -38,6 +38,7 @@ import javax.validation.Valid;
  * 2023/05/28        janguni            게시물 목록 조회 필터링 조건 추가
  * 2023/05/31        janguni            게시물 목록 조회 @RequestBody로 변경
  * 2023/06/01        janguni            게시물 목록 조회 @RequestParam으로 재변경
+ * 2023/06/11        janguni            댓글 하이라이팅 api 추가
  */
 
 @RestController
@@ -124,10 +125,10 @@ public class PostApiController {
      * 게시물 목록 조회
      */
     @GetMapping
-    public Res<PostsResultRes> readPosts(@RequestParam("categoryName") @Valid PostCategory postCategory,
-                                         @RequestParam("type") @Valid PostType postType,
+    public Res<PostsResultRes> readPosts(@RequestParam("postCategory") @Valid PostCategory postCategory,
+                                         @RequestParam("postType") @Valid PostType postType,
                                          @RequestParam("sort") @Valid PostSortType postSortType,
-                                         @RequestParam("page") int pageNumber,
+                                         @RequestParam(required = false, name = "page", defaultValue = "0") int pageNumber,
                                          @RequestParam(required = false, name = "hasCommentCond") boolean hasCommentCond,
                                          @RequestParam(required = false, name = "keyWordCond") String keyWordCond,
                                          @RequestParam(required = false, name = "titleCond") String titleCond,
@@ -138,13 +139,21 @@ public class PostApiController {
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."), postsResultRes);
     }
 
+    /**
+     * 댓글 하이라이팅
+     */
+    @GetMapping("/{post_id}/highlight/{comment_id}")
+    public Res<PostDetailRes> readPostWithHighlightComment(@PathVariable("post_id") Long postId,
+                                                           @PathVariable("comment_id") Long commentId,
+                                                           Authentication authentication){
+        Member findMember = getLoginMember(authentication);
+        PostDetailWithHighlightCommentRes res = postService.readPostWithHighlightComment(postId, commentId, findMember);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), res);
+    }
+
+
 
     private static Member getLoginMember(Authentication authentication) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-//        String email = userDetails.getEmail();
-//
-//        log.info(username);
-//        return null;
         Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();
         return loginMember;
     }
