@@ -5,6 +5,8 @@ import algorithm_QnA_community.algorithm_QnA_community.api.service.member.Member
 import algorithm_QnA_community.algorithm_QnA_community.api.service.s3.S3Service;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentApiController;
 import algorithm_QnA_community.algorithm_QnA_community.config.auth.PrincipalDetails;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.CustomException;
+import algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.DefStatus;
 import algorithm_QnA_community.algorithm_QnA_community.domain.response.Res;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.member
@@ -89,6 +93,18 @@ public class MemberApiController {
 
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 프로필을 변경했습니다."),
             result);
+    }
+
+    @DeleteMapping
+    public Res deleteMember(@RequestBody Map<String, String> req,
+                            Authentication authentication){
+        Member loginMember = ((PrincipalDetails) authentication.getPrincipal()).getMember();
+        if(!loginMember.getEmail().equals(req.getOrDefault("emailCheck", "null"))){
+            throw new CustomException(ErrorCode.WRONG_EMAIL, "이메일 주소가 일치하지 않습니다.");
+        }
+
+        memberService.deleteMember(loginMember);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 회원정보를 삭제했습니다."));
     }
 
     private static Member getLoginMember(Authentication authentication) {
