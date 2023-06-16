@@ -4,6 +4,7 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.admin.Post
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.member.CommentPageRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.repository.CommentRepository;
+import algorithm_QnA_community.algorithm_QnA_community.repository.MemberRepository;
 import algorithm_QnA_community.algorithm_QnA_community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ public class MemberService {
     static final int MAX_COMMENT_SIZE = 20;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final MemberRepository memberRepository;
     @Transactional
     public void updateMemberName(Member loginMember, String memberName) {
         loginMember.updateName(memberName);
@@ -47,5 +49,10 @@ public class MemberService {
     public CommentPageRes getComments(int page, Member member) {
         return new CommentPageRes(commentRepository
             .findByMemberOrderByCreatedDateDesc(member, PageRequest.of(page, MAX_COMMENT_SIZE)));
+    }
+
+    @Transactional
+    public void deleteMember(Member loginMember) {
+        memberRepository.delete(loginMember);
     }
 }
