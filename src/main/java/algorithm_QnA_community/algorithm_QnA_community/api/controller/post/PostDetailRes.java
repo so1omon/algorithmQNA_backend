@@ -1,7 +1,6 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.post;
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.MemberBriefDto;
-import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentDetailRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.CommentsRes;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.TopCommentRes;
@@ -10,7 +9,6 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -72,7 +70,7 @@ public class PostDetailRes {
         this.postDislikeCnt = post.getDislikeCnt();
         this.member = new MemberBriefDto(member);
         this.isLiked = isLiked;
-        this.commentList = commentsRes.getComments();
+        this.commentList = commentsRes.getCommentList();
         /* TODO 추후 페이징 구현 시작 - 생성자 파라미터 정보도 변경하기 */
         this.page = commentsRes.getPage();
         this.totalPageSize = commentsRes.getTotalPageSize();

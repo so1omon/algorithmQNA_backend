@@ -25,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CommentsRes {
     private Long postId;
-    private List<TopCommentRes> comments;
+    private List<TopCommentRes> commentList;
     private int page;
     private int totalPageSize;
     private boolean next;
@@ -33,13 +33,13 @@ public class CommentsRes {
     private int size;
 
     @Builder
-    public CommentsRes(Long postId, Page<Comment> commentPage, List<TopCommentRes> comments){
+    public CommentsRes(Long postId, Page<Comment> commentPage, List<TopCommentRes> commentList){
         this.postId = postId;
         this.page = commentPage.getPageable().getPageNumber();
         this.next = commentPage.hasNext();
         this.prev = commentPage.hasPrevious();
-        this.size = comments.size();
+        this.size = commentList.size();
         this.totalPageSize = commentPage.getTotalPages();
-        this.comments = comments;
+        this.commentList = commentList;
     }
 }
