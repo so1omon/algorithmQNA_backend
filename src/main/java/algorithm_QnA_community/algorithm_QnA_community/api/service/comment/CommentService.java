@@ -275,7 +275,7 @@ public class CommentService {
         return CommentsRes.builder()
             .postId(postId)
             .commentPage(commentsByPost)
-            .comments(topCommentMap.values().stream()
+            .commentList(topCommentMap.values().stream()
                 .map(t->t.updatePageInfo(commentRepository.countByParentIdAndDepth(t.getCommentId(),1).intValue()))
                 .collect(Collectors.toList()))
             .build();
