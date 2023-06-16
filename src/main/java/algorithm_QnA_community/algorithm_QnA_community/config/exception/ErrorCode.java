@@ -33,7 +33,8 @@ public enum ErrorCode {
   INVALID_EXTENSION(HttpStatus.BAD_REQUEST),
   DELAYED_UPLOAD(HttpStatus.BAD_REQUEST),
 
-  WRONG_POST_ID(HttpStatus.BAD_REQUEST);
+  WRONG_POST_ID(HttpStatus.BAD_REQUEST),
+  WRONG_EMAIL(HttpStatus.BAD_REQUEST);
 
   private HttpStatus status;
   private int code;
