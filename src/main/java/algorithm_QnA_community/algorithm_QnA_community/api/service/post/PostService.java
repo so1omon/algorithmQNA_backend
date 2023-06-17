@@ -125,7 +125,7 @@ public class PostService {
         Post findPost = getPost(postId);
 
         // 본인이 쓴 게시물이 맞는지 확인
-        checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 삭제할 권한이 없습니다.");
+        checkPostAccessPermission(member != findPost.getMember(), ErrorCode.UNAUTHORIZED, "게시물을 수정할 권한이 없습니다.");
 
         setIfNotNull(postUpdateReq.getTitle(), findPost::updateTitle);
         setIfNotNull(postUpdateReq.getContent(), findPost::updateContent);
@@ -278,30 +278,39 @@ public class PostService {
 
         switch (postSearchDto.getPostSort()) {
             case LATESTDESC: // 최신순
-                postRepository.findPostsOrderByCreatedDateDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
+                log.info("최신순");
+                pagePosts = postRepository.findPostsOrderByCreatedDateDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case LATESTASC: // 오래된 순
+                log.info("오래된 순");
                 pagePosts = postRepository.findPostsOrderByCreatedDateAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case COMMENTCNTASC: // 댓글 오름차순
+                log.info("댓글 오름차순");
                 pagePosts = postRepository.findPostsOrderByCommentSizeAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case COMMENTCNTDESC: // 댓글 내림차순
+                log.info("댓글 내림차순");
                 pagePosts = postRepository.findPostsOrderByCommentSizeDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case LIKEASC:   // 추천 오름차순
+                log.info("추천 오름차순");
                 pagePosts = postRepository.findPostsOrderByLikeAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case LIKEDESC:  // 추천 내림차순
+                log.info("추천 내림차순");
                 pagePosts = postRepository.findPostsOrderByLikeDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case VIEWCNTASC:    // 조회수 오름차순
+                log.info("조회수 오름차순");
                 pagePosts = postRepository.findPostsOrderByViewAsc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case VIEWCNTDESC:   // 조회수 내림차순
+                log.info("조회수 내림차순");
                 pagePosts = postRepository.findPostsOrderByViewDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
             case POPULAR:   // 인기순
+                log.info("인기순");
                 pagePosts = postRepository.findPostsOrderByPopularDesc(postSearchDto, PageRequest.of(postSearchDto.getPage(), MAX_POST_SIZE));
                 break;
         }
@@ -321,8 +330,13 @@ public class PostService {
         int curPageNumber = pagePosts.getNumber();
 
         List<PostSimpleDto> postSimpleContent = pagePosts.getContent();
+        List<PostSimpleRes> postSimpleResList = new ArrayList<>();
+        for (PostSimpleDto pDto:postSimpleContent) {
+            PostSimpleRes postSimpleRes = new PostSimpleRes(pDto);
+            postSimpleResList.add(postSimpleRes);
+        }
 
-        PostsResultRes postsResultRes = new PostsResultRes(curPageNumber, totalPageCount, next, prev, postSize, postSimpleContent);
+        PostsResultRes postsResultRes = new PostsResultRes(curPageNumber, totalPageCount, next, prev, postSize, postSimpleResList);
         return postsResultRes;
     }
 
