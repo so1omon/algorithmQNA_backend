@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
  * -----------------------------------------------------------
  * 2023/05/17        janguni           최초 생성
  * 2023/06/17        janguni           likeCnt, popularNumber 추가
+ * 2023/06/17        janguni           likeCnt, dislikeCnt 필수로 추가
  */
 @Data
 @NoArgsConstructor
@@ -31,7 +32,7 @@ public class PostSimpleDto {
 
     private int likeCnt;
 
-    private int disLikeCnt;
+    private int dislikeCnt;
 
     private Float popularNumber;
 
@@ -46,11 +47,11 @@ public class PostSimpleDto {
         this.viewCount = viewCount;
         this.commentCount = commentCount;
         this.likeCnt = likeCnt;
-        this.disLikeCnt = disLikeCnt;
+        this.dislikeCnt = disLikeCnt;
     }
 
     @QueryProjection
-    public PostSimpleDto(Long postId, String title, Long memberId, String memberName, String memberProfileUrl, LocalDateTime createdAt, int viewCount, int commentCount,float popularNumber) {
+    public PostSimpleDto(Long postId, String title, Long memberId, String memberName, String memberProfileUrl, LocalDateTime createdAt, int viewCount, int commentCount, int likeCnt, int disLikeCnt,float popularNumber) {
         this.postId = postId;
         this.title = title;
         this.memberId = memberId;
@@ -59,18 +60,9 @@ public class PostSimpleDto {
         this.createdAt = createdAt;
         this.viewCount = viewCount;
         this.commentCount = commentCount;
+        this.likeCnt = likeCnt;
+        this.dislikeCnt = disLikeCnt;
         this.popularNumber = popularNumber;
     }
 
-    @QueryProjection
-    public PostSimpleDto(Long postId, String title, Long memberId, String memberName, String memberProfileUrl, LocalDateTime createdAt, int viewCount, int commentCount) {
-        this.postId = postId;
-        this.title = title;
-        this.memberId = memberId;
-        this.memberName = memberName;
-        this.memberProfileUrl = memberProfileUrl;
-        this.createdAt = createdAt;
-        this.viewCount = viewCount;
-        this.commentCount = commentCount;
-    }
 }
