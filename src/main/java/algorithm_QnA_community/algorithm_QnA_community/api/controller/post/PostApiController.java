@@ -129,12 +129,15 @@ public class PostApiController {
                                          @RequestParam("postType") @Valid PostType postType,
                                          @RequestParam("sort") @Valid PostSortType postSortType,
                                          @RequestParam(required = false, name = "page", defaultValue = "0") int pageNumber,
-                                         @RequestParam(required = false, name = "hasCommentCond") boolean hasCommentCond,
+                                         @RequestParam(required = false, name = "hasCommentCond") Boolean hasCommentCond,
                                          @RequestParam(required = false, name = "keyWordCond") String keyWordCond,
                                          @RequestParam(required = false, name = "titleCond") String titleCond,
                                          @RequestParam(required = false, name = "memberNameCond") String memberNameCond,
-                                         @RequestParam(required = false, name = "isAcceptedCond") boolean isAcceptedCommentCond) {
-        PostSearchDto postSearchDto = new PostSearchDto(postCategory, postType, postSortType, pageNumber, hasCommentCond, keyWordCond, titleCond, memberNameCond, isAcceptedCommentCond);
+                                         @RequestParam(required = false, name = "isPinnedCommentCond") Boolean isPinnedCommentCond) {
+        log.info("controller isPinnedCommentCond={}", isPinnedCommentCond);
+        log.info("controller titleCond={}", titleCond);
+        log.info("controller hasCommentCond={}", hasCommentCond);
+        PostSearchDto postSearchDto = new PostSearchDto(postCategory, postType, postSortType, pageNumber, hasCommentCond, keyWordCond, titleCond, memberNameCond, isPinnedCommentCond);
         PostsResultRes postsResultRes = postService.readPosts(postSearchDto);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."), postsResultRes);
     }
@@ -148,7 +151,7 @@ public class PostApiController {
                                                            Authentication authentication){
         Member findMember = getLoginMember(authentication);
         PostDetailWithHighlightCommentRes res = postService.readPostWithHighlightComment(postId, commentId, findMember);
-        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), res);
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 댓글 하이라이팅을 포함한 게시물을 조회했습니다."), res);
     }
 
 

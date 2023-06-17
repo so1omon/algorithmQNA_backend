@@ -6,6 +6,8 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.Co
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.comment.TopCommentRes;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,6 +43,12 @@ public class PostDetailRes {
     private String postTitle;
 
     private String postContent;
+
+    private PostCategory postCategory;
+
+    private PostType postType;
+
+    private int viewCnt;
     private LocalDateTime createdAt;
 
     private List<String> postKeyWords;
@@ -64,6 +72,9 @@ public class PostDetailRes {
         this.postId = post.getId();
         this.postTitle = post.getTitle();
         this.postContent = post.getContent();
+        this.postCategory = post.getPostCategory();
+        this.postType = post.getType();
+        this.viewCnt = post.getViews();
         this.createdAt = post.getCreatedDate();
         this.postKeyWords = convertToListKeyWords(post.getKeyWords());
         this.postLikeCnt = post.getLikeCnt();
