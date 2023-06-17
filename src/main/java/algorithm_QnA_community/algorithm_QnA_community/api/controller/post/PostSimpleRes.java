@@ -5,7 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
+/**
+ * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.post
+ * fileName       : PostSimpleRes
+ * author         : janguni
+ * date           : 2023/06/16
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 2023/06/16        janguni           최초 생성
+ * 2023/06/17        janguni           likeCnt, dislikeCnt 추가
+ */
 @Data
 @AllArgsConstructor
 public class PostSimpleRes {
@@ -18,6 +29,9 @@ public class PostSimpleRes {
     private int viewCount;
     private int commentCount;
 
+    private int likeCnt;
+    private int dislikeCnt;
+
     public PostSimpleRes(PostSimpleDto postSimpleDto) {
         this.postId = postSimpleDto.getPostId();
         this.title = postSimpleDto.getTitle();
@@ -27,5 +41,7 @@ public class PostSimpleRes {
         this.createdAt = postSimpleDto.getCreatedAt();
         this.viewCount = postSimpleDto.getViewCount();
         this.commentCount = postSimpleDto.getCommentCount();
+        this.likeCnt = postSimpleDto.getLikeCnt();
+        this.dislikeCnt = postSimpleDto.getDislikeCnt();
     }
 }
