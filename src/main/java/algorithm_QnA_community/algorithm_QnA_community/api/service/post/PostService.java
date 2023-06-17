@@ -17,7 +17,6 @@ import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
 import algorithm_QnA_community.algorithm_QnA_community.domain.member.Role;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostCategory;
-import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostSortType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.post.PostType;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportCategory;
 import algorithm_QnA_community.algorithm_QnA_community.domain.report.ReportPost;
@@ -26,11 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -90,7 +86,6 @@ public class PostService {
         checkNoticePermission(member.getRole(), postCreateReq.getPostType());
 
         List<String> keyWords = postCreateReq.getKeyWords();
-        log.info("keyWords={}", keyWords);
 
         if (keyWords == null || keyWords.isEmpty()) {
             keyWords = new ArrayList<>();
@@ -250,7 +245,6 @@ public class PostService {
 
 
     private CommentRes getPinnedCommentRes(Member member, Post findPost) {
-        log.info("잘됨");
         Optional<Comment> pinnedComment = commentRepository.findPinnedCommentByPost(findPost.getId());
         if (pinnedComment.isEmpty()) return null;
         Boolean isLikedPinnedComment = commentRepository.getLikeStatusByMemberAndComment(member, pinnedComment.get());

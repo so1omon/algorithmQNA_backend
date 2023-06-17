@@ -57,7 +57,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -88,7 +90,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -120,8 +124,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.views,
                         post.comments.size(),
                         post.likeCnt,
-                        post.dislikeCnt
-                        )).distinct()
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -184,7 +187,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        commentSizeByPost())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -214,7 +219,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -245,7 +252,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -275,7 +284,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -308,6 +319,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.createdDate,
                         post.views,
                         post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt,
                         popularNumber)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
