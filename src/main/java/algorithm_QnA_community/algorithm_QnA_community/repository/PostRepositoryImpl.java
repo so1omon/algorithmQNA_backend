@@ -4,11 +4,11 @@ import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostS
 
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.PostSimpleDto;
 import algorithm_QnA_community.algorithm_QnA_community.api.controller.post.QPostSimpleDto;
-import algorithm_QnA_community.algorithm_QnA_community.domain.comment.QComment;
 import com.querydsl.core.QueryResults;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +37,7 @@ import static org.springframework.util.StringUtils.isEmpty;
  * -----------------------------------------------------------
  * 2023/05/31        janguni           최초 생성
  * 2023/06/01        janguni           PostSearchDto 변경 후 코드 수정 (Enum비교, keyWordsContain 변경)
+ * 2023/06/17        janguni           likeCnt, di
  */
 @RequiredArgsConstructor
 @Repository
@@ -117,7 +118,10 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt
+                        )).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -125,7 +129,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
-                .orderBy(post.likeCnt.desc())
+                .orderBy(post.likeCnt.subtract(post.dislikeCnt).desc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -137,6 +141,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
 
     @Override
     public Page<PostSimpleDto> findPostsOrderByLikeAsc(PostSearchDto postSearchDto, Pageable pageable) {
+
         QueryResults<PostSimpleDto> results = queryFactory
                 .select(new QPostSimpleDto(
                         post.id,
@@ -146,7 +151,10 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        post.likeCnt,
+                        post.dislikeCnt
+                        )).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -154,7 +162,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
-                .orderBy(post.likeCnt.asc())
+                .orderBy(post.likeCnt.subtract(post.dislikeCnt).asc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -176,7 +184,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        commentSizeByPost())).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -184,13 +192,13 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
-                .orderBy(post.comments.size().desc())
+                .groupBy(post.id)
+                .orderBy(commentSizeByPost().desc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
         List<PostSimpleDto> content = results.getResults();
         long total = results.getTotal();
-
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -214,7 +222,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
-                .orderBy(post.comments.size().asc())
+                .groupBy(post)
+                .orderBy(post.comments.size().asc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -244,7 +253,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
-                .orderBy(post.views.asc())
+                .orderBy(post.views.asc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -274,7 +283,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         post.type.eq(postSearchDto.getPostType()),
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
-                .orderBy(post.views.desc())
+                .orderBy(post.views.desc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -287,6 +296,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
 
     @Override
     public Page<PostSimpleDto> findPostsOrderByPopularDesc(PostSearchDto postSearchDto, Pageable pageable) {
+
+        NumberExpression<Float> popularNumber = getPopularNumber();
         QueryResults<PostSimpleDto> results = queryFactory
                 .select(new QPostSimpleDto(
                         post.id,
@@ -296,7 +307,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         member.profileImgUrl,
                         post.createdDate,
                         post.views,
-                        post.comments.size())).distinct()
+                        post.comments.size(),
+                        popularNumber)).distinct()
                 .from(post)
                 .leftJoin(post.member, member)
                 .leftJoin(comment).on(post.id.eq(comment.post.id))
@@ -305,9 +317,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                         allCond(postSearchDto.getKeyWordsCond(), postSearchDto.getMemberNameCond(), postSearchDto.getTitleCond(), postSearchDto.getHasCommentCond(), postSearchDto.getIsAcceptedCommentCond())
                 )
                 .groupBy(post)
-                .orderBy((post.views.multiply(Expressions.asNumber(0.5).floatValue())
-                        .add((post.likeCnt.multiply(post.likeCnt).divide(post.likeCnt.add(post.dislikeCnt)).multiply(Expressions.asNumber(0.3).floatValue())))
-                        .add(comment.count().multiply(Expressions.asNumber(0.2).floatValue()))).desc())
+                .orderBy(popularNumber.desc(), post.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -316,6 +326,19 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
 
         return new PageImpl<>(contents, pageable, total);
     }
+
+    private NumberExpression<Float> getPopularNumber() {
+        NumberExpression<Integer> likeCnt = post.likeCnt;
+        NumberExpression<Integer> dislikeCnt = post.dislikeCnt;
+
+        NumberExpression<Float> popularNumber = Expressions.numberTemplate(Float.class,
+                "({0} * 50) + (CASE WHEN ({1} = 0 AND {2} = 0) THEN 0 ELSE (({1} * {1} / ({1} + {2})) * 30) END) + ({3} * 20)",
+                post.views, likeCnt, dislikeCnt, post.comments.size());
+        return popularNumber;
+    }
+
+
+
 
     // 필터 조건 조합
     private BooleanExpression allCond(String keyWordsCond, String memberNameCond, String titleCond, Boolean hasCommentCond, Boolean isAcceptedCommentCond) {
@@ -355,6 +378,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
     }
 
     private BooleanExpression isAcceptedCommend(Boolean isAcceptedCommentCond) {
+        log.info("isAcceppedCommentCond={}", isAcceptedCommentCond);
         if (isAcceptedCommentCond == null) return null;
         else if (isAcceptedCommentCond){
             return comment.isPinned.isTrue();
@@ -370,6 +394,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
             return post.comments.isEmpty();
         }
     }
+
+    private NumberExpression<Integer> commentSizeByPost(){ return post.comments.size();}
 
     private BooleanExpression postTitleContain(String titleCond) { return isEmpty(titleCond) ? null : post.title.contains(titleCond);}
 
