@@ -454,7 +454,8 @@ public class PostService {
     }
 
     private Page<CommentWithIsLikeDto> getTopCommentsPage(Member member, Post findPost, Comment topComment) {
-        int topCommentRowNumber = commentRepository.findCommentRowNumberByCommentId(topComment.getId());
+        int topCommentRowNumber = commentRepository.findCommentRowNumberByCommentId(topComment.getId(), findPost.getId());
+        log.info("topCommentRowNumber={}", topCommentRowNumber);
         int topCommentPage = (topCommentRowNumber-1) / 10;
         log.info("topCommentPage={}", topCommentPage);
         Page<CommentWithIsLikeDto> topCommentsPage = commentRepository.findTopCommentWithIsLikeDto(member.getId(), findPost.getId(), PageRequest.of(topCommentPage, 10));
