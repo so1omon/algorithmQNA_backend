@@ -369,12 +369,14 @@ public class PostService {
             d2Comment = highlightComment;
         }
 
-        log.info("topComment={}", topComment);
-        log.info("d1Comment={}", d1Comment);
-        log.info("d2Commnet={}", d2Comment);
+        log.info("topComment={}", topComment.getId());
+        log.info("d1Comment={}", d1Comment.getId());
+        log.info("d2Commnet={}", d2Comment.getId());
 
         // 최상위 댓글 10개 조회
         Page<CommentWithIsLikeDto> topCommentsPage = getTopCommentsPage(member, findPost, topComment);
+        log.info("topComment={}", topCommentsPage.getNumber());
+        log.info("topCommentDto={}", topCommentsPage.getContent());
         List<CommentWithIsLikeDto> topCommentsDto = topCommentsPage.getContent();
         for (CommentWithIsLikeDto c:topCommentsDto) {
             log.info("tc={}", c.getComment().getId());
@@ -454,6 +456,7 @@ public class PostService {
     private Page<CommentWithIsLikeDto> getTopCommentsPage(Member member, Post findPost, Comment topComment) {
         int topCommentRowNumber = commentRepository.findCommentRowNumberByCommentId(topComment.getId());
         int topCommentPage = (topCommentRowNumber-1) / 10;
+        log.info("topCommentPage={}", topCommentPage);
         Page<CommentWithIsLikeDto> topCommentsPage = commentRepository.findTopCommentWithIsLikeDto(member.getId(), findPost.getId(), PageRequest.of(topCommentPage, 10));
         return topCommentsPage;
     }
