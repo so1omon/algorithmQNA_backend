@@ -29,6 +29,7 @@ import java.util.Optional;
  * 2023/06/01        solmin       findByMemberOrderByCreatedDateDesc 추가
  * 2023/06/11       janguni       findChildCommentPageNumberByParentCommentId, findCommentWithLikedByParentId,
  *                                findTopCommentWithIsLikeDto, findChildCommentWithIsLikeDto 추가
+ * 2023/06/18       janguni       findCommentRowNumberByCommentId에 where에 postId 추가
  */
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
