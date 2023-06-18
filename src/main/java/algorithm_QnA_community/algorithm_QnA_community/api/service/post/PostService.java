@@ -370,8 +370,8 @@ public class PostService {
         }
 
         log.info("topComment={}", topComment.getId());
-        log.info("d1Comment={}", d1Comment.getId());
-        log.info("d2Commnet={}", d2Comment.getId());
+        log.info("d1Comment={}", d1Comment);
+        log.info("d2Commnet={}", d2Comment);
 
         // 최상위 댓글 10개 조회
         Page<CommentWithIsLikeDto> topCommentsPage = getTopCommentsPage(member, findPost, topComment);
