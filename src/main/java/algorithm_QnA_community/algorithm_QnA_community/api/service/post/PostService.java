@@ -347,6 +347,7 @@ public class PostService {
         // 댓글 정보
         CommentRes pinnedCommentRes = getPinnedCommentRes(member, findPost);
         Comment highlightComment = getComment(commentId);
+        log.info("highlightComment={}", highlightComment.getId());
         Comment topComment = null;
         Comment d1Comment = null;
         Comment d2Comment = null;
@@ -368,9 +369,16 @@ public class PostService {
             d2Comment = highlightComment;
         }
 
+        log.info("topComment={}", topComment);
+        log.info("d1Comment={}", d1Comment);
+        log.info("d2Commnet={}", d2Comment);
+
         // 최상위 댓글 10개 조회
         Page<CommentWithIsLikeDto> topCommentsPage = getTopCommentsPage(member, findPost, topComment);
         List<CommentWithIsLikeDto> topCommentsDto = topCommentsPage.getContent();
+        for (CommentWithIsLikeDto c:topCommentsDto) {
+            log.info("tc={}", c.getComment().getId());
+        }
 
 
         List<TopCommentRes> comments = new ArrayList<>();
@@ -438,6 +446,7 @@ public class PostService {
                 if (crChildSize>0) cr.setHasChild(true);
                 topCommentRes.addChild(cr);
             }
+            log.info("cc={}", c.getComment().getId());
         }
         return topCommentRes;
     }
