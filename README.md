@@ -250,6 +250,10 @@ $ docker-compose up
 - 댓글 알람의 경우 해당 게시글 페이지에 댓글이 위치한 페이지로 동적 이동 가능한 하이라이팅 기능 제공
 
 ---
+## 제작 일정 (백앤드)
+<img src="https://user-images.githubusercontent.com/37677461/246733314-58eb11c4-479c-4890-bae8-cff66de192b6.png" />
+
+
 ## 아키텍쳐
 
 ### ERD 설계
