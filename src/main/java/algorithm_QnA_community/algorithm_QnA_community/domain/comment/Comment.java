@@ -38,6 +38,7 @@ import java.util.List;
  * 2023/05/23        solmin       신고 리스트와 좋아요 리스트에 대한 삭제 편의 연관 관계 메소드 추가
  * 2023/05/26        solmin       일부 연관관계 메소드 수정
  * 2023/05/26        solmin       삭제 시 s3 이미지 삭제해주는 EntityListener 연동
+ * 2023/06/20        solmin       채택 시 MemberBadge 상태 변경하지 않음
  */
 
 @Entity
@@ -127,7 +128,6 @@ public class Comment extends BaseTimeEntity {
 
     public void updatePin(boolean isPinned){
         this.isPinned = isPinned;
-        this.member.updateMemberBadgeCnt(Badge.Like, this.isPinned?1:-1);
     }
 
     // TODO 추후 배치 update JPQL(객체지향 쿼리 언어2 - 벌크 연산 참고)을 사용해서
