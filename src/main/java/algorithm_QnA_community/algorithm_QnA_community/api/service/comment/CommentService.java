@@ -91,7 +91,12 @@ public class CommentService {
             .build();
 
         Comment savedComment = commentRepository.save(comment);
-        s3Service.moveImages(savedComment.getId(), commentCreateReq.getImageIds(), S3Service.COMMENT_DIR);
+
+        savedComment.updateContent(
+            s3Service.moveImages(savedComment.getId(),
+                savedComment.getContent(),
+                commentCreateReq.getImageIds(),
+                S3Service.COMMENT_DIR));
 
         Long savedCommentId = savedComment.getId();
 
@@ -323,3 +328,4 @@ public class CommentService {
         return findComment;
     }
 }
+

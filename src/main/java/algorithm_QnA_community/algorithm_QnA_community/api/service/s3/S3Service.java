@@ -153,8 +153,12 @@ public class S3Service {
         amazonS3Client.deleteObject(bucket, source);
     }
 
+    /*
+     * content를 넘기면, findImage url과 매칭되는 부분을 replace하는 방식으로 바꾸기
+     * */
     @Transactional
-    public void moveImages(Long objectId, List<Long> imageIds, String dir) {
+    public String moveImages(Long objectId, String content, List<Long> imageIds, String dir) {
+
         for(Long id : imageIds){
             log.info("image id with {} will deleted", id);
             Image findImage = imageRepository.findById(id)
@@ -163,14 +167,17 @@ public class S3Service {
             if (!url.contains("/temp/")) {
                 continue;
             }
-            log.info("replaceTarget = {}",replaceTarget);
-            String oldSource = url.replace(replaceTarget, "");
-            log.info("sourceName = {}",oldSource);
-            String newSource = dir+"/"+objectId+"/"+oldSource.split("/")[1];
-            moveImage(oldSource, newSource);
 
+
+            String oldSource = url.replace(replaceTarget, "");
+            String newSource = dir+"/"+objectId+"/"+oldSource.split("/")[1];
+
+            moveImage(oldSource, newSource);
+            content = content.replace(url, replaceTarget + newSource);
             imageRepository.delete(findImage);
         }
+
+        return content;
     }
 
     @Transactional
@@ -223,3 +230,4 @@ public class S3Service {
 
     }
 }
+
