@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  * 2023/05/26        solmin       최초 생성
  * 2023/06/01        solmin       uploadImage, moveImage 등 이미지 업로드 및 삭제에 관련된 서비스 메소드 작성
  * 2023/06/02        solmin       스케줄러 적용, 하루가 지난 업로드 데이터 삭제
+ * 2023/06/20        solmin       replaceTarget @Value로 받기
  */
 
 @Service
@@ -50,7 +51,9 @@ public class S3Service {
     public static final String COMMENT_DIR = "comment";
     public static final String MEMBER_DIR = "member";
     public static final String TEMP_DIR = "temp";
-    public static final String replaceTarget = "https://algoqnabucket.s3.ap-northeast-2.amazonaws.com/";
+
+    @Value("${cloud.aws.s3.url}")
+    public String replaceTarget;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -152,16 +155,17 @@ public class S3Service {
 
     @Transactional
     public void moveImages(Long objectId, List<Long> imageIds, String dir) {
-
         for(Long id : imageIds){
+            log.info("image id with {} will deleted", id);
             Image findImage = imageRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELAYED_UPLOAD, "업로드 가능 시간이 지났습니다."));
             String url = findImage.getUrl();
             if (!url.contains("/temp/")) {
                 continue;
             }
-
+            log.info("replaceTarget = {}",replaceTarget);
             String oldSource = url.replace(replaceTarget, "");
+            log.info("sourceName = {}",oldSource);
             String newSource = dir+"/"+objectId+"/"+oldSource.split("/")[1];
             moveImage(oldSource, newSource);
 

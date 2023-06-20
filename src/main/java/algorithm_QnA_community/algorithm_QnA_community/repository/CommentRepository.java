@@ -29,6 +29,7 @@ import java.util.Optional;
  * 2023/06/01        solmin       findByMemberOrderByCreatedDateDesc 추가
  * 2023/06/11       janguni       findChildCommentPageNumberByParentCommentId, findCommentWithLikedByParentId,
  *                                findTopCommentWithIsLikeDto, findChildCommentWithIsLikeDto 추가
+ * 2023/06/18       janguni       findCommentRowNumberByCommentId에 where에 postId 추가
  */
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
@@ -121,8 +122,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.parent.id = :parentCommentId")
     int findChildCommentRowNumberByParentCommentId(@Param("commentId") Long commentId, @Param("parentCommentId") Long parentId);
 
-    @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.depth=0")
-    int findCommentRowNumberByCommentId(@Param("commentId") Long commentId);
+    @Query(value = "select count(c) from Comment c where c.id >= :commentId and c.depth=0 and c.post.id  = :postId")
+    int findCommentRowNumberByCommentId(@Param("commentId") Long commentId, @Param("postId") Long postId);
 
 
     // 해당 페이지의 최상위 댓글 정보 가져오기 (사용자의 추천정보도 함께)
