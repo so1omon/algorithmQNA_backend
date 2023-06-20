@@ -23,6 +23,7 @@ import javax.persistence.*;
  * 2023/05/10        solmin       팩토리 메소드 일부 수정
  * 2023/05/23        solmin       삭제 편의 메소드 추가
  * 2023/05/26        solmin       엔티티리스너 추가, 싫어요 시 뱃지에 영향 없도록 변경
+ * 2023/06/20        solmin       좋아요 상태 변경 시 MemberBadge 변동사항 버그 수정
  */
 @Entity
 @Getter
@@ -63,7 +64,7 @@ public class LikeComment extends BaseTimeEntity {
     public void updateState(boolean isLike){
         if (isLike^this.isLike){ // 다른 상태로 변경을 시도할 때만 유효함
             // 좋아요 -> 싫어요 : -1
-            updateCommentWriterBadge(-1);
+            this.comment.getMember().updateMemberBadgeCnt(Badge.Like, this.isLike?(-1):1);
             this.comment.updateLikeCnt(isLike, true);
             this.comment.updateLikeCnt(!isLike, false);
             this.isLike = isLike;

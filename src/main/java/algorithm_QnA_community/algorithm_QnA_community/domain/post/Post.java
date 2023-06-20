@@ -43,6 +43,7 @@ import java.util.List;
  * 2023/05/26        solmin       생성 시 멤버 뱃지 카운트 변경
  * 2023/05/26        solmin       삭제 시 s3 이미지 삭제해주는 EntityListener 연동
  * 2023/05/30        janguni      keyWords 변수 추가
+ * 2023/06/20        solmin       삭제 시 최상위 댓글만 삭제하도록 변경
  */
 
 @Entity
@@ -115,10 +116,10 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<LikePost> likePosts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<ReportPost> reportPosts = new ArrayList<>();
 
 
@@ -161,7 +162,7 @@ public class Post extends BaseTimeEntity {
     public void deletePost(){
 
         for(Comment comment : comments){
-            comment.deleteComment();
+            if(comment.getDepth()==0) comment.deleteComment();
         }
         for(ReportPost reportPost : reportPosts){
             reportPost.deleteReportPost();
