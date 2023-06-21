@@ -60,13 +60,13 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
  * 2023/06/11        janguni            댓글 하이라이팅 기능 추가 (리펙토링 예정)
  * 2023/06/15        janguni            게시물 조회 response에 채택된 댓글 추가
-*/
+ */
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
-  
+
     static final int MAX_POST_SIZE = 20;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
@@ -93,17 +93,20 @@ public class PostService {
         }
 
         Post post = Post.createPost()
-                .member(member)
-                .title(postCreateReq.getTitle())
-                .content(postCreateReq.getContent())
-                .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
-                .type(PostType.valueOf(postCreateReq.getPostType()))
-                .keyWords(keyWords)
-                .build();
+            .member(member)
+            .title(postCreateReq.getTitle())
+            .content(postCreateReq.getContent())
+            .postCategory(PostCategory.valueOf(postCreateReq.getPostCategory()))
+            .type(PostType.valueOf(postCreateReq.getPostType()))
+            .keyWords(keyWords)
+            .build();
 
         Post savedPost = postRepository.save(post);
 
-        s3Service.moveImages(savedPost.getId(), postCreateReq.getImageIds(), S3Service.POST_DIR);
+        savedPost.updateContent(
+            s3Service.moveImages(savedPost.getId(),
+                savedPost.getContent(),
+                postCreateReq.getImageIds(), S3Service.POST_DIR));
 
         return new PostWriteRes(savedPost.getId(), savedPost.getCreatedDate());
     }
@@ -170,10 +173,10 @@ public class PostService {
         else {
             if (!findLikePost.isPresent()){
                 LikePost likePost = LikePost.createLikePost()
-                        .member(member)
-                        .post(findPost)
-                        .isLike(postLikeReq.getIsLike())
-                        .build();
+                    .member(member)
+                    .post(findPost)
+                    .isLike(postLikeReq.getIsLike())
+                    .build();
 
                 likePostRepository.save(likePost);
             }
@@ -200,11 +203,11 @@ public class PostService {
 
         if (!findReportPost.isPresent()){ // 해당 게시물을 신고한 적이 없다면
             ReportPost reportPost = ReportPost.createReportPost()
-                    .post(findPost)
-                    .member(member)
-                    .reportCategory( ReportCategory.valueOf(postReportReq.getCategory()))
-                    .detail(postReportReq.getDetail())
-                    .build();
+                .post(findPost)
+                .member(member)
+                .reportCategory( ReportCategory.valueOf(postReportReq.getCategory()))
+                .detail(postReportReq.getDetail())
+                .build();
 
             reportPostRepository.save(reportPost);
         } else{
@@ -464,13 +467,13 @@ public class PostService {
 
     private Comment getComment(Long commentId) {
         Comment findComment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
         return findComment;
     }
 
     private Post getPost(Long postId) {
         Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("게시물이 존재하지 않습니다."));
         return findPost;
     }
 
@@ -487,3 +490,4 @@ public class PostService {
 
 
 }
+
