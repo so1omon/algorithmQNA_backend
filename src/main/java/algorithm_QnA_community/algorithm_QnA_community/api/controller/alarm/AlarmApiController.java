@@ -29,8 +29,8 @@ public class AlarmApiController {
     private final AlarmService alarmService;
 
     @GetMapping
-    public Res<AlarmsRes> getAlarms(@RequestParam(required = false, name = "recent_alarm_id") Long recentAlarmId,
-                         @RequestParam(required = false, name = "old_alarm_id") Long oldAlarmId,
+    public Res<AlarmsRes> getAlarms(@RequestParam(required = false, name = "recentAlarmId") Long recentAlarmId,
+                         @RequestParam(required = false, name = "oldAlarmId") Long oldAlarmId,
                          Authentication authentication){
         Member loginMember = getLoginMember(authentication);
 
