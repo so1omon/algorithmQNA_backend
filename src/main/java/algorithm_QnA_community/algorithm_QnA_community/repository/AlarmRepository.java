@@ -25,13 +25,13 @@ import java.util.List;
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     List<Alarm> findTop10ByMemberIdOrderByCreatedDateDesc(Long memberId);
 
-    @Query(value = "select * from Alarm" +
+    @Query(value = "select * from alarm" +
         " where alarm_id>:alarm_id" +
         " and member_id=:member_id" +
         " order by created_at asc limit 10", nativeQuery = true)
     List<Alarm> findTop10ByRecentAlarmId(@Param("alarm_id") Long alarmId, @Param("member_id") Long memberId);
 
-    @Query(value = "select * from Alarm" +
+    @Query(value = "select * from alarm" +
         " where alarm_id<:alarm_id" +
         " and member_id=:member_id" +
         " order by created_at desc limit 10", nativeQuery = true)
