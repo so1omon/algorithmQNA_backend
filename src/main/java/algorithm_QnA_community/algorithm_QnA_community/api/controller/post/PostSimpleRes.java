@@ -1,5 +1,7 @@
 package algorithm_QnA_community.algorithm_QnA_community.api.controller.post;
 
+import algorithm_QnA_community.algorithm_QnA_community.domain.member.Member;
+import algorithm_QnA_community.algorithm_QnA_community.domain.post.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
  * -----------------------------------------------------------
  * 2023/06/16        janguni           최초 생성
  * 2023/06/17        janguni           likeCnt, dislikeCnt 추가
+ * 2023/06/26        solmin            post 객체를 받는 Constructor 추가
  */
 @Data
 @AllArgsConstructor
@@ -43,5 +46,19 @@ public class PostSimpleRes {
         this.commentCount = postSimpleDto.getCommentCount();
         this.likeCnt = postSimpleDto.getLikeCnt();
         this.dislikeCnt = postSimpleDto.getDislikeCnt();
+    }
+
+    public PostSimpleRes(Post post) {
+        Member member = post.getMember();
+        this.postId = post.getId();
+        this.title = post.getTitle();
+        this.memberId = member.getId();
+        this.memberName = member.getName();
+        this.memberProfileUrl = member.getProfileImgUrl();
+        this.createdAt = post.getCreatedDate();
+        this.viewCount = post.getViews();
+        this.commentCount = post.getComments().size();
+        this.likeCnt = post.getLikeCnt();
+        this.dislikeCnt = post.getDislikeCnt();
     }
 }

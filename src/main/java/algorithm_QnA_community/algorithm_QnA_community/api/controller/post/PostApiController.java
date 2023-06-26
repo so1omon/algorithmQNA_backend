@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * packageName    : algorithm_QnA_community.algorithm_QnA_community.api.controller.post
@@ -39,6 +40,7 @@ import javax.validation.Valid;
  * 2023/05/31        janguni            게시물 목록 조회 @RequestBody로 변경
  * 2023/06/01        janguni            게시물 목록 조회 @RequestParam으로 재변경
  * 2023/06/11        janguni            댓글 하이라이팅 api 추가
+ * 2023/06/26        solmin             게시글 특성 구분없이 최근 10개의 목록 가져오는 API 추가
  */
 
 @RestController
@@ -119,6 +121,16 @@ public class PostApiController {
         Member findMember = getLoginMember(authentication);
         PostDetailRes postDetailRes = postService.readPostDetail(postId, findMember);
         return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물을 조회했습니다."), postDetailRes);
+    }
+
+    /**
+     * 게시물 목록 조회 - 최근 10개의 게시물을 postCategory, postType, keywords 상관 없이 가져오기
+     */
+    @GetMapping("/home/recent")
+    public Res<List<PostSimpleRes>> readsRecent10Post() {
+        List<PostSimpleRes> result = postService.readsRecent10Post();
+
+        return Res.res(new DefStatus(HttpStatus.OK.value(), "성공적으로 게시물 목록 조회에 성공했습니다."), result);
     }
 
     /**

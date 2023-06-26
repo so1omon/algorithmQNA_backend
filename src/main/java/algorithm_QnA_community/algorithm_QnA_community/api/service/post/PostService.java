@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static algorithm_QnA_community.algorithm_QnA_community.config.exception.ErrorCode.WRONG_POST_ID;
 import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role.ROLE_USER;
@@ -60,6 +61,7 @@ import static algorithm_QnA_community.algorithm_QnA_community.domain.member.Role
  * 2023/06/01        solmin             게시글 작성 시 임시 경로에 존재하는 이미지 정보 삭제
  * 2023/06/11        janguni            댓글 하이라이팅 기능 추가 (리펙토링 예정)
  * 2023/06/15        janguni            게시물 조회 response에 채택된 댓글 추가
+ * 2023/06/26        solmin             게시글 특성 구분없이 최근 10개의 목록 가져오는 Service 추가
  */
 
 @Service
@@ -487,7 +489,9 @@ public class PostService {
         }
     }
 
-
-
+    public List<PostSimpleRes> readsRecent10Post() {
+        return postRepository.findTop10ByOrderByCreatedDateDesc().stream()
+            .map(PostSimpleRes::new).collect(Collectors.toList());
+    }
 }
 

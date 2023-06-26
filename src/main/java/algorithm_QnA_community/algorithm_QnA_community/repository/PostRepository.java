@@ -27,6 +27,7 @@ import java.util.List;
  * 2023/05/21        janguni      정렬 메소드에 페이징기능 추가
  * 2023/05/22        solmin       findByPostIds <- AdminService에서 사용중
  * 2023/06/01        janguni      PostRepositoryCutom 상속 추가
+ * 2023/06/26        solmin       게시글 특성 구분없이 최근 10개의 목록 가져오는 API 추가
  */
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
@@ -40,4 +41,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
 
     Page<Post> findByMemberOrderByCreatedDateDesc(Member member, Pageable pageable);
 
+    List<Post> findTop10ByOrderByCreatedDateDesc();
 }
