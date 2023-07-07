@@ -1,7 +1,7 @@
-# ALGO싶다 - ALgorithm Q&A Community
+# ALGO싶다 - Algorithm Q&A Community
 
 <div align="center">
-<img width="329" alt="image" src="https://user-images.githubusercontent.com/50205887/207568862-cdc9e2c0-b03c-43ff-bf46-3ba79a110d0c.png">
+<img width="329" alt="image" src="https://user-images.githubusercontent.com/37677461/251651727-4258e35b-d12b-4312-87e7-61a7823da9c9.png">
 
 [//]: # ([![Hits]&#40;https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FVoluntain-SKKU%2FVoluntain-2nd&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false&#41;]&#40;https://hits.seeyoufarm.com&#41;)
 
@@ -25,9 +25,9 @@
 ## 프로젝트 소개
 
 알고리즘 분야에서의 학습과 문제 해결을 돕기 위해 만들어진 간편한 커뮤니티 사이트를 제작했습니다. <br/><br/>
-저희의 목표는 프로그래머스, 백준 저지 등 다양한 코딩 테스트 문제를 풀고 이에 대한 질의 응답과 풀이를 공유하는데 있습니다. 
-우리는 알고리즘 문제 풀이와 관련된 모든 분야에서 활동하는 개발자들을 위해 특정 온라인 저지 사이트에 관계 없이 유저들의 질문과 고민을 나누고 풀이를 공유할 수 있는 플랫폼을 제공합니다.<br/><br/> 
-이 커뮤니티에서는 그래프, 탐색, 정렬, 다이나믹 프로그래밍 등 다양한 알고리즘 분류별로 질문과 꿀팁을 누구나 공유할 수 있습니다. 
+저희의 목표는 프로그래머스, 백준 저지 등 다양한 코딩 테스트 문제를 풀고 이에 대한 질의 응답과 풀이를 공유하는데 있습니다.
+우리는 알고리즘 문제 풀이와 관련된 모든 분야에서 활동하는 개발자들을 위해 특정 온라인 저지 사이트에 관계 없이 유저들의 질문과 고민을 나누고 풀이를 공유할 수 있는 플랫폼을 제공합니다.<br/><br/>
+이 커뮤니티에서는 그래프, 탐색, 정렬, 다이나믹 프로그래밍 등 다양한 알고리즘 분류별로 질문과 꿀팁을 누구나 공유할 수 있습니다.
 우리의 목표는 상호간에 지식을 나누고 향상시킴으로써 개발자들의 알고리즘 역량을 향상시키는 것입니다.<br/><br/>
 위와 같은 커뮤니티 서비스를 구현하기 위해 유저들의 의견 공유를 원할히 수행하기 위한 기능 (알람, 댓글 하이라이팅 등)을 제외한 부가적인 기능들 없이 컴팩트한 서비스만을 제공하고 있습니다.
 
@@ -230,13 +230,23 @@ $ docker-compose up
 
 ---
 ## 화면 구성 📺
-| 메인 페이지  |  소개 페이지   |
-| :-------------------------------------------: | :------------: |
-|  <img width="329" src="https://user-images.githubusercontent.com/50205887/208036155-a57900f7-c68a-470d-923c-ff3c296ea635.png"/> |  <img width="329" src="https://user-images.githubusercontent.com/50205887/208036645-a76cf400-85bc-4fa2-af72-86d2abf61366.png"/>|  
-| 강좌 소개 페이지   |  강의 영상 페이지   |  
-| <img width="329" src="https://user-images.githubusercontent.com/50205887/208038737-2b32b7d2-25f4-4949-baf5-83b5c02915a3.png"/>   |  <img width="329" src="https://user-images.githubusercontent.com/50205887/208038965-43a6318a-7b05-44bb-97c8-b08b0495fba7.png"/>     |
+|대시보드|게시판|
+|:---:|:---:|
+|![로그인대시보드](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/1f2b10e0-51ea-4c7d-a442-3c19764402c0)|![게시판필터링](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/31ca9139-de0d-455e-a245-61228e988ed7)|
+|전체게시판의 글을 간략하게 볼 수 있는 대시보드입니다. 로그인 후 접근 가능합니다.| 게시판에는 Q&A게시판, 꿀팁게시판이 있습니다. 여러가지 필터링과 정렬 기능을 사용할 수 있습니다.|
+|**게시글작성**|**게시글보기**|
+|![글작성](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/82f2deef-2945-4ab2-b840-5f44e03b7e08)|![글보기및채택](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/f99933f1-7c12-4c83-ae38-abb12d07b5c0)|
+|게시글을 작성할 때 이미지, 코드블록을 이용해 구체적인 질문 사항이나 꿀팁을 작성할 수 있습니다. 또한 키워드도 등록이 가능합니다.|이용자들이 작성한 글을 읽고 댓글을 달거나 신고, 채택, 좋아요 표시 등의 기능을 수행할 수 있습니다.|
+|**하이라이팅**| --|
+| ![하이라이팅](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/55355601-bb64-4a85-8e08-24265e8b7bfa)| . |
+|알람을 받은 댓글이나 채택된 댓글로 바로 이동하고 하이라이팅해줍니다| . |
+|**마이페이지**|**관리자페이지(신고)**|
+|![마이페이지](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/be8255de-c396-41c7-bc95-b80d43184e8f)|![신고합](https://github.com/algorithmQNA/algorithmQNA_frontend/assets/49019236/129f0282-f423-46e5-953d-fa0854cad808)|
+|마이페이지에서 내 정보 수정, 내 뱃지, 내 활동 내역, 받은 알람등을 확인하고 관리가능합니다.| 관리자 페이지에서 글/댓글에 대한 신고를 관리, 공지사항을 관리할 수 있습니다.|
 
 ---
+
+
 ## 주요 기능 📦
 
 ### ⭐️ 소셜 로그인을 통한 회원가입
@@ -244,7 +254,7 @@ $ docker-compose up
 
 ### ⭐️ 알고리즘 카테고리별 Q&A, TIP 게시판 제공
 - 게시글 작성 시 이미지 업로드 등 다양한 형태의 게시글을 작성할 수 있도록 하는 Editor 제공
-- 제목, 글쓴이, 키워드로 검색과 댓글 유무, 채택 유무를 통하여 게시글을 필터링하는 기능 제공 
+- 제목, 글쓴이, 키워드로 검색과 댓글 유무, 채택 유무를 통하여 게시글을 필터링하는 기능 제공
 
 ### ⭐️ 신고된 게시글, 공지사항 등을 관리 가능한 관리자 페이지 기능
 
